@@ -6,7 +6,6 @@ import { UserContext } from '../context/UserContext';
 
 const SignUpPage = () => {
     const navigate = useNavigate();
-    const { signUp } = useContext(UserContext);
 
     const handleSignUp = (formData) => {
         // signUp handles API call and state management
