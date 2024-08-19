@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography } from '@mui/material';
-import LogInForm from '../components/forms/LogIn';
+import LogInForm from '../components/forms/LogInForm';
 import { UserContext } from '../context/UserContext';
 
 const LogInPage = () => {

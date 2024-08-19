@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { lightTheme, darkTheme } from './utils/theme'
 import { Route, Routes, Router } from 'react-router-dom'
+import HeroPage from './pages/HeroPage'
+import SignUpPage from './pages/SignUpPage'
+import LogInPage from './pages/LoginPage'
+import HomePage from './pages/HomePage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
     const [isDark, setIsDark] = useState(false)
