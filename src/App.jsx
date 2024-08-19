@@ -1,22 +1,26 @@
 import { useState } from 'react'
+import { ThemeProvider, CssBaseline } from '@mui/material'
+import { lightTheme, darkTheme } from './utils/theme'
 import { Route, Routes, Router } from 'react-router-dom'
 
 function App() {
-    const [count, setCount] = useState(0)
+    const [isDark, setIsDark] = useState(false)
+    
+    const toggleTheme = () => {
+        setIsDark(!isDark);
+    };
 
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Layout />}>
-                    {/* Nested routes */}
-                    <Route index element={<Home />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="contact" element={<Contact />} />
-                    <Route path="*" element={<NotFound />} />
-                </Route>
+                <Route path="/" element={<HeroPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login" element={<LogInPage />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/profile" element={<ProfilePage />} />
             </Routes>
         </Router>
-    )
+    );
 }
 
 export default App
