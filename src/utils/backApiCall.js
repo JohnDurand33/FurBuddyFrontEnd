@@ -1,14 +1,15 @@
 import axios from "axios";
 
+const backEndUrl = import.meta.process.env("VITE_BACKEND_URL");
 
-const api = axios.create({
-    baseURL: {backEndUrl},
+const backApiCall = axios.create({
+    baseURL: `${backEndUrl}`,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-api.interceptors.request.use(
+backApiCall.interceptors.request.use(
     (config) => {
         const token = sessionStorage.getItem("token");
         if (token) {
