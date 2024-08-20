@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import backApiCall from '../../utils/backApiCall' 
+import backApiCall from '../../utils/backApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login-lite';
-
+import { Box, Button, Grid, Typography, TextField } from '@mui/material';
 
 const SignUpForm = () => {
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ const SignUpForm = () => {
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
         try {
             const { credential } = credentialResponse;
-            const res = await axios.post('/auth/social-signup', {
+            const res = await backApiCall.post('/auth/social-signup', {
                 token: credential,
                 provider: 'google',
             });
@@ -52,7 +52,7 @@ const SignUpForm = () => {
     const handleFacebookSignUpSuccess = async (response) => {
         try {
             const { accessToken } = response;
-            const res = await axios.post('/auth/social-signup', {
+            const res = await backApiCall.post('/auth/social-signup', {
                 token: accessToken,
                 provider: 'facebook',
             });
@@ -64,55 +64,83 @@ const SignUpForm = () => {
     };
 
     return (
-        <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
-            <div>
-                <Formik
-                    initialValues={{ email: '', password: '', confirmPassword: '' }}
-                    validationSchema={validationSchema}
-                    onSubmit={handleEmailPasswordSignUp}
-                >
-                    {({ isSubmitting }) => (
-                        <Form>
-                            <div>
-                                <label>Email:</label>
-                                <Field type="email" name="email" />
-                                <ErrorMessage name="email" component="div" className="error" />
-                            </div>
-                            <div>
-                                <label>Password:</label>
-                                <Field type="password" name="password" />
-                                <ErrorMessage name="password" component="div" className="error" />
-                            </div>
-                            <div>
-                                <label>Confirm Password:</label>
-                                <Field type="password" name="confirmPassword" />
-                                <ErrorMessage name="confirmPassword" component="div" className="error" />
-                            </div>
-                            <button type="submit" disabled={isSubmitting}>
-                                Sign Up
-                            </button>
-                        </Form>
-                    )}
-                </Formik>
+        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
+            <Formik
+                initialValues={{ email: '', password: '', confirmPassword: '' }}
+                validationSchema={validationSchema}
+                onSubmit={handleEmailPasswordSignUp}
+            >
+                {({ isSubmitting }) => (
+                    <Form>
+                        <Box mb={2}>
+                            <Typography variant="h5" component="h1" align="center">
+                                Sign Up Form
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                type="email"
+                                name="email"
+                                as={TextField}
+                                label="Email"
+                                fullWidth
+                                required
+                            />
+                            <ErrorMessage name="email" component="div" className="error" />
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                type="password"
+                                name="password"
+                                as={TextField}
+                                label="Password"
+                                fullWidth
+                                required
+                            />
+                            <ErrorMessage name="password" component="div" className="error" />
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                type="password"
+                                name="confirmPassword"
+                                as={TextField}
+                                label="Confirm Password"
+                                fullWidth
+                                required
+                            />
+                            <ErrorMessage name="confirmPassword" component="div" className="error" />
+                        </Box>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting}
+                            sx={{ mb: 2 }}
+                        >
+                            Sign Up
+                        </Button>
+                    </Form>
+                )}
+            </Formik>
 
+            <Box sx={{ my: 2 }}>
                 <hr />
+            </Box>
 
-                <GoogleLogin
-                    onSuccess={handleGoogleSignUpSuccess}
-                    onError={() => {
-                        console.log('Google Sign-up Failed');
-                    }}
-                />
-
-                <FacebookLogin
-                    appId="1672022970286921"
-                    onSuccess={handleFacebookSignUpSuccess}
-                    onFailure={() => {
-                        console.log('Facebook Sign-up Failed');
-                    }}
-                />
-            </div>
-        </GoogleOAuthProvider>
+            <Grid container spacing={2} justifyContent="center">
+                <Grid item>
+                    <GoogleOAuthProvider clientId="226829116506-ka1l30arh8c45j6cipnegc5rp98k13sv.apps.googleusercontent.com">
+                        <GoogleLogin
+                            onSuccess={handleGoogleSignUpSuccess}
+                            onError={() => {
+                                console.log('Google Sign-up Failed');
+                            }}
+                        />
+                    </GoogleOAuthProvider>
+                </Grid>
+            </Grid>
+        </Box>
     );
 };
 

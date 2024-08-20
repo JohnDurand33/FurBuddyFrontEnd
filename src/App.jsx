@@ -7,7 +7,7 @@ import HeroPage from './pages/HeroPage'
 import SignUpPage from './pages/SignUpPage'
 import LogInPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
-import ProfilePage from './pages/ProfilePage'
+import DogProfilePage from './pages/DogProfilePage'
 import Navbar from './components/NavBar'
 
 function App() {
@@ -22,14 +22,14 @@ function App() {
         <UserProvider>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <Router toggleTheme={toggleTheme}>
-                    <Navbar />
+                <Router >
+                    <Navbar toggleTheme={toggleTheme} isDark={isDark} />
                     <Routes>
                         <Route path="/" element={<HeroPage />} />
                         <Route path="/signup" element={<SignUpPage />} />
                         <Route path="/login" element={<LogInPage />} />
                         <Route path="/home" element={<HomePage />} />
-                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/dogs" element={<DogProfilePage />} />
                     </Routes>
                 </Router>
             </ThemeProvider>

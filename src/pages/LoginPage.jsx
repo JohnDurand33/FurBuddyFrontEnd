@@ -17,9 +17,9 @@ const LogInPage = () => {
     return (
         <Container style={{ padding: '50px 20px' }}>
             <Typography variant="h4" gutterBottom>
-                Log In
+                Log In Page
             </Typography>
-            <LogInForm onSubmit={handleLogIn} />
+            <LogInForm onSubmit={handleLogIn} width='80%' />
         </Container>
     );
 };

@@ -23,7 +23,7 @@ const AccountMenu = () => {
     };
 
     return (
-        <>
+        <div>
             <IconButton
                 edge="end"
                 aria-controls="account-menu"
@@ -40,26 +40,22 @@ const AccountMenu = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
             >
-                {!user && (
-                    <>
-                        <MenuItem component={Link} to="/signup" onClick={handleMenuClose}>
-                            Sign Up
-                        </MenuItem>
-                        <MenuItem component={Link} to="/login" onClick={handleMenuClose}>
-                            Log In
-                        </MenuItem>
-                    </>
-                )}
-                {user && (
-                    <>
-                        <MenuItem component={Link} to="/profile" onClick={handleMenuClose}>
-                            My Account
-                        </MenuItem>
-                        <MenuItem onClick={handleLogout}>Log Out</MenuItem>
-                    </>
-                )}
+                {!user && [
+                    <MenuItem key="signup" component={Link} to="/signup" onClick={handleMenuClose}>
+                        Sign Up
+                    </MenuItem>,
+                    <MenuItem key="login" component={Link} to="/login" onClick={handleMenuClose}>
+                        Log In
+                    </MenuItem>
+                ]}
+                {user && [
+                    <MenuItem key="profile" component={Link} to="/profile" onClick={handleMenuClose}>
+                        My Account
+                    </MenuItem>,
+                    <MenuItem key="logout" onClick={handleLogout}>Log Out</MenuItem>
+                ]}
             </Menu>
-        </>
+        </div>
     );
 };
 

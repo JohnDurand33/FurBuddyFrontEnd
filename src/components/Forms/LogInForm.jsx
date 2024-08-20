@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login-lite';
+import { Box, Button, Grid, Typography, TextField } from '@mui/material';
 
 const LoginForm = () => {
     const navigate = useNavigate();
@@ -55,47 +56,72 @@ const LoginForm = () => {
     };
 
     return (
-        <GoogleOAuthProvider clientId="226829116506-ka1l30arh8c45j6cipnegc5rp98k13sv.apps.googleusercontent.com">
-            <div>
-                <Formik
-                    initialValues={{ email: '', password: '' }}
-                    validationSchema={validationSchema}
-                    onSubmit={handleEmailPasswordLogin}
-                >
-                    {({ isSubmitting }) => (
-                        <Form>
-                            <div>
-                                <label>Email:</label>
-                                <Field type="email" name="email" />
-                                <ErrorMessage name="email" component="div" className="error" />
-                            </div>
-                            <div>
-                                <label>Password:</label>
-                                <Field type="password" name="password" />
-                                <ErrorMessage name="password" component="div" className="error" />
-                            </div>
-                            <button type="submit" disabled={isSubmitting}>
-                                Login
-                            </button>
-                        </Form>
-                    )}
-                </Formik>
+        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
+            <Formik
+                initialValues={{ email: '', password: '' }}
+                validationSchema={validationSchema}
+                onSubmit={handleEmailPasswordLogin}
+            >
+                {({ isSubmitting }) => (
+                    <Form>
+                        <Box mb={2}>
+                            <Typography variant="h5" component="h1" align="center">
+                                Login Form
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                type="email"
+                                name="email"
+                                as={TextField}
+                                label="Email"
+                                fullWidth
+                                required
+                            />
+                            <ErrorMessage name="email" component="div" className="error" />
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                type="password"
+                                name="password"
+                                as={TextField}
+                                label="Password"
+                                fullWidth
+                                required
+                            />
+                            <ErrorMessage name="password" component="div" className="error" />
+                        </Box>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            disabled={isSubmitting}
+                            sx={{ mb: 2 }}
+                        >
+                            Login
+                        </Button>
+                    </Form>
+                )}
+            </Formik>
 
-                <GoogleLogin
-                    onSuccess={handleGoogleLoginSuccess}
-                    onError={() => {
-                        console.log('Google Login Failed');
-                    }}
-                />
-                <FacebookLogin
-                    appId="1672022970286921"
-                    onSuccess={handleFacebookLoginSuccess}
-                    onFailure={() => {
-                        console.log('Facebook Login Failed');
-                    }}
-                />
-            </div>
-        </GoogleOAuthProvider>
+            <Box sx={{ my: 2 }}>
+                <hr />
+            </Box>
+
+            <Grid container spacing={2} justifyContent="center">
+                <Grid item>
+                    <GoogleOAuthProvider clientId="226829116506-ka1l30arh8c45j6cipnegc5rp98k13sv.apps.googleusercontent.com">
+                        <GoogleLogin
+                            onSuccess={handleGoogleLoginSuccess}
+                            onError={() => {
+                                console.log('Google Login Failed');
+                            }}
+                        />
+                    </GoogleOAuthProvider>
+                </Grid>
+            </Grid>
+        </Box>
     );
 };
 
