@@ -8,6 +8,7 @@ import SignUpPage from './pages/SignUpPage'
 import LogInPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import ProfilePage from './pages/ProfilePage'
+import Navbar from './components/NavBar'
 
 function App() {
     const [isDark, setIsDark] = useState(false)
@@ -20,8 +21,9 @@ function App() {
     return (
         <UserProvider>
             <ThemeProvider theme={theme}>
-            <CssBaseline />
-                <Router>
+                <CssBaseline />
+                <Router toggleTheme={toggleTheme}>
+                    <Navbar />
                     <Routes>
                         <Route path="/" element={<HeroPage />} />
                         <Route path="/signup" element={<SignUpPage />} />

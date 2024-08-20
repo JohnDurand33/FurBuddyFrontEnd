@@ -1,49 +1,23 @@
-import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
-import { makeStyles } from '@mui/styles';
+import { AppBar, Toolbar, Typography, Box } from '@mui/material';
+import NavLink from './NavLink';
+import AccountMenu from './AccountMenu';
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1,
-    },
-    title: {
-        flexGrow: 1,
-    },
-    appBar: {
-        position: 'sticky',
-        top: 0,
-    },
-    linkButton: {
-        color: 'inherit',
-        textDecoration: 'none',
-    }
-}));
-
-function Navbar() {
-    const classes = useStyles();
-
+const Navbar = () => {
     return (
-        <AppBar className={classes.appBar} position="sticky">
+        <AppBar position="static" sx={{ backgroundColor: 'background.paper' }}>
             <Toolbar>
-                <Typography variant="h6" className={classes.title}>
-                    FurBuddy
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                    <NavLink to="/">My Application</NavLink>
                 </Typography>
-                <Button color="inherit">
-                    <Link to="/" className={classes.linkButton}>Home</Link>
-                </Button>
-                <Button color="inherit">
-                    <Link to="/signup" className={classes.linkButton}>Sign Up</Link>
-                </Button>
-                <Button color="inherit">
-                    <Link to="/profile" className={classes.linkButton}>Profile</Link>
-                </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <NavLink to="/dogs">My Dogs</NavLink>
+                    <NavLink to="/vaccinations">Vaccinations</NavLink>
+                    <NavLink to="/calendar">Calendar</NavLink>
+                    <AccountMenu />
+                </Box>
             </Toolbar>
         </AppBar>
     );
-}
+};
 
 export default Navbar;

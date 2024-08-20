@@ -32,23 +32,7 @@ export const lightTheme = createTheme({
             color: "#5f6368",
         },
     },
-    components: {
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 20,
-                    textTransform: "none",
-                },
-                containedPrimary: {
-                    backgroundColor: "#6200ea",
-                    color: "#ffffff",
-                },
-                containedSecondary: {
-                    backgroundColor: "#03dac6",
-                    color: "#000000",
-                },
-            },
-        },
+    components:{
     },
 });
 
@@ -86,21 +70,5 @@ export const darkTheme = createTheme({
         },
     },
     components: {
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 20,
-                    textTransform: "none",
-                },
-                containedPrimary: {
-                    backgroundColor: "#bb86fc",
-                    color: "#000000",
-                },
-                containedSecondary: {
-                    backgroundColor: "#03dac6",
-                    color: "#000000",
-                },
-            },
-        },
     },
 });
