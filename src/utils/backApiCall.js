@@ -1,9 +1,7 @@
 import axios from "axios";
 
-const backEndUrl = import.meta.process.env("VITE_BACKEND_URL");
-
 const backApiCall = axios.create({
-    baseURL: `${backEndUrl}`,
+    baseURL: '',
     headers: {
         "Content-Type": "application/json",
     },
@@ -22,4 +20,4 @@ backApiCall.interceptors.request.use(
     }
 );
 
-export default api;
+export default backApiCall;
