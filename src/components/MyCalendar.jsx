@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 const localizer = momentLocalizer(moment);
 
 function MyCalendar() {
-    const [view, setView] = useState('month'); // Default view is month
+    const [view, setView] = useState('month'); 
 
     return (
         <>
