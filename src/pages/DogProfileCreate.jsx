@@ -17,7 +17,7 @@ const DogProfileCreate = () => {
         weight: '',
         sex: '',
         fixed: false,
-        microchipNumber: '',
+        chip_number: '',  // updated field name to match the backend
         img_url: '',
     };
 
@@ -27,7 +27,8 @@ const DogProfileCreate = () => {
         age: Yup.number().required('Age is required'),
         weight: Yup.number().required('Weight is required'),
         sex: Yup.string().required('Sex is required'),
-        microchipNumber: Yup.string(),
+        fixed: Yup.boolean(),
+        chip_number: Yup.string().required('Microchip number is required.').length(15, 'Microchip number must be 15 characters long.'),  // Added validation
         img_url: Yup.string().required('Image is required')
     });
 
@@ -53,40 +54,105 @@ const DogProfileCreate = () => {
             const imageUrl = await handleImageUpload();
             values.img_url = imageUrl; // Set the image URL in form values
         }
-        // Submit the form data to the backend
-        axios.post('/api/dogProfile', values)  // Replace '/api/dogProfile' with your actual route
-            .then(response => {
-                console.log(response.data);
-                actions.resetForm();
-            })
-            .catch(error => {
-                console.error(error);
-            });
+        // Submit form data
+        await axios.post('/api/dogprofile', values);
+        actions.setSubmitting(false);
+        actions.resetForm();
     };
 
     return (
+
         <Formik
+            
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
         >
-            {({ values, setFieldValue }) => (
-                <Form>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
+            {({ setFieldValue, errors, touched }) => (
+                <Form >
+                    <Grid container spacing={2} sx={{ pt: 5 }}>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
                             <Field
                                 as={TextField}
                                 fullWidth
                                 name="name"
                                 label="Dog's Name"
                                 variant="outlined"
-                                error={Boolean(ErrorMessage.name)}
+                                error={Boolean(errors.name && touched.name)}
                                 helperText={<ErrorMessage name="name" />}
                             />
                         </Grid>
-                        {/* Other form fields for breed, age, etc. */}
-
-                        <Grid item xs={12}>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="breed"
+                                label="Breed"
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.breed)}
+                                helperText={<ErrorMessage name="breed" />}
+                            />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="age"
+                                label="Age"
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.age)}
+                                helperText={<ErrorMessage name="age" />}
+                            />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="weight"
+                                label="Weight"
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.weight)}
+                                helperText={<ErrorMessage name="weight" />}
+                            />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="sex"
+                                label="Sex"
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.sex)}
+                                helperText={<ErrorMessage name="sex" />}
+                            />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <FormControlLabel
+                                control={<Field as={Checkbox} name="fixed" />}
+                                label="Fixed"
+                            />
+                            <ErrorMessage name="fixed" component="div" />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="chip_number"
+                                label="Microchip Number"
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.chip_number)}
+                                helperText={<ErrorMessage name="chip_number" />}
+                            />
+                        </Grid>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
                             <Button
                                 variant="contained"
                                 component="label"
@@ -104,7 +170,8 @@ const DogProfileCreate = () => {
                             <ErrorMessage name="img_url" component="div" />
                         </Grid>
 
-                        <Grid item xs={12}>
+                        <Grid item 
+                            style={{ margin: '0 auto', width:'80%' }} >
                             <Button
                                 type="submit"
                                 variant="contained"

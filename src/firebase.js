@@ -3,13 +3,13 @@ import { getStorage } from "firebase/storage";
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyChuUW0G-sc0dzg90PvcipwYzPs4v_y9XU",
-    authDomain: "furbuddy-b79c3.firebaseapp.com",
-    projectId: "furbuddy-b79c3",
-    storageBucket: "furbuddy-b79c3.appspot.com",
-    messagingSenderId: "310547829146",
-    appId: "1:310547829146:web:fb9e016fcea5038239ea23",
-    measurementId: "G-Q7J0399752",
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);

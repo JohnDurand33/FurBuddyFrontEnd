@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
 import axios from 'axios';
 
-const DogProfilePage = ({ dogId }) => {
+const DogProfileViewPage = ({ dogId }) => {
     const [dogProfile, setDogProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -55,9 +55,8 @@ const DogProfilePage = ({ dogId }) => {
                         Fixed: {dogProfile.fixed ? 'Yes' : 'No'}
                     </Typography>
                     <Typography variant="h6">
-                        Microchip Number: {dogProfile.microchipNumber || 'N/A'}
+                        Microchip Number: {dogProfile.chip_number || 'N/A'}
                     </Typography>
-                    {/* You can add more fields as needed */}
                     <Button variant="contained" color="primary" onClick={() => console.log('Edit Profile')}>
                         Edit Profile
                     </Button>
@@ -67,4 +66,4 @@ const DogProfilePage = ({ dogId }) => {
     );
 };
 
-export default DogProfilePage;
+export default DogProfileViewPage;

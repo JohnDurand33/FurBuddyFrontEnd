@@ -8,6 +8,7 @@ import SignUp from './pages/SignUp'
 import LogIn from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import DogProfileCreate from './pages/DogProfileCreate'
+import DogProfileViewPage from './pages/DogProfileViewPage'
 import Navbar from './components/NavBar'
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
                         <Route path="/login" element={<LogIn />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/dogs/new" element={<DogProfileCreate />} />
+                        <Route path="/dogs/:dogId" element={<DogProfileViewPage />} />
                     </Routes>
                 </Router>
             </ThemeProvider>
