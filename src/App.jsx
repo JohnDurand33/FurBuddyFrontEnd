@@ -2,13 +2,12 @@ import { useState, useMemo } from 'react'
 import { UserProvider} from './context/UserContext'
 import { lightTheme, darkTheme } from './utils/theme'
 import { ThemeProvider, CssBaseline } from '@mui/material'
-import { Route, Routes, Options, BrowserRouter as Router } from 'react-router-dom'
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom'
 import HeroPage from './pages/HeroPage'
 import SignUp from './pages/SignUp'
 import LogIn from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import DogProfileCreate from './pages/DogProfileCreate
-'
+import DogProfileCreate from './pages/DogProfileCreate'
 import Navbar from './components/NavBar'
 
 function App() {
@@ -29,8 +28,8 @@ function App() {
                         <Route path="/" element={<HeroPage />} />
                         <Route path="/signup" element={<SignUp />} />
                         <Route path="/login" element={<LogIn />} />
-                        <Route path="/home" element={<HomePage />} />
-                        <Route path="/dogs/new" element={<DogProfilePage />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/dogs/new" element={<DogProfileCreate />} />
                     </Routes>
                 </Router>
             </ThemeProvider>
