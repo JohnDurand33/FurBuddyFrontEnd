@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import backApiCall from '../../utils/backApiCall';
+import backApiCall from '../utils/backApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login-lite';
 import { Box, Button, Grid, Typography, TextField } from '@mui/material';

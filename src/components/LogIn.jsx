@@ -7,7 +7,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login-lite';
 import { Box, Button, Grid, Typography, TextField } from '@mui/material';
 
-const LoginForm = () => {
+const Login = () => {
     const navigate = useNavigate();
 
     const validationSchema = Yup.object().shape({
@@ -111,4 +111,4 @@ const LoginForm = () => {
     );
 };
 
-export default LoginForm;
+export default Login;
