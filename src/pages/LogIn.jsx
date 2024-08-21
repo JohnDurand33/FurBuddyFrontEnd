@@ -16,8 +16,9 @@ const Login = () => {
     });
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
-        setServerError(null); // Reset server error on new submission
+        setServerError(null); 
         try {
+            localStorage.removeItem('access_token')
             const res = await axios.post('/auth/login', values);
             localStorage.setItem('access_token', res.data.access_token);
             navigate('/dashboard');
@@ -31,6 +32,7 @@ const Login = () => {
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null); 
         try {
+            localStorage.removeItem('access_token')
             const { credential } = credentialResponse;
             const res = await axios.post('/auth/social-login', {
                 token: credential,
@@ -44,7 +46,7 @@ const Login = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
+        <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={validationSchema}

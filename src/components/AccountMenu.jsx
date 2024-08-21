@@ -1,11 +1,11 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { Menu, MenuItem, IconButton } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { Link } from 'react-router-dom';
-import { UserContext } from '../context/UserContext';
+import { useAuth } from '../context/AuthContext';
 
 const AccountMenu = () => {
-    const { user, setUser } = useContext(UserContext);
+    const { user, logout } = useAuth();
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleMenuOpen = (event) => {
@@ -17,8 +17,7 @@ const AccountMenu = () => {
     };
 
     const handleLogout = () => {
-        // Logic to handle logout
-        setUser(null);
+        logout();
         handleMenuClose();
     };
 

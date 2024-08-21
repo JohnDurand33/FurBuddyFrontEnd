@@ -53,7 +53,7 @@ const SignUpForm = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
+        <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
                 initialValues={{ email: '', password: '', confirmPassword: '' }}
                 validationSchema={validationSchema}

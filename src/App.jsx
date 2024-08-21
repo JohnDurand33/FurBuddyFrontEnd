@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react'
-import { UserProvider} from './context/UserContext'
+import { AuthProvider } from './context/AuthContext'
 import { lightTheme, darkTheme } from './utils/theme'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom'
+import Navbar from './components/NavBar'
 import HeroPage from './pages/HeroPage'
 import SignUp from './pages/SignUp'
-import LogIn from './pages/Login'
+import LogIn from './pages/LogIn'
 import Dashboard from './pages/Dashboard'
 import DogProfileCreate from './pages/DogProfileCreate'
 import DogProfileViewPage from './pages/DogProfileViewPage'
-import Navbar from './components/NavBar'
+import MyCalendar from './components/MyCalendar'
+
 
 function App() {
     const [isDark, setIsDark] = useState(false)
@@ -20,11 +22,12 @@ function App() {
     };
 
     return (
-        <UserProvider>
-            <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <Router >
-                    <Navbar toggleTheme={toggleTheme} isDark={isDark} />
+        
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Router >
+                <AuthProvider>
+                        <Navbar toggleTheme={toggleTheme} isDark={isDark} />
                     <Routes>
                         <Route path="/" element={<HeroPage />} />
                         <Route path="/signup" element={<SignUp />} />
@@ -32,10 +35,12 @@ function App() {
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/dogs/new" element={<DogProfileCreate />} />
                         <Route path="/dogs/:dogId" element={<DogProfileViewPage />} />
+                        <Route path="/calendar" element={<MyCalendar />} />
                     </Routes>
-                </Router>
-            </ThemeProvider>
-        </UserProvider>
+                </AuthProvider>
+            </Router>
+        </ThemeProvider>
+        
     );
 }
 
