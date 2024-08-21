@@ -4,11 +4,11 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login-lite';
-import { Box, Button, Grid, Typography, TextField } from '@mui/material';
+import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [serverError, setServerError] = React.useState(null);
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -16,18 +16,20 @@ const Login = () => {
     });
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
+        setServerError(null); // Reset server error on new submission
         try {
             const res = await axios.post('/auth/login', values);
             localStorage.setItem('access_token', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
-            console.error('Login failed:', err);
+            setServerError(err.response?.data?.message || 'Login failed. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleGoogleLoginSuccess = async (credentialResponse) => {
+        setServerError(null); 
         try {
             const { credential } = credentialResponse;
             const res = await axios.post('/auth/social-login', {
@@ -37,7 +39,7 @@ const Login = () => {
             localStorage.setItem('access_token', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
-            console.error('Google login failed:', err);
+            setServerError('Google login failed. Please try again.');
         }
     };
 
@@ -55,6 +57,11 @@ const Login = () => {
                                 Login Form
                             </Typography>
                         </Box>
+                        {serverError && (
+                            <Box mb={2}>
+                                <Alert severity="error">{serverError}</Alert>
+                            </Box>
+                        )}
                         <Box mb={2}>
                             <Field
                                 type="email"
@@ -85,7 +92,7 @@ const Login = () => {
                             disabled={isSubmitting}
                             sx={{ mb: 2 }}
                         >
-                            Login
+                            {isSubmitting ? <CircularProgress size={24} /> : 'Login'}
                         </Button>
                     </Form>
                 )}
@@ -101,7 +108,7 @@ const Login = () => {
                         <GoogleLogin
                             onSuccess={handleGoogleLoginSuccess}
                             onError={() => {
-                                console.log('Google Login Failed');
+                                setServerError('Google Login Failed. Please try again.');
                             }}
                         />
                     </GoogleOAuthProvider>

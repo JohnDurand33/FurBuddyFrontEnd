@@ -4,11 +4,12 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import backApiCall from '../utils/backApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login-lite';
-import { Box, Button, Grid, Typography, TextField } from '@mui/material';
+import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
 
 const SignUpForm = () => {
     const navigate = useNavigate();
+
+    const [serverError, setServerError] = React.useState(null);
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -21,6 +22,7 @@ const SignUpForm = () => {
     });
 
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
+        setServerError(null); // Reset server error on new submission
         try {
             const res = await backApiCall.post('/auth/signup', {
                 email: values.email,
@@ -29,13 +31,14 @@ const SignUpForm = () => {
             localStorage.setItem('access_token', res.data.access_token);
             navigate('/home');
         } catch (err) {
-            console.error('Sign-up failed:', err);
+            setServerError(err.response?.data?.message || 'Sign-up failed. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
+        setServerError(null); // Reset server error on new submission
         try {
             const { credential } = credentialResponse;
             const res = await backApiCall.post('/auth/social-signup', {
@@ -45,7 +48,7 @@ const SignUpForm = () => {
             localStorage.setItem('access_token', res.data.access_token);
             navigate('/home');
         } catch (err) {
-            console.error('Google sign-up failed:', err);
+            setServerError('Google sign-up failed. Please try again.');
         }
     };
 
@@ -63,6 +66,11 @@ const SignUpForm = () => {
                                 Sign Up Form
                             </Typography>
                         </Box>
+                        {serverError && (
+                            <Box mb={2}>
+                                <Alert severity="error">{serverError}</Alert>
+                            </Box>
+                        )}
                         <Box mb={2}>
                             <Field
                                 type="email"
@@ -104,7 +112,7 @@ const SignUpForm = () => {
                             disabled={isSubmitting}
                             sx={{ mb: 2 }}
                         >
-                            Sign Up
+                            {isSubmitting ? <CircularProgress size={24} /> : 'Sign Up'}
                         </Button>
                     </Form>
                 )}
@@ -120,7 +128,7 @@ const SignUpForm = () => {
                         <GoogleLogin
                             onSuccess={handleGoogleSignUpSuccess}
                             onError={() => {
-                                console.log('Google Sign-up Failed');
+                                setServerError('Google Sign-up Failed. Please try again.');
                             }}
                         />
                     </GoogleOAuthProvider>
