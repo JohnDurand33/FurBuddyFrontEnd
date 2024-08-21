@@ -41,20 +41,6 @@ const LoginForm = () => {
         }
     };
 
-    const handleFacebookLoginSuccess = async (response) => {
-        try {
-            const { accessToken } = response;
-            const res = await axios.post('/auth/social-login', {
-                token: accessToken,
-                provider: 'facebook',
-            });
-            localStorage.setItem('access_token', res.data.access_token);
-            navigate('/dashboard');
-        } catch (err) {
-            console.error('Facebook login failed:', err);
-        }
-    };
-
     return (
         <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
             <Formik

@@ -1,12 +1,16 @@
 import React from 'react';
+import { Container, Typography } from '@mui/material';
+import DogProfileForm from '../components/Forms/DogProfileFOrm';
 
-function Dog() {
+const DogProfilePage = () => {
     return (
-        <div>
-            <h2>Dog Page</h2>
-            <p>Create and manage your dog's profile(s).</p>
-        </div>
+        <Container style={{ padding: '50px 20px' }}>
+            <Typography variant="h4" gutterBottom>
+                Create a Dog Profile
+            </Typography>
+            <DogProfileForm />
+        </Container>
     );
-}
+};
 
-export default Dog;
+export default DogProfilePage

@@ -49,20 +49,6 @@ const SignUpForm = () => {
         }
     };
 
-    const handleFacebookSignUpSuccess = async (response) => {
-        try {
-            const { accessToken } = response;
-            const res = await backApiCall.post('/auth/social-signup', {
-                token: accessToken,
-                provider: 'facebook',
-            });
-            localStorage.setItem('access_token', res.data.access_token);
-            navigate('/home');
-        } catch (err) {
-            console.error('Facebook sign-up failed:', err);
-        }
-    };
-
     return (
         <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}>
             <Formik

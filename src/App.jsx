@@ -29,7 +29,7 @@ function App() {
                         <Route path="/signup" element={<SignUpPage />} />
                         <Route path="/login" element={<LogInPage />} />
                         <Route path="/home" element={<HomePage />} />
-                        <Route path="/dogs" element={<DogProfilePage />} />
+                        <Route path="/dogs/new" element={<DogProfilePage />} />
                     </Routes>
                 </Router>
             </ThemeProvider>
