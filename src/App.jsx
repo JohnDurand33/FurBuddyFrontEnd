@@ -34,7 +34,7 @@ function App() {
                         <Route path="/login" element={<LogIn />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/dogs/new" element={<DogProfileCreate />} />
-                        <Route path="/dogs/:dogId" element={<DogProfileViewPage />} />
+                        <Route path="/dog" element={<DogProfileViewPage />} />
                         <Route path="/calendar" element={<MyCalendar />} />
                     </Routes>
                 </AuthProvider>

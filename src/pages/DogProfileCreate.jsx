@@ -3,7 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Box, Button, Grid, Typography, TextField, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
 import axios from 'axios';
-import { storage } from '../firebase'; // Import Firebase storage
+import { storage } from '../firebase'; 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const DogProfileCreate = () => {
@@ -17,7 +17,7 @@ const DogProfileCreate = () => {
         weight: '',
         sex: '',
         fixed: false,
-        chip_number: '',  // updated field name to match the backend
+        chip_number: '',  
         img_url: '',
     };
 
@@ -28,7 +28,7 @@ const DogProfileCreate = () => {
         weight: Yup.number().required('Weight is required'),
         sex: Yup.string().required('Sex is required'),
         fixed: Yup.boolean(),
-        chip_number: Yup.string().required('Microchip number is required.').length(15, 'Microchip number must be 15 characters long.'),  // Added validation
+        chip_number: Yup.string().required('Microchip number is required.').length(15, 'Microchip number must be 15 characters long.'), 
         img_url: Yup.string().required('Image is required')
     });
 
@@ -52,7 +52,7 @@ const DogProfileCreate = () => {
         // Upload image and get URL before submitting the form
         if (image) {
             const imageUrl = await handleImageUpload();
-            values.img_url = imageUrl; // Set the image URL in form values
+            values.img_url = imageUrl; 
         }
         // Submit form data
         await axios.post('/api/dogprofile', values);
