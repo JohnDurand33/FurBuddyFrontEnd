@@ -1,48 +1,75 @@
 import axios from "axios";
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { getToken, setToken, removeToken } from "../utils/token";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('access_token');
+        const token = getToken();
         if (token) {
-            try {
-                const decodedToken = jwtDecode(token);
-                if (decodedToken.exp * 1000 > Date.now()) {
-                    setUser(decodedToken);
-                } else {
-                    localStorage.removeItem('access_token');
-                    navigate('/login');
-                }
-            } catch (err) {
-                console.error('Invalid token:', err);
-                localStorage.removeItem('access_token');
-            }
+            fetchUser(token);
         }
-        setLoading(false);
-    }, [navigate]);
+    }, []);
 
-    const login = (token) => {
-        localStorage.setItem('access_token', token);
-        const decodedToken = jwtDecode(token);
-        setUser(decodedToken);
+    //fetchUser Uses token passed in to function to setUser information
+    const fetchUser = async (token) => {
+        try {
+            setLoading(true)
+            const response = await axios.get('owner/<int:owner_id/profiles/<int:profile_id>', {      //ROUTE NEEDED!!
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            setUser(response.data);
+        } catch (error) {
+            console.error('Failed to fetch user:', error);
+            handleTokenError();
+        } finally {
+            setLoading(false)
+        }
     };
 
-    const logout = () => {
-        localStorage.removeItem('access_token');
+    // authenicateUser handles 
+    const authenticateUser = async (endpoint, userData) => {
+        setLoading(true)
+        removeToken();
+        setUser(null)
+
+        try {
+            const response = await axios.post(endpoint, userData);
+
+            const token = response.data.token;
+
+            setToken(token);
+            await fetchUser(token);
+            navigate('/dashboard');
+        } catch (error) {
+            console.error(`An error occurred during ${endpoint.split('/').pop()}`)
+        }
+    };
+
+    const handleLogout = () => {
+        removeToken();
         setUser(null);
         navigate('/login');
     };
 
+    handleTokenError = () => {
+        removeToken();
+        setUser(null);
+        navigate('login');
+        alert('Session expired. Please login again')
+    }
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, setUser, authenticateUser, handleLogout }}>
             {!loading && children}
         </AuthContext.Provider>
     );
