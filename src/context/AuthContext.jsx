@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const backendUrl = import.meta.env.VITE_BACKEND_URL
 
     useEffect(() => {
         const token = getToken();
@@ -61,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         navigate('/login');
     };
 
-    handleTokenError = () => {
+    const handleTokenError = () => {
         removeToken();
         setUser(null);
         navigate('login');
@@ -69,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, setUser, authenticateUser, handleLogout }}>
+        <AuthContext.Provider value={{ backendUrl, user, setUser, fetchUser, loading, setLoading, authenticateUser, handleLogout, handleTokenError }}>
             {!loading && children}
         </AuthContext.Provider>
     );

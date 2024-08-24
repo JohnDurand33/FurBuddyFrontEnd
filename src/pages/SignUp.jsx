@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import backApiCall from '../utils/backApiCall';
+import backApiCall from '../utils/backEndApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
 
@@ -24,7 +24,7 @@ const SignUpForm = () => {
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null); // Reset server error on new submission
         try {
-            const res = await backApiCall.post('/auth/signup', {
+            const res = await backApiCall.post('/create/', {
                 email: values.email,
                 password: values.password,
             });

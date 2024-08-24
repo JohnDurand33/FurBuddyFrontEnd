@@ -1,15 +1,17 @@
 import axios from "axios";
 
-const backApiCall = axios.create({
-    baseURL: '',
+const backEnd = import.meta.env.VITE_BACKEND_URL
+
+const TokenRequiredApiCall = axios.create({
+    baseURL: `${backEnd}`,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-backApiCall.interceptors.request.use(
+TokenRequiredApiCall.interceptors.request.use(
     (config) => {
-        const token = sessionStorage.getItem("token");
+        const token = localStorage.getItem("token");
         if (token) {
             config.headers["Authorization"] = `Bearer ${token}`;
         }
@@ -20,4 +22,4 @@ backApiCall.interceptors.request.use(
     }
 );
 
-export default backApiCall;
+export default TokenRequiredApiCall;

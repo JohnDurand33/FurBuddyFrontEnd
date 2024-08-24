@@ -26,7 +26,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Router >
-                <AuthProvider>
+                <AuthProvider >
                         <Navbar toggleTheme={toggleTheme} isDark={isDark} />
                     <Routes>
                         <Route path="/" element={<HeroPage />} />
