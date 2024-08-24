@@ -18,9 +18,9 @@ const Login = () => {
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null); 
         try {
-            localStorage.removeItem('access_token')
-            const res = await axios.post('/auth/login', values);
-            localStorage.setItem('access_token', res.data.access_token);
+            removeToken('colab32Access')
+            const res = await axios.post('/login', values);
+            setLocalToken('colab32Access', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
             setServerError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -32,13 +32,13 @@ const Login = () => {
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null); 
         try {
-            localStorage.removeItem('access_token')
+            removeToken('colab32Access')
             const { credential } = credentialResponse;
             const res = await axios.post('/auth/social-login', {
                 token: credential,
                 provider: 'google',
             });
-            localStorage.setItem('access_token', res.data.access_token);
+            setLocalToken('colab32Access', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
             setServerError('Google login failed. Please try again.');

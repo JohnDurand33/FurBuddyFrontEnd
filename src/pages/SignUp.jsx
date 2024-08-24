@@ -1,15 +1,16 @@
-import React from 'react';
+import { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import backApiCall from '../utils/backEndApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
+import { setLocalToken, removeToken  } from '../utils/token';
 
 const SignUpForm = () => {
     const navigate = useNavigate();
-
-    const [serverError, setServerError] = React.useState(null);
+    const [serverError, setServerError] = useState(null);
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -23,12 +24,15 @@ const SignUpForm = () => {
 
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null); // Reset server error on new submission
+        removeToken('COLAB32authtoken') //remove any existing token in storage
         try {
-            const res = await backApiCall.post('/create/', {
-                email: values.email,
+            const res = await axios.post('/login', {
+                owner_email: values.email,
                 password: values.password,
+                owner_name: values.ownerName,
+                owner_phone: values.ownerPhone
             });
-            localStorage.setItem('access_token', res.data.access_token);
+            setLocalToken('COLAB32authtoken', res.data.access_token);
             navigate('/home');
         } catch (err) {
             setServerError(err.response?.data?.message || 'Sign-up failed. Please try again.');
@@ -38,14 +42,15 @@ const SignUpForm = () => {
     };
 
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
-        setServerError(null); // Reset server error on new submission
+        setServerError(null); 
+        removeToken('COLAB32authtoken')
         try {
             const { credential } = credentialResponse;
             const res = await backApiCall.post('/auth/social-signup', {
                 token: credential,
                 provider: 'google',
             });
-            localStorage.setItem('access_token', res.data.access_token);
+            setLocalToken('access_token', res.data.access_token);
             navigate('/home');
         } catch (err) {
             setServerError('Google sign-up failed. Please try again.');
@@ -55,7 +60,7 @@ const SignUpForm = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ email: '', password: '', confirmPassword: '' }}
+                initialValues={{ email: '', password: '', confirmPassword: '', ownerName: '', ownerPhone: '' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordSignUp}
             >
@@ -104,6 +109,7 @@ const SignUpForm = () => {
                             />
                             <ErrorMessage name="confirmPassword" component="div" className="error" />
                         </Box>
+
                         <Button
                             type="submit"
                             fullWidth

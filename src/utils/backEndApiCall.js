@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const backEnd = import.meta.env.VITE_BACKEND_URL
+import { backEndUrl } from "./config";
 
 const TokenRequiredApiCall = axios.create({
-    baseURL: `${backEnd}`,
+    baseURL: `${backEndUrl}`,
     headers: {
         "Content-Type": "application/json",
     },
@@ -11,7 +10,7 @@ const TokenRequiredApiCall = axios.create({
 
 TokenRequiredApiCall.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("colab32Access");
         if (token) {
             config.headers["Authorization"] = `Bearer ${token}`;
         }

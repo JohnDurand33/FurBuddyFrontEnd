@@ -1,11 +1,11 @@
-export const setToken = (token) => {
-    localStorage.setItem('COLAB32authtoken', token)
+export const setLocalToken = (token) => {
+    localStorage.setItem("colab32Access", token);
 };
 
 export const getToken = () => {
-    return localStorage.getItem("COLAB32authtoken");
+    return localStorage.getItem("colab32Access");
 }
     ;
 export const removeToken = () => {
-    localStorage.removeItem("COLAB32authtoken");
+    localStorage.removeItem("colab32Access");
 };

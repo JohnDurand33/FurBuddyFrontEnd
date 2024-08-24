@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken, setToken, removeToken } from "../utils/token";
+import { backEndUrl } from "../utils/config";
 
 const AuthContext = createContext();
 
@@ -9,7 +10,6 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const backendUrl = import.meta.env.VITE_BACKEND_URL
 
     useEffect(() => {
         const token = getToken();
@@ -22,12 +22,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async (token) => {
         try {
             setLoading(true)
-            const response = await axios.get('owner/<int:owner_id/profiles/<int:profile_id>', {      //ROUTE NEEDED!!
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
+            const response = await axios.get(`${backendUrl}/owners`);
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user:', error);
