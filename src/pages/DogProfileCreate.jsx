@@ -29,7 +29,7 @@ const DogProfileCreate = () => {
         weight: Yup.number(),
         sex: Yup.string(),
         fixed: Yup.boolean(),
-        chip_number: Yup.string().optional().length(15, 'Microchip number must be 15 characters long.'),
+        chip_number: Yup.string().optional().length(15, 'Microchip number is usually 15 characters long.'),
         img_url: Yup.string().required('Image is required')
     });
 
@@ -157,6 +157,17 @@ const DogProfileCreate = () => {
                                 variant="outlined"
                                 error={Boolean(ErrorMessage.sex)}
                                 helperText={<ErrorMessage name="sex" />}
+                            />
+                        </Grid>
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                name="chip_number"
+                                label="Chip No."
+                                variant="outlined"
+                                error={Boolean(ErrorMessage.chip_number)}
+                                helperText={<ErrorMessage name="chip_number" />}
                             />
                         </Grid>
 

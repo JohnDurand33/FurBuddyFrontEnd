@@ -37,17 +37,17 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 root: {
                     "& .MuiInputBase-input": {
-                        color: "#000000", // Typed text color for light mode
+                        color: "#ffffff", // Typed text color
                     },
                     "& .MuiInputLabel-root": {
-                        color: "rgba(0, 0, 0, 0.6)", // Placeholder text color (darker for light mode)
+                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color 
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
-                        color: "rgba(0, 0, 0, 0.8)", // Placeholder text color when focused
+                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
                     },
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
-                            borderColor: "#5f6368",
+                            borderColor: "#b0bec5",
                         },
                         "&:hover fieldset": {
                             borderColor: "#FFCA00",
@@ -98,23 +98,23 @@ export const darkTheme = createTheme({
             styleOverrides: {
                 root: {
                     "& .MuiInputBase-input": {
-                        color: "#ffffff", // Typed text color for dark mode
+                        color: "#000000", // Typed text color for light mode
                     },
                     "& .MuiInputLabel-root": {
-                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color (lighter for dark mode)
+                        color: "rgba(0, 0, 0, 0.6)", // Placeholder text color (darker for light mode)
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
-                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
+                        color: "rgba(0, 0, 0, 0.8)", // Placeholder text color when focused
                     },
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#5f6368",
                         },
                         "&:hover fieldset": {
                             borderColor: "#FFCA00",
                         },
                         "&.Mui-focused fieldset": {
-                            borderColor: "#FFCA00",
+                            borderColor: "#FFCA00"
                         },
                     },
                 },

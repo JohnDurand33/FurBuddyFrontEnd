@@ -1,69 +1,125 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Button, CircularProgress } from '@mui/material';
+import React, { useState } from 'react';
+import { Grid, Box, Avatar, Button, TextField, Typography } from '@mui/material';
 import axios from 'axios';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-const DogProfileViewPage = ({ dogId }) => {
-    const [dogProfile, setDogProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const DogProfileView = () => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [dogProfileData, setDogProfileData] = useState({
+        name: '',
+        breed: '',
+        age: '',
+        weight: '',
+        sex: '',
+        fixed: true,
+        chip_number: '123456789012345',
+        img_url: '', // Initial image URL
+    });
 
-    useEffect(() => {
-        // Fetch the dog profile data from the backend
-        const fetchDogProfile = async () => {
-            try {
-                const response = await axios.get(`/api/dogProfile/${dogId}`);
-                setDogProfile(response.data);
-                setLoading(false);
-            } catch (err) {
-                setError('Error fetching dog profile');
-                setLoading(false);
-            }
-        };
+    const [image, setImage] = useState(null);
+    const [imageUrl, setImageUrl] = useState(dogProfileData.img_url);
 
-        fetchDogProfile();
-    }, [dogId]);
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            setImage(e.target.files[0]);
+        }
+    };
 
-    if (loading) {
-        return <CircularProgress />;
-    }
+    const handleImageUpload = async () => {
+        if (image) {
+            const storageRef = ref(storage, `dog_images/${image.name}`);
+            await uploadBytes(storageRef, image);
+            const url = await getDownloadURL(storageRef);
+            setImageUrl(url);
+            return url;
+        }
+        return dogProfileData.img_url;
+    };
 
-    if (error) {
-        return <Typography color="error">{error}</Typography>;
-    }
+    const handleSave = async () => {
+        const img_url = await handleImageUpload();
+        const updatedData = { ...dogProfileData, img_url };
 
-    if (!dogProfile) {
-        return <Typography>No profile found</Typography>;
-    }
+        Example: await axios.post('/api/dogprofile/update', updatedData);
+
+        setDogProfileData(updatedData);
+        setIsEditing(false);
+    };
+
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
 
     return (
-        <Box p={4}>
-            <Grid container spacing={4}>
-                <Grid item xs={12} sm={6}>
-                    <img
-                        src={dogProfile.img_url}
-                        alt={dogProfile.name}
-                        style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-                    />
+        <Box sx={{ padding: 3 }}>
+            <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+                {/* Avatar and Upload Button */}
+                <Grid item xs={12} container justifyContent="center">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: 'fit-content' }}>
+                        <Avatar
+                            alt="Dog's Image"
+                            src={imageUrl || ""}
+                            sx={{ width: 100, height: 100 }}
+                        />
+                        {isEditing && (
+                            <Button
+                                variant="contained"
+                                component="label"
+                                sx={{ ml: 2 }}
+                            >
+                                Upload Image
+                                <input
+                                    type="file"
+                                    hidden
+                                    onChange={handleImageChange}
+                                />
+                            </Button>
+                        )}
+                    </Box>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                    <Typography variant="h4">{dogProfile.name}</Typography>
-                    <Typography variant="h6">Breed: {dogProfile.breed}</Typography>
-                    <Typography variant="h6">Age: {dogProfile.age} years</Typography>
-                    <Typography variant="h6">Weight: {dogProfile.weight} lbs</Typography>
-                    <Typography variant="h6">Sex: {dogProfile.sex}</Typography>
-                    <Typography variant="h6">
-                        Fixed: {dogProfile.fixed ? 'Yes' : 'No'}
-                    </Typography>
-                    <Typography variant="h6">
-                        Microchip Number: {dogProfile.chip_number || 'N/A'}
-                    </Typography>
-                    <Button variant="contained" color="primary" onClick={() => console.log('Edit Profile')}>
-                        Edit Profile
-                    </Button>
+
+                {/* Profile Information */}
+                {Object.keys(dogProfileData).map((key) => (
+                    key !== 'img_url' && (
+                        <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
+                            {!isEditing ? (
+                                <Typography variant="body1">
+                                    {`${key.charAt(0).toUpperCase() + key.slice(1)}: ${dogProfileData[key]}`}
+                                </Typography>
+                            ) : (
+                                <TextField
+                                    fullWidth
+                                    label={key.charAt(0).toUpperCase() + key.slice(1)}
+                                    value={dogProfileData[key]}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
+                                    variant="outlined"
+                                />
+                            )}
+                        </Grid>
+                    )
+                ))}
+
+                {/* Buttons */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    {!isEditing ? (
+                        <Button variant="contained" onClick={handleEditToggle}>
+                            Edit Profile
+                        </Button>
+                    ) : (
+                        <>
+                            <Button variant="contained" onClick={handleSave}>
+                                Save Changes
+                            </Button>
+                            <Button variant="outlined" onClick={handleEditToggle} sx={{ ml: 2 }}>
+                                Cancel
+                            </Button>
+                        </>
+                    )}
                 </Grid>
             </Grid>
         </Box>
     );
 };
 
-export default DogProfileViewPage;
+export default DogProfileView;
