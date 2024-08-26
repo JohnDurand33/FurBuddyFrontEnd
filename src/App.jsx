@@ -12,12 +12,9 @@ import DogProfileViewPage from './pages/DogProfileViewPage';
 import MyCalendar from './components/MyCalendar';
 
 const App = ({ isDark, setIsDark }) => {
-    console.log("App component received isDark:", isDark);
-    console.log("App component received setIsDark:", setIsDark);
+
     const toggleTheme = () => {
-        console.log('Before toggle:', isDark);  // Log before toggle
         setIsDark(prevDark => !prevDark);
-        console.log('After toggle:', !isDark);  // Log after toggle
     };
 
     return (
@@ -31,7 +28,7 @@ const App = ({ isDark, setIsDark }) => {
                         <Route path="/login" element={<LogIn />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/dogs/new" element={<DogProfileCreate />} />
-                        <Route path="/dog" element={<DogProfileViewPage />} />
+                        <Route path="/dogs/view" element={<DogProfileViewPage />} />
                         <Route path="/calendar" element={<MyCalendar />} />
                     </Routes>
                 </Box>

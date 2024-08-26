@@ -3,6 +3,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken, setLocalToken, removeToken } from "../utils/token";
 import { backEndUrl } from "../utils/config";
+import TokenRequiredApiCall from "../utils/TokenRequiredApiCall";
 
 const AuthContext = createContext();
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async (token) => {
         try {
             setLoading(true)
-            const response = await axios.get(`${backEndUrl}/owner/`);
+            const response = await TokenRequiredApiCall.get(`/owner/`);
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user:', error);
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
             const token = response.data.token;
 
-            setToken(token);
+            setLocalToken(token);
             await fetchUser(token);
             navigate('/dashboard');
         } catch (error) {

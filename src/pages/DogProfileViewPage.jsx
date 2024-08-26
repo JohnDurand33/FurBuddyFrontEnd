@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Grid, Box, Avatar, Button, TextField, Typography } from '@mui/material';
-import axios from 'axios';
+import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox } from '@mui/material';
+import TokenRequiredApiCall from '../utils/TokenRequiredApiCall';
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -13,8 +13,12 @@ const DogProfileView = () => {
         weight: '',
         sex: '',
         fixed: true,
-        chip_number: '123456789012345',
-        img_url: '', // Initial image URL
+        chip_number: '',
+        img_url: '',
+        vet_clinic_name: '',
+        vet_clinic_email: '',
+        vet_doctor_name: '',
+        vet_clinic_phone: '',
     });
 
     const [image, setImage] = useState(null);
@@ -41,8 +45,11 @@ const DogProfileView = () => {
         const img_url = await handleImageUpload();
         const updatedData = { ...dogProfileData, img_url };
 
-        Example: await axios.post('/api/dogprofile/update', updatedData);
-
+        const response = await TokenRequiredApiCall.post('/profile/update', updatedData);
+        if (response.status !== 200) {
+            console.error('Failed to update profile');
+            return;
+        }
         setDogProfileData(updatedData);
         setIsEditing(false);
     };
@@ -79,25 +86,76 @@ const DogProfileView = () => {
                     </Box>
                 </Grid>
 
-                {/* Profile Information */}
-                {Object.keys(dogProfileData).map((key) => (
-                    key !== 'img_url' && (
-                        <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
-                            {!isEditing ? (
-                                <Typography variant="body1">
-                                    {`${key.charAt(0).toUpperCase() + key.slice(1)}: ${dogProfileData[key]}`}
-                                </Typography>
-                            ) : (
-                                <TextField
-                                    fullWidth
-                                    label={key.charAt(0).toUpperCase() + key.slice(1)}
-                                    value={dogProfileData[key]}
-                                    onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
-                                    variant="outlined"
+                {/* Dog Information Header */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                        Dog Information
+                    </Typography>
+                </Grid>
+
+                {/* Dog Information Fields */}
+                {['name', 'breed', 'age', 'weight', 'sex', 'chip_number'].map((key) => (
+                    <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
+                        {!isEditing ? (
+                            <Typography variant="body1">
+                                {`${key.charAt(0).toUpperCase() + key.slice(1)}: ${dogProfileData[key]}`}
+                            </Typography>
+                        ) : (
+                            <TextField
+                                fullWidth
+                                label={key.charAt(0).toUpperCase() + key.slice(1)}
+                                value={dogProfileData[key]}
+                                onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
+                                variant="outlined"
+                            />
+                        )}
+                    </Grid>
+                ))}
+
+                {/* Fixed Checkbox */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    {!isEditing ? (
+                        <Typography variant="body1">
+                            Fixed: {dogProfileData.fixed ? 'Yes' : 'No'}
+                        </Typography>
+                    ) : (
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={dogProfileData.fixed}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, fixed: e.target.checked })}
+                                    color="primary"
                                 />
-                            )}
-                        </Grid>
-                    )
+                            }
+                            label="Fixed"
+                        />
+                    )}
+                </Grid>
+
+                {/* Vet Information Header */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                        Vet Information
+                    </Typography>
+                </Grid>
+
+                {/* Vet Information Fields */}
+                {['vet_clinic_name', 'vet_clinic_email', 'vet_doctor_name', 'vet_clinic_phone'].map((key) => (
+                    <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
+                        {!isEditing ? (
+                            <Typography variant="body1">
+                                {`${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${dogProfileData[key]}`}
+                            </Typography>
+                        ) : (
+                            <TextField
+                                fullWidth
+                                label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                                value={dogProfileData[key]}
+                                onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
+                                variant="outlined"
+                            />
+                        )}
+                    </Grid>
                 ))}
 
                 {/* Buttons */}
