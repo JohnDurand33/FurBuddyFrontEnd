@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox } from '@mui/material';
+import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import TokenRequiredApiCall from '../utils/TokenRequiredApiCall';
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -94,7 +94,7 @@ const DogProfileView = () => {
                 </Grid>
 
                 {/* Dog Information Fields */}
-                {['name', 'breed', 'age', 'weight', 'sex', 'chip_number'].map((key) => (
+                {['name', 'breed', 'age', 'chip_number'].map((key) => (
                     <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
                         {!isEditing ? (
                             <Typography variant="body1">
@@ -111,6 +111,82 @@ const DogProfileView = () => {
                         )}
                     </Grid>
                 ))}
+
+                {/* Weight Dropdown */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    {!isEditing ? (
+                        <Typography variant="body1">
+                            Weight: {dogProfileData.weight}
+                        </Typography>
+                    ) : (
+                        <FormControl fullWidth variant="outlined" sx={{ maxWidth: '80vw', width: '100%' }}>
+                            <InputLabel id="weight-label">Weight</InputLabel>
+                            <Select
+                                labelId="weight-label"
+                                value={dogProfileData.weight}
+                                onChange={(e) => setDogProfileData({ ...dogProfileData, weight: e.target.value })}
+                                label="Weight"
+                                sx={{
+                                    backgroundColor: 'secondary.main',
+                                    color: 'text.opposite',
+                                    width: 'auto', 
+                                    maxWidth: '100%',
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        sx: {
+                                            width: '50%',
+                                            maxWidth: '50%',
+                                        },
+                                    },
+                                    disableScrollLock: true,
+                                }}
+                            >
+                                <MenuItem value="Small">Small: less than 20 lbs</MenuItem>
+                                <MenuItem value="Medium">Medium: 21 - 60 lbs</MenuItem>
+                                <MenuItem value="Large">Large: 61 - 100 lbs</MenuItem>
+                                <MenuItem value="Extra-Large">Extra-Large: more than 100 lbs</MenuItem>
+                            </Select>
+                        </FormControl>
+                    )}
+                </Grid>
+
+                {/* Sex Dropdown */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    {!isEditing ? (
+                        <Typography variant="body1">
+                            Sex: {dogProfileData.sex}
+                        </Typography>
+                    ) : (
+                        <FormControl fullWidth variant="outlined" sx={{ maxWidth: '80vw', width: '100%' }}>
+                            <InputLabel id="sex-label">Sex</InputLabel>
+                            <Select
+                                labelId="sex-label"
+                                value={dogProfileData.sex}
+                                onChange={(e) => setDogProfileData({ ...dogProfileData, sex: e.target.value })}
+                                label="Sex"
+                                sx={{
+                                    backgroundColor: 'secondary.main',
+                                    color: 'text.opposite',
+                                    width: '100%', 
+                                    maxWidth: '100%',
+                                }}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            sx: {
+                                                width: '50%',
+                                                maxWidth: '50%',
+                                            },
+                                        },
+                                        disableScrollLock: true,
+                                    }}
+                            >
+                                <MenuItem value="Male">Male</MenuItem>
+                                <MenuItem value="Female">Female</MenuItem>
+                            </Select>
+                        </FormControl>
+                    )}
+                </Grid>
 
                 {/* Fixed Checkbox */}
                 <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
