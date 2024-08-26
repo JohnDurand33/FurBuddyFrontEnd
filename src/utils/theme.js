@@ -37,23 +37,23 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 root: {
                     "& .MuiInputBase-input": {
-                        color: "#ffffff", // Typed text color for dark mode
+                        color: "#000000", // Typed text color for light mode
                     },
                     "& .MuiInputLabel-root": {
-                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color (lighter for dark mode)
+                        color: "rgba(0, 0, 0, 0.6)", // Placeholder text color (darker for light mode)
                     },
                     "& .MuiInputLabel-root.Mui-focused": {
-                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
+                        color: "rgba(0, 0, 0, 0.8)", // Placeholder text color when focused
                     },
                     "& .MuiOutlinedInput-root": {
                         "& fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#5f6368",
                         },
                         "&:hover fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#FFCA00",
                         },
                         "&.Mui-focused fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#FFCA00",
                         },
                     },
                 },
@@ -111,10 +111,10 @@ export const darkTheme = createTheme({
                             borderColor: "#b0bec5",
                         },
                         "&:hover fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#FFCA00",
                         },
                         "&.Mui-focused fieldset": {
-                            borderColor: "#b0bec5",
+                            borderColor: "#FFCA00",
                         },
                     },
                 },
