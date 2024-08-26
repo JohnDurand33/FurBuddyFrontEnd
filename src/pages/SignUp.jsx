@@ -7,6 +7,7 @@ import backApiCall from '../utils/backEndApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
 import { setLocalToken, removeToken  } from '../utils/token';
+import { backEndUrl } from '../utils/config';
 
 const SignUpForm = () => {
     const navigate = useNavigate();
@@ -26,11 +27,13 @@ const SignUpForm = () => {
         setServerError(null); // Reset server error on new submission
         removeToken('COLAB32authtoken') //remove any existing token in storage
         try {
-            const res = await axios.post('/login', {
+            const res = await axios.post(`${backEndUrl}/owner/signup`, {
                 owner_email: values.email,
                 password: values.password,
-                owner_name: values.ownerName,
-                owner_phone: values.ownerPhone
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
             setLocalToken('COLAB32authtoken', res.data.access_token);
             navigate('/home');
@@ -84,6 +87,7 @@ const SignUpForm = () => {
                                 label="Email"
                                 fullWidth
                                 required
+                                autoComplete="email"
                             />
                             <ErrorMessage name="email" component="div" className="error" />
                         </Box>
@@ -95,6 +99,7 @@ const SignUpForm = () => {
                                 label="Password"
                                 fullWidth
                                 required
+                                autoComplete="new-password"
                             />
                             <ErrorMessage name="password" component="div" className="error" />
                         </Box>
@@ -106,6 +111,7 @@ const SignUpForm = () => {
                                 label="Confirm Password"
                                 fullWidth
                                 required
+                                autoComplete="confirm-password"
                             />
                             <ErrorMessage name="confirmPassword" component="div" className="error" />
                         </Box>

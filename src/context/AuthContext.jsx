@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getToken, setToken, removeToken } from "../utils/token";
+import { getToken, setLocalToken, removeToken } from "../utils/token";
 import { backEndUrl } from "../utils/config";
 
 const AuthContext = createContext();
@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async (token) => {
         try {
             setLoading(true)
-            const response = await axios.get(`${backendUrl}/owners`);
+            const response = await axios.get(`${backEndUrl}/owner/`);
             setUser(response.data);
         } catch (error) {
             console.error('Failed to fetch user:', error);
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ backendUrl, user, setUser, fetchUser, loading, setLoading, authenticateUser, handleLogout, handleTokenError }}>
+        <AuthContext.Provider value={{ backEndUrl, user, setUser, fetchUser, loading, setLoading, authenticateUser, handleLogout, handleTokenError }}>
             {!loading && children}
         </AuthContext.Provider>
     );

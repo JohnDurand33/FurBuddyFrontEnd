@@ -13,6 +13,8 @@ const Login = () => {
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
         password: Yup.string().required('Password is required'),
+        ownerName: Yup.string(),
+        ownerPhone: Yup.string()
     });
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
@@ -48,7 +50,7 @@ const Login = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ email: '', password: '' }}
+                initialValues={{ ownerEmail: '', password: '', ownerName:'', ownerPhone:'' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordLogin}
             >
