@@ -1,15 +1,14 @@
 import { createTheme } from "@mui/material/styles";
+
+// Define your themes
 export const lightTheme = createTheme({
     palette: {
         mode: "light",
         primary: {
-            main: "#6200ea",
+            main: "#FFCA00",
         },
         secondary: {
-            main: "#03dac6",
-        },
-        tertiary: {
-            main: "#ff5722",
+            main: "#373848",
         },
         background: {
             default: "#f5f5f5",
@@ -18,6 +17,7 @@ export const lightTheme = createTheme({
         text: {
             primary: "#000000",
             secondary: "#5f6368",
+            opposite: "#ffffff",
         },
     },
     typography: {
@@ -32,7 +32,33 @@ export const lightTheme = createTheme({
             color: "#5f6368",
         },
     },
-    components:{
+    components: {
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    "& .MuiInputBase-input": {
+                        color: "#ffffff", // Typed text color for dark mode
+                    },
+                    "& .MuiInputLabel-root": {
+                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color (lighter for dark mode)
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
+                    },
+                    "& .MuiOutlinedInput-root": {
+                        "& fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                        "&:hover fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                        "&.Mui-focused fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                    },
+                },
+            },
+        },
     },
 });
 
@@ -40,13 +66,10 @@ export const darkTheme = createTheme({
     palette: {
         mode: "dark",
         primary: {
-            main: "#bb86fc",
+            main: "#FFCA00",
         },
         secondary: {
-            main: "#03dac6",
-        },
-        tertiary: {
-            main: "#ff8a50",
+            main: "#373848",
         },
         background: {
             default: "#121212",
@@ -55,6 +78,7 @@ export const darkTheme = createTheme({
         text: {
             primary: "#ffffff",
             secondary: "#b0bec5",
+            opposite: "#000000",
         },
     },
     typography: {
@@ -70,5 +94,41 @@ export const darkTheme = createTheme({
         },
     },
     components: {
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    "& .MuiInputBase-input": {
+                        color: "#ffffff", // Typed text color for dark mode
+                    },
+                    "& .MuiInputLabel-root": {
+                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color (lighter for dark mode)
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
+                    },
+                    "& .MuiOutlinedInput-root": {
+                        "& fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                        "&:hover fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                        "&.Mui-focused fieldset": {
+                            borderColor: "#b0bec5",
+                        },
+                    },
+                },
+            },
+        },
     },
 });
+
+// Define the applyTheme function
+export function applyTheme(theme) {
+    // Set CSS variables dynamically based on the current theme
+    const root = document.documentElement;
+    root.style.setProperty('--background-default', theme.palette.background.default);
+    root.style.setProperty('--background-paper', theme.palette.background.paper);
+    root.style.setProperty('--text-primary', theme.palette.text.primary);
+    root.style.setProperty('--text-secondary', theme.palette.text.secondary);
+}

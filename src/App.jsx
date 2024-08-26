@@ -1,33 +1,30 @@
-import { useState, useMemo } from 'react'
-import { AuthProvider } from './context/AuthContext'
-import { lightTheme, darkTheme } from './utils/theme'
-import { ThemeProvider, CssBaseline } from '@mui/material'
-import { Route, Routes, BrowserRouter as Router } from 'react-router-dom'
-import Navbar from './components/NavBar'
-import HeroPage from './pages/HeroPage'
-import SignUp from './pages/SignUp'
-import LogIn from './pages/LogIn'
-import Dashboard from './pages/Dashboard'
-import DogProfileCreate from './pages/DogProfileCreate'
-import DogProfileViewPage from './pages/DogProfileViewPage'
-import MyCalendar from './components/MyCalendar'
+import React from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { Box } from '@mui/material';
+import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
+import Navbar from './components/NavBar';
+import HeroPage from './pages/HeroPage';
+import SignUp from './pages/SignUp';
+import LogIn from './pages/LogIn';
+import Dashboard from './pages/Dashboard';
+import DogProfileCreate from './pages/DogProfileCreate';
+import DogProfileViewPage from './pages/DogProfileViewPage';
+import MyCalendar from './components/MyCalendar';
 
-
-function App() {
-    const [isDark, setIsDark] = useState(false)
-    const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
-    
+const App = ({ isDark, setIsDark }) => {
+    console.log("App component received isDark:", isDark);
+    console.log("App component received setIsDark:", setIsDark);
     const toggleTheme = () => {
-        setIsDark(!isDark);
+        console.log('Before toggle:', isDark);  // Log before toggle
+        setIsDark(prevDark => !prevDark);
+        console.log('After toggle:', !isDark);  // Log after toggle
     };
 
     return (
-        
-        <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Router >
-                <AuthProvider >
-                        <Navbar toggleTheme={toggleTheme} isDark={isDark} />
+        <Router>
+            <AuthProvider>
+                <Navbar toggleTheme={toggleTheme} isDark={isDark} />
+                <Box sx={{ backgroundColor: 'secondary.main', color: 'text.opposite', minHeight: '100vh', p: 3 }}>
                     <Routes>
                         <Route path="/" element={<HeroPage />} />
                         <Route path="/signup" element={<SignUp />} />
@@ -37,11 +34,10 @@ function App() {
                         <Route path="/dog" element={<DogProfileViewPage />} />
                         <Route path="/calendar" element={<MyCalendar />} />
                     </Routes>
-                </AuthProvider>
-            </Router>
-        </ThemeProvider>
-        
+                </Box>
+            </AuthProvider>
+        </Router>
     );
-}
+};
 
-export default App
+export default App;

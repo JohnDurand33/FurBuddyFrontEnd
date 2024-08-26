@@ -3,11 +3,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import backApiCall from '../utils/backEndApiCall';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
 import { setLocalToken, removeToken  } from '../utils/token';
 import { backEndUrl } from '../utils/config';
+import CustomButton from '../components/CustomButton';
 
 const SignUpForm = () => {
     const navigate = useNavigate();
@@ -25,18 +25,25 @@ const SignUpForm = () => {
 
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null); // Reset server error on new submission
-        removeToken('COLAB32authtoken') //remove any existing token in storage
+        removeToken('colab32Access') //remove any existing token in storage
         try {
-            const res = await axios.post(`${backEndUrl}/owner/signup`, {
-                owner_email: values.email,
-                password: values.password,
-            }, {
+            const payload = {
+                "owner_email": values.email,
+                "password": values.password,
+                "owner_name": "",
+                "owner_phone": ""
+            }
+            console.log('Formik values', values)
+            console.log('Payload to be sent:', payload);
+            removeToken('colab32Access')
+            const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-            setLocalToken('COLAB32authtoken', res.data.access_token);
-            navigate('/home');
+            console.log('Response from server:', res.data);
+            setLocalToken('colab32Access', res.data.access_token);
+            navigate('/dashboard');
         } catch (err) {
             setServerError(err.response?.data?.message || 'Sign-up failed. Please try again.');
         } finally {
@@ -46,15 +53,15 @@ const SignUpForm = () => {
 
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
         setServerError(null); 
-        removeToken('COLAB32authtoken')
+        removeToken('colab32Access')
         try {
             const { credential } = credentialResponse;
-            const res = await backApiCall.post('/auth/social-signup', {
+            const res = await axios.post('/auth/social-signup', {
                 token: credential,
                 provider: 'google',
             });
             setLocalToken('access_token', res.data.access_token);
-            navigate('/home');
+            navigate('/dashboard');
         } catch (err) {
             setServerError('Google sign-up failed. Please try again.');
         }
@@ -63,7 +70,7 @@ const SignUpForm = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ email: '', password: '', confirmPassword: '', ownerName: '', ownerPhone: '' }}
+                initialValues={{ owner_email: '', password: ''}}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordSignUp}
             >
@@ -116,7 +123,7 @@ const SignUpForm = () => {
                             <ErrorMessage name="confirmPassword" component="div" className="error" />
                         </Box>
 
-                        <Button
+                        <CustomButton
                             type="submit"
                             fullWidth
                             variant="contained"
@@ -125,7 +132,7 @@ const SignUpForm = () => {
                             sx={{ mb: 2 }}
                         >
                             {isSubmitting ? <CircularProgress size={24} /> : 'Sign Up'}
-                        </Button>
+                        </CustomButton>
                     </Form>
                 )}
             </Formik>

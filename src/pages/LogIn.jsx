@@ -5,6 +5,8 @@ import * as Yup from 'yup';
 import axios from 'axios';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
+import { setLocalToken, removeToken } from '../utils/token';
+import { backEndUrl } from '../utils/config';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -13,15 +15,25 @@ const Login = () => {
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
         password: Yup.string().required('Password is required'),
-        ownerName: Yup.string(),
-        ownerPhone: Yup.string()
     });
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null); 
+        removeToken('colab32Access')
         try {
+            const payload = {
+                "owner_email": values.email,
+                "password": values.password,
+            }
+            console.log('Formik values', values)
+            console.log('Payload to be sent:', payload);
             removeToken('colab32Access')
-            const res = await axios.post('/login', values);
+            const res = await axios.post(`${backEndUrl}/owner/login`, payload,
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+            });
             setLocalToken('colab32Access', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
@@ -48,9 +60,9 @@ const Login = () => {
     };
 
     return (
-        <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
+        <Box sx={{ maxWidth: '80%', minHeight: '90vh', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ ownerEmail: '', password: '', ownerName:'', ownerPhone:'' }}
+                initialValues={{ owner_email: '', password: '' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordLogin}
             >

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { Grid, Box, Avatar, Button, TextField, Typography } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Box, Button, Grid, Typography, TextField, MenuItem, FormControlLabel, Checkbox } from '@mui/material';
 import axios from 'axios';
-import { storage } from '../firebase'; 
+import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import CustomButton from '../components/CustomButton';
 
 const DogProfileCreate = () => {
     const [image, setImage] = useState(null);
@@ -17,18 +18,18 @@ const DogProfileCreate = () => {
         weight: '',
         sex: '',
         fixed: false,
-        chip_number: '',  
+        chip_number: '',
         img_url: '',
     };
 
     const validationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
-        breed: Yup.string().required('Breed is required'),
-        age: Yup.number().required('Age is required'),
-        weight: Yup.number().required('Weight is required'),
-        sex: Yup.string().required('Sex is required'),
+        breed: Yup.string(),
+        age: Yup.number(),
+        weight: Yup.number(),
+        sex: Yup.string(),
         fixed: Yup.boolean(),
-        chip_number: Yup.string().required('Microchip number is required.').length(15, 'Microchip number must be 15 characters long.'), 
+        chip_number: Yup.string().optional().length(15, 'Microchip number must be 15 characters long.'),
         img_url: Yup.string().required('Image is required')
     });
 
@@ -44,35 +45,64 @@ const DogProfileCreate = () => {
             await uploadBytes(storageRef, image);
             const url = await getDownloadURL(storageRef);
             setImageUrl(url);
-            return url; // Return the URL for formik's state update
+            return url;
         }
     };
 
     const handleSubmit = async (values, actions) => {
-        // Upload image and get URL before submitting the form
         if (image) {
             const imageUrl = await handleImageUpload();
-            values.img_url = imageUrl; 
+            values.img_url = imageUrl;
         }
-        // Submit form data
         await axios.post('/api/dogprofile', values);
         actions.setSubmitting(false);
         actions.resetForm();
     };
 
     return (
-
         <Formik
-            
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
         >
             {({ setFieldValue, errors, touched }) => (
-                <Form >
-                    <Grid container spacing={2} sx={{ pt: 5 }}>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
+                <Form>
+                    <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+                        {/* Avatar and Upload Button */}
+                        <Grid item xs={12} container justifyContent="center">
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', ml:'10%'}}>
+                                {/* Center the Avatar */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Avatar
+                                        alt="Dog's Image"
+                                        src={imageUrl || ""}
+                                        sx={{ width: 100, height: 100 }}
+                                    />
+                                </Box>
+                                    {/* Button to the right of Avatar */}
+                                    <Button
+                                        variant="contained"
+                                        component="label"
+                                        sx={{ ml: 2, width: '10%', height: '25%' }}
+                                    >
+                                        <Typography variant="caption" fontSize="55%" noWrap>
+                                            ADD IMAGE
+                                        </Typography>
+                                        <input
+                                            type="file"
+                                            hidden
+                                            onChange={(e) => {
+                                                handleImageChange(e);
+                                                setFieldValue('img_url', e.target.value);
+                                            }}
+                                        />
+                                    </Button>
+                                
+                            </Box>
+                        </Grid>
+
+                        {/* Dog's Name */}
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%', paddingTop: '2.5rem' }}>
                             <Field
                                 as={TextField}
                                 fullWidth
@@ -83,8 +113,9 @@ const DogProfileCreate = () => {
                                 helperText={<ErrorMessage name="name" />}
                             />
                         </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
+
+                        {/* Other Fields */}
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                             <Field
                                 as={TextField}
                                 fullWidth
@@ -95,8 +126,7 @@ const DogProfileCreate = () => {
                                 helperText={<ErrorMessage name="breed" />}
                             />
                         </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                             <Field
                                 as={TextField}
                                 fullWidth
@@ -107,8 +137,7 @@ const DogProfileCreate = () => {
                                 helperText={<ErrorMessage name="age" />}
                             />
                         </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                             <Field
                                 as={TextField}
                                 fullWidth
@@ -119,8 +148,7 @@ const DogProfileCreate = () => {
                                 helperText={<ErrorMessage name="weight" />}
                             />
                         </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                             <Field
                                 as={TextField}
                                 fullWidth
@@ -131,54 +159,16 @@ const DogProfileCreate = () => {
                                 helperText={<ErrorMessage name="sex" />}
                             />
                         </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
-                            <FormControlLabel
-                                control={<Field as={Checkbox} name="fixed" />}
-                                label="Fixed"
-                            />
-                            <ErrorMessage name="fixed" component="div" />
-                        </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="chip_number"
-                                label="Microchip Number"
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.chip_number)}
-                                helperText={<ErrorMessage name="chip_number" />}
-                            />
-                        </Grid>
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
-                            <Button
-                                variant="contained"
-                                component="label"
-                            >
-                                Upload Image
-                                <input
-                                    type="file"
-                                    hidden
-                                    onChange={(e) => {
-                                        handleImageChange(e);
-                                        setFieldValue('img_url', e.target.value);
-                                    }}
-                                />
-                            </Button>
-                            <ErrorMessage name="img_url" component="div" />
-                        </Grid>
 
-                        <Grid item 
-                            style={{ margin: '0 auto', width:'80%' }} >
-                            <Button
+                        {/* Submit Button */}
+                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                            <CustomButton
                                 type="submit"
                                 variant="contained"
                                 color="primary"
                             >
                                 Submit
-                            </Button>
+                            </CustomButton>
                         </Grid>
                     </Grid>
                 </Form>

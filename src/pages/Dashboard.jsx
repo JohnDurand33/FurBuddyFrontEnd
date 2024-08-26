@@ -1,4 +1,5 @@
 import Navbar from '../components/NavBar'
+import { Box, Grid } from '@mui/material'
 
 const HomePage = ({ leftContent, middleContent, rightContent }) => {
     const hasLeftContent = !!leftContent;
