@@ -69,7 +69,7 @@ const Login = () => {
                 {({ isSubmitting }) => (
                     <Form>
                         <Box mb={2}>
-                            <Typography variant="h5" component="h1" align="center">
+                            <Typography variant="h5" component="h1" align="center" color="#white">
                                 Login Form
                             </Typography>
                         </Box>

@@ -11,6 +11,7 @@ import DogProfileCreate from './pages/DogProfileCreate';
 import DogProfileViewPage from './pages/DogProfileViewPage';
 import MyCalendar from './components/MyCalendar';
 import RecordsViewPage from './pages/RecordsViewPage';
+import Map from './components/NavBar';
 
 const App = ({ isDark, setIsDark }) => {
 
@@ -32,6 +33,7 @@ const App = ({ isDark, setIsDark }) => {
                         <Route path="/dogs/view" element={<DogProfileViewPage />} />
                         <Route path="/health_records" element={<RecordsViewPage />} />
                         <Route path="/calendar" element={<MyCalendar />} />
+                        <Route path="/map" element={<Map />} />
                     </Routes>
                 </Box>
             </AuthProvider>

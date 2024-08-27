@@ -33,8 +33,7 @@ const SignUpForm = () => {
                 "owner_name": "",
                 "owner_phone": ""
             }
-            console.log('Formik values', values)
-            console.log('Payload to be sent:', payload);
+
             removeToken('colab32Access')
             const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
                 headers: {
@@ -43,7 +42,7 @@ const SignUpForm = () => {
             });
             console.log('Response from server:', res.data);
             setLocalToken('colab32Access', res.data.access_token);
-            navigate('/dashboard');
+            navigate('/dogs/create');
         } catch (err) {
             setServerError(err.response?.data?.message || 'Sign-up failed. Please try again.');
         } finally {
@@ -70,14 +69,14 @@ const SignUpForm = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ owner_email: '', password: ''}}
+                initialValues={{ owner_email: '', password: '', }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordSignUp}
             >
                 {({ isSubmitting }) => (
                     <Form>
                         <Box mb={2}>
-                            <Typography variant="h5" component="h1" align="center">
+                            <Typography variant="h5" component="h1" align="center" color="white">
                                 Sign Up Form
                             </Typography>
                         </Box>

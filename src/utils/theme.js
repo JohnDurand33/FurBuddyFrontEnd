@@ -15,9 +15,9 @@ export const lightTheme = createTheme({
             paper: "#ffffff",
         },
         text: {
-            primary: "#000000",
+            primary: "#ffffff",
             secondary: "#5f6368",
-            opposite: "#ffffff",
+            opposite: "#000000",
         },
     },
     typography: {
@@ -33,52 +33,52 @@ export const lightTheme = createTheme({
         },
     },
     components: {
-        MuiTextField: {
+        MuiInputLabel: {
             styleOverrides: {
                 root: {
-                    "& .MuiInputBase-input": {
-                        color: "#000000", // Typed text color for light mode
+                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for placeholder text by default
+                },
+                shrink: {
+                    color: "rgba(255, 255, 255, 0.8)", // Darker white when focused/shrunk
+                },
+            },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                notchedOutline: {
+                    borderColor: "rgba(255, 255, 255, 0.6)", // Soft white for outline by default
+                },
+                root: {
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
                     },
-                    "& .MuiInputLabel-root": {
-                        color: "rgba(0, 0, 0, 0.6)", // Placeholder text color (darker for light mode)
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when focused
                     },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                        color: "rgba(0, 0, 0, 0.8)", // Placeholder text color when focused
-                    },
-                    "& .MuiOutlinedInput-root": {
-                        "& fieldset": {
-                            borderColor: "#5f6368",
-                        },
-                        "&:hover fieldset": {
-                            borderColor: "#FFCA00",
-                        },
-                        "&.Mui-focused fieldset": {
-                            borderColor: "#FFCA00",
-                        },
-                    },
+                },
+                input: {
+                    color: "#FFFFFF", // Pure white text inside the input
                 },
             },
         },
         MuiSelect: {
             styleOverrides: {
                 select: {
-                    color: "#000000", // Input text color for dropdown
-                    "&:focus": {
-                        backgroundColor: "transparent", // Prevent background color change on focus
-                    },
+                    backgroundColor: "transparent", // Ensure the background is consistent with the text field
+                    color: "#FFFFFF", // White text inside the select field
                 },
                 icon: {
-                    color: "#000000", // Icon color for dropdown arrow
-                },
-                root: {
-                    "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#5f6368", // Border color
+                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for the dropdown arrow icon
+                    "&:hover": {
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white when hovered
                     },
+                },
+                outlined: {
                     "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#FFCA00",
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
                     },
                     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#FFCA00",
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when focused
                     },
                 },
             },
@@ -86,12 +86,18 @@ export const lightTheme = createTheme({
         MuiMenuItem: {
             styleOverrides: {
                 root: {
-                    color: "#000000", // Menu item text color
+                    backgroundColor: "transparent",
+                    color: "#FFFFFF", // White text for menu items
+                    "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)", // Light white shade when hovered
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white text when hovered
+                    },
                     "&.Mui-selected": {
-                        backgroundColor: "rgba(255, 202, 0, 0.15)", // Selected item background color
+                        backgroundColor: "rgba(255, 255, 255, 0.2)", // Slightly darker white when selected
                     },
                     "&.Mui-selected:hover": {
-                        backgroundColor: "rgba(255, 202, 0, 0.25)", // Hover effect on selected item
+                        backgroundColor: "rgba(255, 255, 255, 0.3)", // Darker white when selected and hovered
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white text when selected and hovered
                     },
                 },
             },
@@ -113,9 +119,9 @@ export const darkTheme = createTheme({
             paper: "#1e1e1e",
         },
         text: {
-            primary: "#ffffff",
+            primary: "#000000",
             secondary: "#b0bec5",
-            opposite: "#000000",
+            opposite: "#ffffff",
         },
     },
     typography: {
@@ -131,52 +137,52 @@ export const darkTheme = createTheme({
         },
     },
     components: {
-        MuiTextField: {
+        MuiInputLabel: {
             styleOverrides: {
                 root: {
-                    "& .MuiInputBase-input": {
-                        color: "#ffffff", // Typed text color for dark mode
+                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for placeholder text by default
+                },
+                shrink: {
+                    color: "rgba(255, 255, 255, 0.8)", // Darker white when focused/shrunk
+                },
+            },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                notchedOutline: {
+                    borderColor: "rgba(255, 255, 255, 0.6)", // Soft white for outline by default
+                },
+                root: {
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
                     },
-                    "& .MuiInputLabel-root": {
-                        color: "rgba(255, 255, 255, 0.6)", // Placeholder text color (lighter for dark mode)
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when focused
                     },
-                    "& .MuiInputLabel-root.Mui-focused": {
-                        color: "rgba(255, 255, 255, 0.8)", // Placeholder text color when focused
-                    },
-                    "& .MuiOutlinedInput-root": {
-                        "& fieldset": {
-                            borderColor: "#b0bec5",
-                        },
-                        "&:hover fieldset": {
-                            borderColor: "#FFCA00",
-                        },
-                        "&.Mui-focused fieldset": {
-                            borderColor: "#FFCA00",
-                        },
-                    },
+                },
+                input: {
+                    color: "#FFFFFF", // Pure white text inside the input
                 },
             },
         },
         MuiSelect: {
             styleOverrides: {
                 select: {
-                    color: "#ffffff", // Input text color for dropdown
-                    "&:focus": {
-                        backgroundColor: "transparent", // Prevent background color change on focus
-                    },
+                    backgroundColor: "transparent", // Ensure the background is consistent with the text field
+                    color: "#FFFFFF", // White text inside the select field
                 },
                 icon: {
-                    color: "#ffffff", // Icon color for dropdown arrow
-                },
-                root: {
-                    "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#b0bec5", // Border color
+                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for the dropdown arrow icon
+                    "&:hover": {
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white when hovered
                     },
+                },
+                outlined: {
                     "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#FFCA00",
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
                     },
                     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#FFCA00",
+                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when focused
                     },
                 },
             },
@@ -184,12 +190,18 @@ export const darkTheme = createTheme({
         MuiMenuItem: {
             styleOverrides: {
                 root: {
-                    color: "#ffffff", // Menu item text color for dark mode
+                    backgroundColor: "transparent",
+                    color: "#FFFFFF", // White text for menu items
+                    "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.1)", // Light white shade when hovered
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white text when hovered
+                    },
                     "&.Mui-selected": {
-                        backgroundColor: "rgba(255, 202, 0, 0.15)", // Selected item background color
+                        backgroundColor: "rgba(255, 255, 255, 0.2)", // Slightly darker white when selected
                     },
                     "&.Mui-selected:hover": {
-                        backgroundColor: "rgba(255, 202, 0, 0.25)", // Hover effect on selected item
+                        backgroundColor: "rgba(255, 255, 255, 0.3)", // Darker white when selected and hovered
+                        color: "rgba(255, 255, 255, 0.8)", // Darker white text when selected and hovered
                     },
                 },
             },
@@ -201,14 +213,8 @@ export const darkTheme = createTheme({
 export function applyTheme(theme) {
     // Set CSS variables dynamically based on the current theme
     const root = document.documentElement;
-    root.style.setProperty(
-        "--background-default",
-        theme.palette.background.default
-    );
-    root.style.setProperty(
-        "--background-paper",
-        theme.palette.background.paper
-    );
-    root.style.setProperty("--text-primary", theme.palette.text.primary);
-    root.style.setProperty("--text-secondary", theme.palette.text.secondary);
+    root.style.setProperty('--background-default', theme.palette.background.default);
+    root.style.setProperty('--background-paper', theme.palette.background.paper);
+    root.style.setProperty('--text-primary', theme.palette.text.primary);
+    root.style.setProperty('--text-secondary', theme.palette.text.secondary);
 }
