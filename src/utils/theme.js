@@ -3,7 +3,7 @@ import { createTheme } from "@mui/material/styles";
 // Define your themes
 export const lightTheme = createTheme({
     palette: {
-        mode: "light",
+        mode: "dark",
         primary: {
             main: "#FFCA00",
         },
@@ -11,25 +11,25 @@ export const lightTheme = createTheme({
             main: "#373848",
         },
         background: {
-            default: "#f5f5f5",
-            paper: "#ffffff",
+            default: "#121212",
+            paper: "#1e1e1e",
         },
         text: {
-            primary: "#ffffff",
-            secondary: "#5f6368",
+            primary: "#ffffff ",
+            secondary: "#b0bec5",
             opposite: "#000000",
         },
     },
     typography: {
-        fontFamily: "Roboto, Arial, sans-serif",
+        fontFamily: "Helvetica Neue",
         h1: {
             fontSize: "2.5rem",
             fontWeight: 700,
-            color: "#6200ea",
+            color: "#bb86fc",
         },
         body1: {
             fontSize: "1rem",
-            color: "#5f6368",
+            color: "#b0bec5",
         },
     },
     components: {
@@ -61,11 +61,18 @@ export const lightTheme = createTheme({
                 },
             },
         },
+        MuiList: {
+            styleOverrides: {
+                root: {
+                    padding: "0",
+                },
+            },
+        },
         MuiSelect: {
             styleOverrides: {
                 select: {
-                    backgroundColor: "transparent", // Ensure the background is consistent with the text field
-                    color: "#FFFFFF", // White text inside the select field
+                    backgroundColor: "background.default", // Ensure the background is consistent with the text field
+                    color: "text.primary", // White text inside the select field
                 },
                 icon: {
                     color: "rgba(255, 255, 255, 0.6)", // Soft white color for the dropdown arrow icon
@@ -119,13 +126,13 @@ export const darkTheme = createTheme({
             paper: "#1e1e1e",
         },
         text: {
-            primary: "#000000",
+            primary: "#ffffff ",
             secondary: "#b0bec5",
-            opposite: "#ffffff",
+            opposite: "#000000",
         },
     },
     typography: {
-        fontFamily: "Roboto, Arial, sans-serif",
+        fontFamily: "Helvetica Neue",
         h1: {
             fontSize: "2.5rem",
             fontWeight: 700,
@@ -165,11 +172,18 @@ export const darkTheme = createTheme({
                 },
             },
         },
+        MuiList: {
+            styleOverrides: {
+                root: {
+                    padding: "0",
+                },
+            },
+        },
         MuiSelect: {
             styleOverrides: {
                 select: {
-                    backgroundColor: "transparent", // Ensure the background is consistent with the text field
-                    color: "#FFFFFF", // White text inside the select field
+                    backgroundColor: "background.default", // Ensure the background is consistent with the text field
+                    color: "text.primary", // White text inside the select field
                 },
                 icon: {
                     color: "rgba(255, 255, 255, 0.6)", // Soft white color for the dropdown arrow icon

@@ -5,10 +5,10 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import NavLink from './NavLink';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
+import { useAuth } from '../context/AuthContext'; 
 
 const Navbar = ({ toggleTheme, isDark }) => {
-    const { isAuthenticated, logout } = useAuth(); // Access auth state and logout function
+    const { isAuthenticated, logout } = useAuth(); 
     const [anchorEl, setAnchorEl] = useState(null);
     const [accountMenuAnchorEl, setAccountMenuAnchorEl] = useState(null);
 
@@ -34,7 +34,7 @@ const Navbar = ({ toggleTheme, isDark }) => {
     };
 
     return (
-        <AppBar position="static" sx={{ backgroundColor: 'primary.main', width: '100%' }}>
+        <AppBar position="static" sx={{ backgroundColor: 'primary.main', color:"text.opposite", width: '100%' }}>
             <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {/* Hamburger Icon for Mobile Menu */}
                 <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', }}>
@@ -50,17 +50,19 @@ const Navbar = ({ toggleTheme, isDark }) => {
                         anchorEl={anchorEl}
                         open={Boolean(anchorEl)}
                         onClose={handleMenuClose}
-                        MenuProps={{
-                            PaperProps: {
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                        slotProps={{
+                            paper: {
                                 sx: {
                                     width: '25vw',
-                                    backgroundColor: 'secondary.main', // Adjust the background color here
-                                    color: 'text.primary', // Adjust the text color here
+                                    mt: 1, // margin top to ensure the menu does not overlap the button
+                                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.12)',
                                 },
                             },
-                            disableScrollLock: true,
-                        }}
-                    >
+                        }}>
                         <MenuItem onClick={handleMenuClose}>
                             <NavLink to="/dogs/view">Dog Profile</NavLink>
                         </MenuItem>
@@ -74,6 +76,20 @@ const Navbar = ({ toggleTheme, isDark }) => {
                             <NavLink to="/map">Map</NavLink>
                         </MenuItem>
                     </Menu>
+                </Box>
+                <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+                    <MenuItem onClick={handleMenuClose}>
+                        <NavLink to="/dogs/view">Dog Profile</NavLink>
+                    </MenuItem>
+                    <MenuItem onClick={handleMenuClose}>
+                        <NavLink to="/health_records">Records</NavLink>
+                    </MenuItem>
+                    <MenuItem onClick={handleMenuClose}>
+                        <NavLink to="/calendar">Calendar</NavLink>
+                    </MenuItem>
+                    <MenuItem onClick={handleMenuClose}>
+                        <NavLink to="/map">Map</NavLink>
+                    </MenuItem>
                 </Box>
 
                 {/* Brand Logo Centered */}
@@ -102,10 +118,9 @@ const Navbar = ({ toggleTheme, isDark }) => {
                             PaperProps: {
                                 sx: {
                                     width: '25vw',
-                                    backgroundColor: 'secondary.main', // Adjust the background color here
-                                    color: 'text.opposite', // Adjust the text color here
                                 },
-                            }
+                            },
+                            disableScrollLock: true,
                         }}
                     >
                         {isAuthenticated ? (

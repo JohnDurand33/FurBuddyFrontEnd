@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import TokenRequiredApiCall from '../utils/TokenRequiredApiCall';
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -23,6 +24,8 @@ const DogProfileView = () => {
 
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState(dogProfileData.img_url);
+    const theme = useTheme();
+    const isLargeScreen = useMediaQuery(theme.breakpoints.up('sm')); // Breakpoint for larger screens
 
     const handleImageChange = (e) => {
         if (e.target.files[0]) {
@@ -59,7 +62,7 @@ const DogProfileView = () => {
     };
 
     return (
-        <Box sx={{ padding: 3 }}>
+        <Box sx={{ padding: 3, color:'text.primary' }}>
             <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
                 {/* Avatar and Upload Button */}
                 <Grid item xs={12} container justifyContent="center">
@@ -67,7 +70,7 @@ const DogProfileView = () => {
                         <Avatar
                             alt="Dog's Image"
                             src={imageUrl || ""}
-                            sx={{ width: 100, height: 100 }}
+                            sx={{ width: 100, height: 100, color: 'text.primary' }}
                         />
                         {isEditing && (
                             <Button
@@ -94,98 +97,78 @@ const DogProfileView = () => {
                 </Grid>
 
                 {/* Dog Information Fields */}
-                {['name', 'breed', 'age', 'chip_number'].map((key) => (
-                    <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
-                        {!isEditing ? (
-                            <Typography variant="body1">
-                                {`${key.charAt(0).toUpperCase() + key.slice(1)}: ${dogProfileData[key]}`}
-                            </Typography>
-                        ) : (
-                            <TextField
-                                fullWidth
-                                label={key.charAt(0).toUpperCase() + key.slice(1)}
-                                value={dogProfileData[key]}
-                                onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
-                                variant="outlined"
-                            />
-                        )}
-                    </Grid>
-                ))}
-
-                {/* Weight Dropdown */}
-                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                    {!isEditing ? (
-                        <Typography variant="body1">
-                            Weight: {dogProfileData.weight}
-                        </Typography>
-                    ) : (
-                        <FormControl fullWidth variant="outlined" sx={{ maxWidth: '80vw', width: '100%' }}>
-                            <InputLabel id="weight-label">Weight</InputLabel>
-                            <Select
-                                labelId="weight-label"
-                                value={dogProfileData.weight}
-                                onChange={(e) => setDogProfileData({ ...dogProfileData, weight: e.target.value })}
-                                label="Weight"
-                                sx={{
-                                    backgroundColor: 'secondary.main',
-                                    color: 'text.opposite',
-                                    width: 'auto', 
-                                    maxWidth: '100%',
-                                }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            width: '50%',
-                                            maxWidth: '50%',
-                                        },
-                                    },
-                                    disableScrollLock: true,
-                                }}
-                            >
-                                <MenuItem value="Small">Small: less than 20 lbs</MenuItem>
-                                <MenuItem value="Medium">Medium: 21 - 60 lbs</MenuItem>
-                                <MenuItem value="Large">Large: 61 - 100 lbs</MenuItem>
-                                <MenuItem value="Extra-Large">Extra-Large: more than 100 lbs</MenuItem>
-                            </Select>
-                        </FormControl>
-                    )}
+                <Grid container item xs={12} spacing={2} style={{ margin: '0 auto', width: '80%' }}>
+                    {['name', 'breed', 'age', 'chip_number'].map((key) => (
+                        <Grid item xs={12} md={6} key={key}>
+                            {!isEditing ? (
+                                <Typography variant="body1">
+                                    {`${key.charAt(0).toUpperCase() + key.slice(1)}: ${dogProfileData[key]}`}
+                                </Typography>
+                            ) : (
+                                <TextField
+                                    fullWidth
+                                    label={key.charAt(0).toUpperCase() + key.slice(1)}
+                                    value={dogProfileData[key]}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
+                                    variant="outlined"
+                                />
+                            )}
+                        </Grid>
+                    ))}
                 </Grid>
 
-                {/* Sex Dropdown */}
-                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                    {!isEditing ? (
-                        <Typography variant="body1">
-                            Sex: {dogProfileData.sex}
-                        </Typography>
-                    ) : (
-                        <FormControl fullWidth variant="outlined" sx={{ maxWidth: '80vw', width: '100%' }}>
-                            <InputLabel id="sex-label">Sex</InputLabel>
-                            <Select
-                                labelId="sex-label"
-                                value={dogProfileData.sex}
-                                onChange={(e) => setDogProfileData({ ...dogProfileData, sex: e.target.value })}
-                                label="Sex"
-                                sx={{
-                                    backgroundColor: 'secondary.main',
-                                    color: 'text.opposite',
-                                    width: '100%', 
-                                    maxWidth: '100%',
-                                }}
-                                    MenuProps={{
-                                        PaperProps: {
-                                            sx: {
-                                                width: '50%',
-                                                maxWidth: '50%',
-                                            },
-                                        },
-                                        disableScrollLock: true,
+                {/* Weight and Sex Dropdowns */}
+                <Grid container item xs={12} spacing={2} style={{ margin: '0 auto', width: '80%' }}>
+                    <Grid item xs={12} md={6}>
+                        {!isEditing ? (
+                            <Typography variant="body1">
+                                Weight: {dogProfileData.weight}
+                            </Typography>
+                        ) : (
+                            <FormControl fullWidth variant="outlined">
+                                <InputLabel id="weight-label">Weight</InputLabel>
+                                <Select
+                                    labelId="weight-label"
+                                    value={dogProfileData.weight}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, weight: e.target.value })}
+                                    label="Weight"
+                                    sx={{
+                                        backgroundColor: 'secondary.main',
+                                        color: 'text.opposite',
                                     }}
-                            >
-                                <MenuItem value="Male">Male</MenuItem>
-                                <MenuItem value="Female">Female</MenuItem>
-                            </Select>
-                        </FormControl>
-                    )}
+                                >
+                                    <MenuItem value="Small">Small: less than 20 lbs</MenuItem>
+                                    <MenuItem value="Medium">Medium: 21 - 60 lbs</MenuItem>
+                                    <MenuItem value="Large">Large: 61 - 100 lbs</MenuItem>
+                                    <MenuItem value="Extra-Large">Extra-Large: more than 100 lbs</MenuItem>
+                                </Select>
+                            </FormControl>
+                        )}
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                        {!isEditing ? (
+                            <Typography variant="body1">
+                                Sex: {dogProfileData.sex}
+                            </Typography>
+                        ) : (
+                            <FormControl fullWidth variant="outlined">
+                                <InputLabel id="sex-label">Sex</InputLabel>
+                                <Select
+                                    labelId="sex-label"
+                                    value={dogProfileData.sex}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, sex: e.target.value })}
+                                    label="Sex"
+                                    sx={{
+                                        backgroundColor: 'secondary.main',
+                                        color: 'text.opposite',
+                                    }}
+                                >
+                                    <MenuItem value="Male">Male</MenuItem>
+                                    <MenuItem value="Female">Female</MenuItem>
+                                </Select>
+                            </FormControl>
+                        )}
+                    </Grid>
                 </Grid>
 
                 {/* Fixed Checkbox */}
@@ -216,23 +199,25 @@ const DogProfileView = () => {
                 </Grid>
 
                 {/* Vet Information Fields */}
-                {['vet_clinic_name', 'vet_clinic_email', 'vet_doctor_name', 'vet_clinic_phone'].map((key) => (
-                    <Grid item xs={12} key={key} style={{ margin: '0 auto', width: '80%' }}>
-                        {!isEditing ? (
-                            <Typography variant="body1">
-                                {`${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${dogProfileData[key]}`}
-                            </Typography>
-                        ) : (
-                            <TextField
-                                fullWidth
-                                label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
-                                value={dogProfileData[key]}
-                                onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
-                                variant="outlined"
-                            />
-                        )}
-                    </Grid>
-                ))}
+                <Grid container item xs={12} spacing={2} style={{ margin: '0 auto', width: '80%' }}>
+                    {['vet_clinic_name', 'vet_clinic_email', 'vet_doctor_name', 'vet_clinic_phone'].map((key) => (
+                        <Grid item xs={12} md={6} key={key}>
+                            {!isEditing ? (
+                                <Typography variant="body1">
+                                    {`${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${dogProfileData[key]}`}
+                                </Typography>
+                            ) : (
+                                <TextField
+                                    fullWidth
+                                    label={key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}
+                                    value={dogProfileData[key]}
+                                    onChange={(e) => setDogProfileData({ ...dogProfileData, [key]: e.target.value })}
+                                    variant="outlined"
+                                />
+                            )}
+                        </Grid>
+                    ))}
+                </Grid>
 
                 {/* Buttons */}
                 <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
