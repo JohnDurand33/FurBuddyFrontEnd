@@ -50,11 +50,14 @@ const DogProfileCreate = () => {
     };
 
     const handleSubmit = async (values, actions) => {
+        console.log('submitting', values);
         if (image) {
             const imageUrl = await handleImageUpload();
+            console.log('handleImageUpload completed')
             values.img_url = imageUrl;
+            console.log('imgUrl', imageUrl)
         }
-        await axios.post('/api/dogprofile', values);
+        // await axios.post('/api/dogprofile', values);
         actions.setSubmitting(false);
         actions.resetForm();
     };
@@ -174,6 +177,7 @@ const DogProfileCreate = () => {
                         {/* Submit Button */}
                         <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                             <CustomButton
+                                onClick={handleSubmit}
                                 type="submit"
                                 variant="contained"
                                 color="primary"
