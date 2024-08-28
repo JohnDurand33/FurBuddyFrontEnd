@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
-import { setLocalToken, removeToken  } from '../utils/token';
+import { setLocalToken, removeToken } from '../utils/token';
 import { backEndUrl } from '../utils/config';
 import CustomButton from '../components/CustomButton';
+import { auth, Providers } from '../config/firebase.js'; // Import Firebase auth and providers
+import { createUserWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+import { useAuth } from '../context/AuthContext';
 
 const SignUpForm = () => {
+    const { user, setUser } = useAuth();
+    const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
 
@@ -25,41 +30,56 @@ const SignUpForm = () => {
 
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null); // Reset server error on new submission
-        removeToken('colab32Access') //remove any existing token in storage
+        removeToken('colab32Access'); // Remove any existing token in storage
         try {
-            const payload = {
-                "owner_email": values.email,
-                "password": values.password,
-                "owner_name": "",
-                "owner_phone": ""
-            }
+            // Create a new user with email and password using Firebase
+            const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+            const user = userCredential.user;
+            console.log('Firebase user created:', user);
+            setUser(user)
 
-            removeToken('colab32Access')
-            const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            console.log('Response from server:', res.data);
-            setLocalToken('colab32Access', res.data.access_token);
+            // You may want to send additional user details to your backend
+            // const payload = {
+            //     "owner_email": values.email,
+            //     "password": values.password,
+            //     "owner_name": "",
+            //     "owner_phone": ""
+            // };
+
+            // const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     }
+            // });
+
+            setUser(user)
+            // setLocalToken('colab32Access', res.data.access_token);
             navigate('/dogs/create');
         } catch (err) {
-            setServerError(err.response?.data?.message || 'Sign-up failed. Please try again.');
+            setServerError(err.message || 'Sign-up failed. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
-        setServerError(null); 
-        removeToken('colab32Access')
+        setServerError(null);
+        removeToken('colab32Access');
         try {
             const { credential } = credentialResponse;
-            const res = await axios.post('/auth/social-signup', {
+            const googleCredential = GoogleAuthProvider.credential(credential);
+            const userCredential = await signInWithCredential(auth, googleCredential);
+            const user = userCredential.user;
+            setUser(user)
+            console.log('Firebase Google user signed in:', user);
+
+            // You may want to send additional user details to your backend
+            const res = await axios.post(`${backEndUrl}/owner/google-signup`, {
                 token: credential,
                 provider: 'google',
             });
-            setLocalToken('access_token', res.data.access_token);
+
+            setLocalToken('colab32Access', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
             setServerError('Google sign-up failed. Please try again.');
@@ -69,14 +89,14 @@ const SignUpForm = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ owner_email: '', password: '', }}
+                initialValues={{ email: '', password: '', confirmPassword: '' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordSignUp}
             >
                 {({ isSubmitting }) => (
                     <Form>
                         <Box mb={2}>
-                            <Typography variant="h5" component="h1" align="center" color="white">
+                            <Typography variant="h5" component="h1" align="center" color="text.primary">
                                 Sign Up Form
                             </Typography>
                         </Box>
@@ -142,7 +162,7 @@ const SignUpForm = () => {
 
             <Grid container spacing={2} justifyContent="center">
                 <Grid item>
-                    <GoogleOAuthProvider clientId="226829116506-ka1l30arh8c45j6cipnegc5rp98k13sv.apps.googleusercontent.com">
+                    <GoogleOAuthProvider clientId={GC_ID}>
                         <GoogleLogin
                             onSuccess={handleGoogleSignUpSuccess}
                             onError={() => {

@@ -1,39 +1,14 @@
-import Navbar from '../components/NavBar'
-import { Box, Grid } from '@mui/material'
+import { Box } from '@mui/material'
+import { useAuth } from '../context/AuthContext'
 
-const HomePage = ({ leftContent, middleContent, rightContent }) => {
-    const hasLeftContent = !!leftContent;
-    const hasRightContent = !!rightContent;
 
-    return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            <Navbar />
-            {/* To account for the Navbar height */}
-            <Box sx={{ mt: 8, flexGrow: 1 }}>
-                <Grid container>
-                    {hasLeftContent && (
-                        <Grid item xs={12} md={3}>
-                            <Box sx={{ p: 2 }}>
-                                {leftContent}
-                            </Box>
-                        </Grid>
-                    )}
-                    <Grid item xs={12} md={hasLeftContent && hasRightContent ? 6 : hasLeftContent || hasRightContent ? 9 : 12}>
-                        <Box sx={{ p: 2 }}>
-                            {middleContent}
-                        </Box>
-                    </Grid>
-                    {hasRightContent && (
-                        <Grid item xs={12} md={3}>
-                            <Box sx={{ p: 2 }}>
-                                {rightContent}
-                            </Box>
-                        </Grid>
-                    )}
-                </Grid>
-            </Box>
-        </Box>
-    );
-};
+const Dashboard = () => {
+    const { user } = useAuth()
+  return (
+      <Box>
+          User information: {user ? <h1>{user.email}</h1> : <h1>"Not logged In"</h1>}
+      </Box>
+  )
+}
 
-export default HomePage
+export default Dashboard

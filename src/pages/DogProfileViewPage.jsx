@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import TokenRequiredApiCall from '../utils/TokenRequiredApiCall';
-import { storage } from '../firebase';
+import { storage } from '../config/firebase.js';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const DogProfileView = () => {

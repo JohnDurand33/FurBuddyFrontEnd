@@ -8,16 +8,16 @@ export const lightTheme = createTheme({
             main: "#FFCA00",
         },
         secondary: {
-            main: "#373848",
+            main: "#FFFFFF",
         },
         background: {
             default: "#121212",
             paper: "#1e1e1e",
         },
         text: {
-            primary: "#ffffff ",
+            primary: "#000000 ",
             secondary: "#b0bec5",
-            opposite: "#000000",
+            opposite: "#FFFFFF",
         },
     },
     typography: {
@@ -36,24 +36,24 @@ export const lightTheme = createTheme({
         MuiInputLabel: {
             styleOverrides: {
                 root: {
-                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for placeholder text by default
+                    color: "#33333, 0.6", // Soft white color for placeholder text by default
                 },
                 shrink: {
-                    color: "rgba(255, 255, 255, 0.8)", // Darker white when focused/shrunk
+                    color: "#33333, 0.6", // Darker white when focused/shrunk
                 },
             },
         },
         MuiOutlinedInput: {
             styleOverrides: {
                 notchedOutline: {
-                    borderColor: "rgba(255, 255, 255, 0.6)", // Soft white for outline by default
+                    borderColor: "#333333", // Soft white for outline by default
                 },
                 root: {
                     "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
+                        borderColor: "333333", // Darker shade when hovered
                     },
                     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when focused
+                        borderColor: "333333", // Darker shade when focused
                     },
                 },
                 input: {
@@ -72,12 +72,12 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 select: {
                     backgroundColor: "background.default", // Ensure the background is consistent with the text field
-                    color: "text.primary", // White text inside the select field
+                    color: "(#333333, 0.6)", // White text inside the select field
                 },
                 icon: {
-                    color: "rgba(255, 255, 255, 0.6)", // Soft white color for the dropdown arrow icon
+                    color: "(#333333, 0.6)", // Soft white color for the dropdown arrow icon
                     "&:hover": {
-                        color: "rgba(255, 255, 255, 0.8)", // Darker white when hovered
+                        color: "333333", // Darker white when hovered
                     },
                 },
                 outlined: {

@@ -114,7 +114,7 @@ const Navbar = ({ toggleTheme, isDark }) => {
                         anchorEl={accountMenuAnchorEl}
                         open={Boolean(accountMenuAnchorEl)}
                         onClose={handleAccountMenuClose}
-                        MenuProps={{
+                        menuprops={{
                             PaperProps: {
                                 sx: {
                                     width: '25vw',

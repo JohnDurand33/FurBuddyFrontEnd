@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Grid, Box, Avatar, Button, TextField, Typography } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
-import { storage } from '../firebase';
+import { storage } from '../config/firebase.js';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import CustomButton from '../components/CustomButton';
 
 const DogProfileCreate = () => {
     const [image, setImage] = useState(null);
@@ -51,15 +49,17 @@ const DogProfileCreate = () => {
 
     const handleSubmit = async (values, actions) => {
         console.log('submitting', values);
-        if (image) {
+        try { if (image) {
             const imageUrl = await handleImageUpload();
             console.log('handleImageUpload completed')
             values.img_url = imageUrl;
             console.log('imgUrl', imageUrl)
+        }} catch (err) {
+            setServerError(err.message || 'Sign-up failed. Please try again.');
+        } finally {
+            actions.setSubmitting(false);
+            Navigate('/dog/view');
         }
-        // await axios.post('/api/dogprofile', values);
-        actions.setSubmitting(false);
-        actions.resetForm();
     };
 
     return (
@@ -68,7 +68,7 @@ const DogProfileCreate = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
         >
-            {({ setFieldValue, errors, touched }) => (
+            {({ setFieldValue, isSubmitting, errors, touched }) => (
                 <Form>
                     <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
                         {/* Avatar and Upload Button */}
@@ -176,14 +176,14 @@ const DogProfileCreate = () => {
 
                         {/* Submit Button */}
                         <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <CustomButton
+                            <Button
                                 onClick={handleSubmit}
                                 type="submit"
                                 variant="contained"
                                 color="primary"
                             >
                                 Submit
-                            </CustomButton>
+                            </Button>
                         </Grid>
                     </Grid>
                 </Form>
