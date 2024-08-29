@@ -43,21 +43,34 @@ export const lightTheme = createTheme({
                 },
             },
         },
+        MuiFormLabel: {
+            styleOverrides: {
+                root: {
+                    color: "gray", // Default text color
+                    "&.Mui-focused": {
+                        color: "gray", // Text color when focused
+                    },
+                },
+            },
+        },
         MuiOutlinedInput: {
             styleOverrides: {
-                notchedOutline: {
-                    borderColor: "#333333", // Soft white for outline by default
-                },
                 root: {
+                    backgroundColor: "#ffffff", // Set input background to white
+                    color: "#000000", // Set input text color to black
                     "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "333333", // Darker shade when hovered
+                        borderColor: "gray", // Darker shade when hovered
                     },
                     "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "333333", // Darker shade when focused
+                        borderColor: "gray", // Darker shade when focused
                     },
                 },
                 input: {
-                    color: "#FFFFFF", // Pure white text inside the input
+                    color: "#000000", // Text color inside the input
+                    backgroundColor: "#ffffff", // Ensure the background is white
+                },
+                notchedOutline: {
+                    borderColor: "gray", // Outline color
                 },
             },
         },
@@ -136,11 +149,11 @@ export const darkTheme = createTheme({
         h1: {
             fontSize: "2.5rem",
             fontWeight: 700,
-            color: "#bb86fc",
+            color: "text.primary",
         },
         body1: {
             fontSize: "1rem",
-            color: "#b0bec5",
+            color: "text.primary",
         },
     },
     components: {
@@ -156,10 +169,9 @@ export const darkTheme = createTheme({
         },
         MuiOutlinedInput: {
             styleOverrides: {
-                notchedOutline: {
-                    borderColor: "rgba(255, 255, 255, 0.6)", // Soft white for outline by default
-                },
                 root: {
+                    backgroundColor: "#ffffff", // Set input background to white
+                    color: "#000000", // Set input text color to black
                     "&:hover .MuiOutlinedInput-notchedOutline": {
                         borderColor: "rgba(255, 255, 255, 0.8)", // Darker shade when hovered
                     },
@@ -168,7 +180,29 @@ export const darkTheme = createTheme({
                     },
                 },
                 input: {
-                    color: "#FFFFFF", // Pure white text inside the input
+                    color: "#ffffff", // Text color inside the input
+                    backgroundColor: "#1e1e1e", // Set a consistent background for dark theme
+                },
+                notchedOutline: {
+                    borderColor: "rgba(255, 255, 255, 0.6)", // Outline color
+                },
+            },
+        },
+        MuiInputBase: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: "#1e1e1e", // Consistent background for all input types
+                    color: "#ffffff", // White text color
+                },
+            },
+        },
+        MuiFormLabel: {
+            styleOverrides: {
+                root: {
+                    color: "gray", // Default text color
+                    "&.Mui-focused": {
+                        color: "gray", // Text color when focused
+                    },
                 },
             },
         },
@@ -204,7 +238,6 @@ export const darkTheme = createTheme({
         MuiMenuItem: {
             styleOverrides: {
                 root: {
-                    backgroundColor: "transparent",
                     color: "#FFFFFF", // White text for menu items
                     "&:hover": {
                         backgroundColor: "rgba(255, 255, 255, 0.1)", // Light white shade when hovered

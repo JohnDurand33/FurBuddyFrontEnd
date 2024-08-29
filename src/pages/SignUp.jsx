@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import { Alert, Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
-import { setLocalToken, removeToken } from '../utils/token';
-import { backEndUrl } from '../utils/config';
 import CustomButton from '../components/CustomButton';
-import { auth, Providers } from '../config/firebase.js'; // Import Firebase auth and providers
-import { createUserWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+import { auth } from '../config/firebase.js'; // Import Firebase auth and providers
 import { useAuth } from '../context/AuthContext';
+import { backEndUrl } from '../utils/config';
+import { removeToken, setLocalToken } from '../utils/token';
 
-const SignUpForm = () => {
-    const { user, setUser } = useAuth();
+const SignUpForm = (isDark) => {
+    const { user, setUser, fireUser, setFireUser } = useAuth();
     const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
@@ -36,25 +36,25 @@ const SignUpForm = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
             const user = userCredential.user;
             console.log('Firebase user created:', user);
+            setFireUser(user)
+
+            // Backend signup
+            const payload = {
+                "owner_email": values.email,
+                "password": values.password,
+                "owner_name": values.ownerName,
+                "owner_phone": values.ownerPhone
+            };
+
+            const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
             setUser(user)
-
-            // You may want to send additional user details to your backend
-            // const payload = {
-            //     "owner_email": values.email,
-            //     "password": values.password,
-            //     "owner_name": "",
-            //     "owner_phone": ""
-            // };
-
-            // const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     }
-            // });
-
-            setUser(user)
-            // setLocalToken('colab32Access', res.data.access_token);
-            navigate('/dogs/create');
+            console.log('Backend user signed up:', res);
+            navigate('/dogs/new');
         } catch (err) {
             setServerError(err.message || 'Sign-up failed. Please try again.');
         } finally {
@@ -89,7 +89,7 @@ const SignUpForm = () => {
     return (
         <Box sx={{ maxWidth: '80%', mx: 'auto', mt: 4 }}>
             <Formik
-                initialValues={{ email: '', password: '', confirmPassword: '' }}
+                initialValues={{ email: '', password: '', confirmPassword: '', ownerName: '', ownerPhone: '' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordSignUp}
             >
@@ -143,10 +143,10 @@ const SignUpForm = () => {
                         </Box>
 
                         <CustomButton
+                            isDark={isDark}
                             type="submit"
                             fullWidth
                             variant="contained"
-                            color="primary"
                             disabled={isSubmitting}
                             sx={{ mb: 2 }}
                         >

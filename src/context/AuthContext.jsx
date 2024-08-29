@@ -1,14 +1,21 @@
-import axios from "axios";
+import axios from 'axios';
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken, setLocalToken, removeToken } from "../utils/token";
 import { backEndUrl } from "../utils/config";
-import TokenRequiredApiCall from "../utils/TokenRequiredApiCall";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const backendUrl = backEndUrl;
+    const [user, setUser] = useState({
+        id: '',
+        owner_email: '',
+        password: '',
+        owner_name: '',
+        owner_phone: '',
+    });
+    const [fireUser, setFireUser ] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -22,38 +29,43 @@ export const AuthProvider = ({ children }) => {
     //fetchUser Uses token passed in to function to setUser information
     const fetchUser = async (token) => {
         try {
-            setLoading(true)
-            const response = await TokenRequiredApiCall.get(`/owner/`);
-            setUser(response.data);
+            const response = await axios.get(`${backendUrl}/owners`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.status === 200) {
+                setUser(response.data);
+            }
         } catch (error) {
-            console.error('Failed to fetch user:', error);
-            handleTokenError();
-        } finally {
-            setLoading(false)
+            console.error('Error fetching user:', error);
         }
-    };
-
-    // authenicateUser handles 
-    const authenticateUser = async (endpoint, userData) => {
-        setLoading(true)
-        removeToken();
-        setUser(null)
-
+    }
+    const loginUserBE = async (owner_email, password) => {
         try {
-            const response = await axios.post(endpoint, userData);
+            const response = await fetch(`${backEndUrl}/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ owner_email, password }),
+            });
 
-            const token = response.data.token;
-
-            setLocalToken(token);
-            await fetchUser(token);
-            navigate('/dashboard');
+            if (response.ok) {
+                const data = await response.json();
+                setLocalToken('authToken', data.token);
+                console.log('ok', data);
+                navigate('/dashboard');
+            }
         } catch (error) {
-            console.error(`An error occurred during ${endpoint.split('/').pop()}`)
+            console.error('Error logging in:', error);
         }
-    };
+    }
 
     const handleLogout = () => {
         removeToken();
+        setUserId(null);
         setUser(null);
         navigate('/login');
     };
@@ -61,13 +73,14 @@ export const AuthProvider = ({ children }) => {
     const handleTokenError = () => {
         removeToken();
         setUser(null);
-        navigate('login');
+        setUserId(null);    
+        navigate('/login');
         alert('Session expired. Please login again')
     }
 
     return (
-        <AuthContext.Provider value={{ backEndUrl, user, setUser, fetchUser, loading, setLoading, authenticateUser, handleLogout, handleTokenError }}>
-            {!loading && children}
+        <AuthContext.Provider value={{ backEndUrl, user, setUser, fireUser, setFireUser, loginUserBE, loading, setLoading, handleLogout, handleTokenError }}>
+            {children}
         </AuthContext.Provider>
     );
 };

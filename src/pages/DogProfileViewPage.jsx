@@ -27,6 +27,21 @@ const DogProfileView = () => {
     const theme = useTheme();
     const isLargeScreen = useMediaQuery(theme.breakpoints.up('sm')); // Breakpoint for larger screens
 
+    const getWeightInLbs = (weightCategory) => {
+        switch (weightCategory) {
+            case 'Small':
+                return '< 20';
+            case 'Medium':
+                return '21 - 60';
+            case 'Large':
+                return '61 - 100';
+            case 'Extra-Large':
+                return '> 100';
+            default:
+                return ''; 
+        }
+    }
+
     const handleImageChange = (e) => {
         if (e.target.files[0]) {
             setImage(e.target.files[0]);
@@ -122,7 +137,7 @@ const DogProfileView = () => {
                     <Grid item xs={12} md={6}>
                         {!isEditing ? (
                             <Typography variant="body1">
-                                Weight: {dogProfileData.weight}
+                                Weight: {getWeightInLbs(dogProfileData.weight)} lbs
                             </Typography>
                         ) : (
                             <FormControl fullWidth variant="outlined">

@@ -1,19 +1,20 @@
+import { Alert, Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import axios from 'axios';
+import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from 'firebase/auth';
+import CustomButton from '../components/CustomButton';
 import { auth } from '../config/firebase';
-import { Box, Button, Grid, Typography, TextField, CircularProgress, Alert } from '@mui/material';
-import { setLocalToken, removeToken } from '../utils/token';
-import { backEndUrl } from '../utils/config';
 import { useAuth } from '../context/AuthContext';
+import { backEndUrl } from '../utils/config';
+import { GC_ID } from '../utils/config.js';
+import { removeToken, setLocalToken } from '../utils/token';
 
-const Login = () => {
-    const { user, setUser } = useAuth();
-    const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const Login = (isDark) => {
+    const { user, setUser, fireUser, setFireUser, loginUserBE } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
 
@@ -28,22 +29,23 @@ const Login = () => {
         try {
             // Authenticate with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-            const Emailuser = userCredential.user;
-            setUser(Emailuser)
+            const fireBaseUser = userCredential.user;
+            setFireUser(fireBaseUser)
             
 
             // Send the login details to your backend if needed
-            // const payload = {
-            //     owner_email: values.email,
-            //     password: values.password,
-            // };
+            const payload = {
+                owner_email: values.email,
+                password: values.password,
+            };
 
-            // const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     }
-            // });
-            // setLocalToken('colab32Access', res.data.access_token);
+            const res = await axios.post(`${backEndUrl}/login`, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            setLocalToken('colab32Access', res.data.access_token);
             navigate('/dashboard');
         } catch (err) {
             setServerError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -64,9 +66,10 @@ const Login = () => {
             setUser(user)
             console.log('Firebase Google user logged in:', user);
 
-            const res = await axios.post(`${backEndUrl}/owner/google-login`, {
-                token: credential,
-                provider: 'google',
+            const res = await axiosInstanceCORS.post(`owner/login`, payload, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
             });
 
             setLocalToken('colab32Access', res.data.access_token);
@@ -86,7 +89,7 @@ const Login = () => {
                 {({ isSubmitting }) => (
                     <Form>
                         <Box mb={2}>
-                            <Typography variant="h5" component="h1" align="center" color="#white">
+                            <Typography variant="h5" component="h1" align="center" color="text.primary">
                                 Login Form
                             </Typography>
                         </Box>
@@ -99,6 +102,7 @@ const Login = () => {
                             <Field
                                 type="email"
                                 name="email"
+                                backgroundColor="white"
                                 as={TextField}
                                 label="Email"
                                 fullWidth
@@ -117,16 +121,16 @@ const Login = () => {
                             />
                             <ErrorMessage name="password" component="div" className="error" />
                         </Box>
-                        <Button
+                        <CustomButton
+                            isDark={isDark}
                             type="submit"
                             fullWidth
                             variant="contained"
-                            color="primary"
                             disabled={isSubmitting}
                             sx={{ mb: 2 }}
                         >
                             {isSubmitting ? <CircularProgress size={24} /> : 'Login'}
-                        </Button>
+                        </CustomButton>
                     </Form>
                 )}
             </Formik>

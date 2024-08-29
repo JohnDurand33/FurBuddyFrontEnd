@@ -6,7 +6,8 @@ const CustomButton = ({ isDark, children, ...props }) => {
     return (
         <Button
             {...props}
-            sx={{color: "text.primary",
+            sx={{
+                color: isDark ? "text.primary" : "text.opposite",
 }}>
             {children}
         </Button>
