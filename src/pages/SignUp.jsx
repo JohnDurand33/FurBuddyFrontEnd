@@ -52,14 +52,14 @@ const SignUpForm = (isDark) => {
                 }
             });
 
-            setUser(user)
-            setLocalToken('colab32Access', res.data.auth_token);
-            console.log('Backend user signed up:', res);
+            setUser(res.data.owner.owner_email)
+            setLocalToken(res.data.auth_token);
             navigate('/dogs/new');
         } catch (err) {
             setServerError(err.message || 'Sign-up failed. Please try again.');
         } finally {
             setSubmitting(false);
+            console.log('Firebase user logged in:', user);
         }
     };
 
@@ -80,8 +80,8 @@ const SignUpForm = (isDark) => {
                 provider: 'google',
             });
 
-            setLocalToken('colab32Access', res.data.access_token);
-            navigate('/dashboard');
+            setLocalToken(res.data.access_token);
+            navigate('/dogs/new');
         } catch (err) {
             setServerError('Google sign-up failed. Please try again.');
         }

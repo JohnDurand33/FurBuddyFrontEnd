@@ -32,26 +32,24 @@ const Login = (isDark) => {
             const fireBaseUser = userCredential.user;
             setFireUser(fireBaseUser)
             
-
-            // Send the login details to your backend if needed
+            // BackendLogin
             const payload = {
-                owner_email: values.email,
-                password: values.password,
+                "owner_email": values.email,
+                "password": values.password,
             };
 
-            const res = await axios.post(`${backEndUrl}/login`, payload, {
+            const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
-
-            setLocalToken('colab32Access', res.data.access_token);
-            navigate('/dashboard');
+            setUser(res.data.owner.owner_email)
+            setLocalToken(res.data.auth_token);
+            navigate('/dogs/new');
         } catch (err) {
-            setServerError(err.response?.data?.message || 'Login failed. Please try again.');
+            setServerError(err.message || 'Login failed. Please try again.');
         } finally {
             setSubmitting(false);
-            console.log('Firebase user logged in:', user);
         }
     };
 
@@ -72,8 +70,8 @@ const Login = (isDark) => {
                 }
             });
 
-            setLocalToken('colab32Access', res.data.access_token);
-            navigate('/dashboard');
+            setLocalToken(res.data.access_token);
+            navigate('/dogs/new');
         } catch (err) {
             setServerError('Google login failed. Please try again.');
         }
@@ -102,7 +100,6 @@ const Login = (isDark) => {
                             <Field
                                 type="email"
                                 name="email"
-                                backgroundColor="white"
                                 as={TextField}
                                 label="Email"
                                 fullWidth

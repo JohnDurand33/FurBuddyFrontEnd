@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogout = () => {
         removeToken();
-        setUserId(null);
+        setFireUser(null);
         setUser(null);
         navigate('/login');
     };
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }) => {
     const handleTokenError = () => {
         removeToken();
         setUser(null);
-        setUserId(null);    
+        setFireUser(null);  
         navigate('/login');
         alert('Session expired. Please login again')
     }
