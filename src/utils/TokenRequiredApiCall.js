@@ -1,8 +1,8 @@
 import axios from "axios";
-import {backEndUrl} from '../utils/config'
+import { backEndUrl } from '../utils/config'
 
 const TokenRequiredApiCall = axios.create({
-    baseURL:`${backEndUrl}`,
+    baseURL: `${backEndUrl}`,
     headers: {
         "Content-Type": "application/json",
     },

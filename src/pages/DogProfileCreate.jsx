@@ -1,37 +1,30 @@
 import React, { useState } from 'react';
-import { Grid, Box, Avatar, Button, TextField, Typography } from '@mui/material';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import { Grid, Box, Avatar, Button, TextField, Typography, Checkbox, FormControlLabel, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { storage } from '../config/firebase.js';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getToken } from '../utils/token';
+import axios from 'axios';
+import { backEndUrl } from '../utils/config.js';
 
 const DogProfileCreate = () => {
-    const [image, setImage] = useState(null);
-    const [imageUrl, setImageUrl] = useState('');
+    console.log("DogProfileCreate component rendered"); // Initial render log
 
-    const initialValues = {
+    const [formValues, setFormValues] = useState({
         name: '',
         breed: '',
-        age: '',
+        date_of_birth: '',
         weight: '',
         sex: '',
         fixed: false,
         chip_number: '',
-        img_url: '',
-    };
-
-    const validationSchema = Yup.object({
-        name: Yup.string().required('Name is required'),
-        breed: Yup.string(),
-        age: Yup.number(),
-        weight: Yup.number(),
-        sex: Yup.string(),
-        fixed: Yup.boolean(),
-        chip_number: Yup.string().optional().length(15, 'Microchip number is usually 15 characters long.'),
-        img_url: Yup.string().required('Image is required')
+        image_path: ''  // Using image_path to store the URL
     });
 
+    const [errors, setErrors] = useState({});
+    const [image, setImage] = useState(null);
+
     const handleImageChange = (e) => {
+        console.log("Image selected:", e.target.files[0]); // Log selected image
         if (e.target.files[0]) {
             setImage(e.target.files[0]);
         }
@@ -39,156 +32,262 @@ const DogProfileCreate = () => {
 
     const handleImageUpload = async () => {
         if (image) {
+            console.log("Uploading image:", image.name); // Log before upload
             const storageRef = ref(storage, `dog_images/${image.name}`);
             await uploadBytes(storageRef, image);
             const url = await getDownloadURL(storageRef);
-            setImageUrl(url);
+            console.log('Image uploaded:', url); // Log after upload
+
+            // Update formValues with the image path after successful upload
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                image_path: url
+            }));
+
             return url;
         }
+        return null;
     };
 
-    const handleSubmit = async (values, actions) => {
-        console.log('submitting', values);
-        try { if (image) {
-            const imageUrl = await handleImageUpload();
-            console.log('handleImageUpload completed')
-            values.img_url = imageUrl;
-            console.log('imgUrl', imageUrl)
-        }} catch (err) {
-            setServerError(err.message || 'Sign-up failed. Please try again.');
-        } finally {
-            actions.setSubmitting(false);
-            Navigate('/dog/view');
+    const validateForm = () => {
+        console.log("Validating form"); // Log validation start
+        let formErrors = {};
+
+        if (!formValues.name) {
+            formErrors.name = 'Name is required';
+        }
+        if (!formValues.date_of_birth) {
+            formErrors.date_of_birth = 'Date of Birth is required';
+        }
+        if (!formValues.image_path) {
+            formErrors.image_path = 'Image is required';
+        }
+
+        setErrors(formErrors);
+        console.log("Form validation errors:", formErrors); // Log validation errors
+        return Object.keys(formErrors).length === 0;
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        console.log(`Field changed: ${name}, Value: ${value}`); // Log field changes
+        setFormValues({
+            ...formValues,
+            [name]: type === 'checkbox' ? checked : value,
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        console.log("Form submitted"); // Log form submission
+
+        // Handle image upload if an image is selected
+        if (image) {
+            await handleImageUpload();  // This will update formValues.image_path
+        }
+
+        // If no image was uploaded, set image_path to an empty string
+        if (!formValues.image_path) {
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                image_path: ''
+            }));
+        }
+
+        // Perform form validation after setting image_path
+        if (!validateForm()) {
+            console.log("Form validation failed"); // Log failed validation
+            return;
+        }
+
+        console.log("Form validation passed"); // Log successful validation
+
+        try {
+            const submissionData = { ...formValues };
+
+            console.log("Submitting form data:", submissionData); // Log data being submitted
+
+            const response = await axios.post(
+                `${backEndUrl}/profiles/new`,
+                submissionData,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${getToken()}`
+                    },
+                }
+            );
+
+            if (response.status === 201) {
+                console.log('Dog profile created successfully:', response.data); // Log successful submission
+                // Reset form state
+                setFormValues({
+                    name: '',
+                    breed: '',
+                    date_of_birth: '',
+                    weight: '',
+                    sex: '',
+                    fixed: false,
+                    chip_number: '',
+                    image_path: ''  // Clear image_path after successful submission
+                });
+                setErrors({});
+                setImage(null);
+            } else {
+                console.error('Error creating dog profile:', response.data);
+                setErrors({ submit: response.data.message });
+            }
+        } catch (err) {
+            console.error('Error during form submission:', err);
+            setErrors({ submit: 'An error occurred. Please try again later.' });
         }
     };
 
     return (
-        <Formik
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-        >
-            {({ setFieldValue, isSubmitting, errors, touched }) => (
-                <Form>
-                    <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
-                        {/* Avatar and Upload Button */}
-                        <Grid item xs={12} container justifyContent="center">
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', ml:'10%'}}>
-                                {/* Center the Avatar */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Avatar
-                                        alt="Dog's Image"
-                                        src={imageUrl || ""}
-                                        sx={{ width: 100, height: 100 }}
-                                    />
-                                </Box>
-                                    {/* Button to the right of Avatar */}
-                                    <Button
-                                        variant="contained"
-                                        component="label"
-                                        sx={{ ml: 2, width: '10%', height: '25%' }}
-                                    >
-                                        <Typography variant="caption" fontSize="55%" noWrap>
-                                            ADD IMAGE
-                                        </Typography>
-                                        <input
-                                            type="file"
-                                            hidden
-                                            onChange={(e) => {
-                                                handleImageChange(e);
-                                                setFieldValue('img_url', e.target.value);
-                                            }}
-                                        />
-                                    </Button>
-                                
-                            </Box>
-                        </Grid>
+        <form onSubmit={handleSubmit}>
+            <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+                {/* Avatar and Upload Button */}
+                <Grid item xs={12} container justifyContent="center">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', ml: '10%' }}>
+                        {/* Center the Avatar */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Avatar
+                                alt="Dog's Image"
+                                src={formValues.image_path || ""}
+                                sx={{ width: 100, height: 100 }}
+                            />
+                        </Box>
+                        {/* Button to the right of Avatar */}
+                        <Button
+                            variant="contained"
+                            component="label"
+                            sx={{ ml: 2, width: '10%', height: '25%' }}
+                        >
+                            <Typography variant="caption" fontSize="55%" noWrap>
+                                ADD IMAGE
+                            </Typography>
+                            <input
+                                type="file"
+                                hidden
+                                onChange={handleImageChange}
+                            />
+                        </Button>
+                    </Box>
+                </Grid>
 
-                        {/* Dog's Name */}
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%', paddingTop: '2.5rem' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="name"
-                                label="Dog's Name"
-                                variant="outlined"
-                                error={Boolean(errors.name && touched.name)}
-                                helperText={<ErrorMessage name="name" />}
-                            />
-                        </Grid>
+                {/* Dog's Name */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%', paddingTop: '2.5rem' }}>
+                    <TextField
+                        fullWidth
+                        name="name"
+                        label="Dog's Name"
+                        variant="outlined"
+                        value={formValues.name}
+                        onChange={handleChange}
+                        error={Boolean(errors.name)}
+                        helperText={errors.name}
+                    />
+                </Grid>
 
-                        {/* Other Fields */}
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="breed"
-                                label="Breed"
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.breed)}
-                                helperText={<ErrorMessage name="breed" />}
-                            />
-                        </Grid>
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="age"
-                                label="Age"
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.age)}
-                                helperText={<ErrorMessage name="age" />}
-                            />
-                        </Grid>
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="weight"
-                                label="Weight"
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.weight)}
-                                helperText={<ErrorMessage name="weight" />}
-                            />
-                        </Grid>
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="sex"
-                                label="Sex"
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.sex)}
-                                helperText={<ErrorMessage name="sex" />}
-                            />
-                        </Grid>
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Field
-                                as={TextField}
-                                fullWidth
-                                name="chip_number"
-                                label="Chip No."
-                                variant="outlined"
-                                error={Boolean(ErrorMessage.chip_number)}
-                                helperText={<ErrorMessage name="chip_number" />}
-                            />
-                        </Grid>
+                {/* Breed */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <TextField
+                        fullWidth
+                        name="breed"
+                        label="Breed"
+                        variant="outlined"
+                        value={formValues.breed}
+                        onChange={handleChange}
+                        error={Boolean(errors.breed)}
+                        helperText={errors.breed}
+                    />
+                </Grid>
 
-                        {/* Submit Button */}
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Button
-                                onClick={handleSubmit}
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                            >
-                                Submit
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Form>
-            )}
-        </Formik>
+                {/* Date of Birth */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <TextField
+                        fullWidth
+                        name="date_of_birth"
+                        label="Date of Birth"
+                        variant="outlined"
+                        type="date"
+                        InputLabelProps={{ shrink: true }}
+                        value={formValues.date_of_birth}
+                        onChange={handleChange}
+                        error={Boolean(errors.date_of_birth)}
+                        helperText={errors.date_of_birth}
+                    />
+                </Grid>
+
+                {/* Weight */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <TextField
+                        fullWidth
+                        name="weight"
+                        label="Weight"
+                        variant="outlined"
+                        value={formValues.weight}
+                        onChange={handleChange}
+                        error={Boolean(errors.weight)}
+                        helperText={errors.weight}
+                    />
+                </Grid>
+
+                {/* Sex */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <FormControl fullWidth variant="outlined" error={Boolean(errors.sex)}>
+                        <InputLabel>Sex</InputLabel>
+                        <Select
+                            name="sex"
+                            label="Sex"
+                            value={formValues.sex}
+                            onChange={handleChange}
+                        >
+                            <MenuItem value="Male">Male</MenuItem>
+                            <MenuItem value="Female">Female</MenuItem>
+                        </Select>
+                        {errors.sex && (
+                            <Typography variant="caption" color="error">
+                                {errors.sex}
+                            </Typography>
+                        )}
+                    </FormControl>
+                </Grid>
+
+                {/* Fixed */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <FormControlLabel
+                        control={<Checkbox checked={formValues.fixed} onChange={handleChange} name="fixed" />}
+                        label="Fixed"
+                    />
+                </Grid>
+
+                {/* Chip Number */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <TextField
+                        fullWidth
+                        name="chip_number"
+                        label="Chip No."
+                        variant="outlined"
+                        value={formValues.chip_number}
+                        onChange={handleChange}
+                        error={Boolean(errors.chip_number)}
+                        helperText={errors.chip_number}
+                    />
+                </Grid>
+
+                {/* Submit Button */}
+                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                    >
+                        Submit
+                    </Button>
+                </Grid>
+            </Grid>
+        </form>
     );
 };
 

@@ -38,7 +38,7 @@ const Login = (isDark) => {
                 "password": values.password,
             };
 
-            const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
+            const res = await axios.post(`${backEndUrl}/owners/login`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -64,7 +64,7 @@ const Login = (isDark) => {
             setUser(user)
             console.log('Firebase Google user logged in:', user);
 
-            const res = await axiosInstanceCORS.post(`owner/login`, payload, {
+            const res = await axiosInstanceCORS.post(`owners/login`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 }

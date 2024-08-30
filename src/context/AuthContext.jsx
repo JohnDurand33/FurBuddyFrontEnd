@@ -19,12 +19,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const token = getToken();
-        if (token) {
-            fetchUser(token);
-        }
-    }, []);
 
     //fetchUser Uses token passed in to function to setUser information
     const fetchUser = async (token) => {
