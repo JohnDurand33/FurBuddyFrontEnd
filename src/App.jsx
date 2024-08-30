@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
-import { Box } from '@mui/material';
+import { Box, Drawer } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import Navbar from './components/NavBar';
 import MenuRail from './components/MenuRail';
@@ -17,10 +17,10 @@ import { useMediaQuery } from '@mui/material';
 
 const App = ({ isDark, setIsDark }) => {
     const isMed = useMediaQuery('(min-width:768px)');
-    const [isRailOpen, setIsRailOpen] = useState(isMed); // Rail is open by default on medium screens
+    const [isRailOpen, setIsRailOpen] = useState(isMed);
 
     useEffect(() => {
-        setIsRailOpen(isMed); // Automatically open or close rail based on screen size
+        setIsRailOpen(isMed);
     }, [isMed]);
 
     const toggleTheme = () => {
@@ -31,16 +31,6 @@ const App = ({ isDark, setIsDark }) => {
         setIsRailOpen((prevOpen) => !prevOpen);
     };
 
-    const handleOutsideClick = () => {
-        if (!isMed && isRailOpen) {
-            setIsRailOpen(false);
-        }
-    };
-
-    useEffect(() => {
-        setIsRailOpen(isMed);
-    }, [isMed]);
-
     return (
         <Router>
             <AuthProvider>
@@ -49,16 +39,12 @@ const App = ({ isDark, setIsDark }) => {
                         minHeight: '100vh',
                         display: 'flex',
                         flexDirection: 'column',
-                        backdgroundColor: 'background.primary',
+                        backgroundColor: 'background.main',
                     }}
-                    onClick={toggleRail} // Handle click outside to close rail
                 >
-                    <Navbar toggleTheme={toggleTheme} isDark={isDark} isMed={isMed} toggleRail={toggleRail} />
-                    <MenuRail isMed={isMed} isRailOpen={isRailOpen} onClose={handleOutsideClick} />
-                    <Box sx={{
-                        backgroundColor: 'background.main', flexGrow: 1, paddingLeft: isMed && isRailOpen ? '200px' : '0px',
-                        transition: 'padding-left 0.3s ease',  // Match transition timing with MenuRail
-                     }}>
+                    <Navbar toggleTheme={toggleTheme} isMed={isMed} toggleRail={toggleRail} />
+                    <MenuRail setIsRailOpen={setIsRailOpen} isOpen={isRailOpen} onClose={toggleRail} />
+                    <Box sx={{ flexGrow: 1, paddingLeft: isMed && isRailOpen ? '200px' : '0px' }}>
                         <Routes>
                             <Route path="/" element={<HeroPage />} />
                             <Route path="/signup" element={<SignUp isDark={isDark} />} />

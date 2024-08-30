@@ -10,7 +10,7 @@ import CustomButton from '../components/CustomButton';
 import { auth } from '../config/firebase.js'; // Import Firebase auth and providers
 import { useAuth } from '../context/AuthContext';
 import { backEndUrl } from '../utils/config';
-import { removeToken, setLocalToken } from '../utils/token';
+import { removeToken, setLocalToken, getToken } from '../utils/token';
 
 const SignUpForm = (isDark) => {
     const { user, setUser, fireUser, setFireUser } = useAuth();
@@ -53,6 +53,7 @@ const SignUpForm = (isDark) => {
             });
 
             setUser(user)
+            setLocalToken('colab32Access', res.data.auth_token);
             console.log('Backend user signed up:', res);
             navigate('/dogs/new');
         } catch (err) {

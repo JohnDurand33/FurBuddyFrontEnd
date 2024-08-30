@@ -1,63 +1,44 @@
 import { useEffect } from 'react';
-import { Box, List, ListItem } from '@mui/material';
-import NavLink from './NavLink';
+import { NavLink } from 'react-router-dom';
+import { Box, List, ListItemButton, Drawer } from '@mui/material';
+import { useMediaQuery } from '@mui/material';
 
-const MenuRail = ({ isRailOpen, onClose, isMed }) => {
 
+const MenuRail = ({ isOpen, onClose, setIsRailOpen }) => {
+    const isMed = useMediaQuery('(min-width:768px)');
     useEffect(() => {
-        const handleOutsideClick = (e) => {
-            const railElement = document.querySelector('.custom-menu-rail');
-            if (isMed && railElement && !railElement.contains(e.target)) {
-                onClose();
-            } else if (!isMed && railElement && !railElement.contains(e.target)) {
-                onClose();
-            }
-        };
-
-        if (isRailOpen) {
-            document.addEventListener('mousedown', handleOutsideClick);
-        } else {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleOutsideClick);
-        };
-    }, [isRailOpen, onClose ]);
-
+        setIsRailOpen(isMed);
+    }, [isMed]);
     return (
-        <Box
-            className="custom-menu-rail"
+        <Drawer
+            anchor="left"
+            open={isOpen}
+            onClose={onClose}
             sx={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: isRailOpen ? '200px' : '0px',
-                height: '100vh',
-                backgroundColor: 'primary.main',
-                overflowX: 'hidden',
-                transition: '0.3s ease',
-                zIndex: 1200,
+                '& .MuiDrawer-paper': {
+                    width: '200px',
+                    backgroundColor: 'primary.main',
+                    color: 'white', // Adjust text color if needed
+                }
             }}
-            onClick={(e) => e.stopPropagation()} // Prevent clicks inside the rail from closing it
         >
-            {isRailOpen && (
-                <List>
-                    <ListItem>
-                        <NavLink to="/dogs/view">Dog Profile</NavLink>
-                    </ListItem>
-                    <ListItem>
-                        <NavLink to="/health_records">Records</NavLink>
-                    </ListItem>
-                    <ListItem>
-                        <NavLink to="/calendar">Calendar</NavLink>
-                    </ListItem>
-                    <ListItem>
-                        <NavLink to="/map">Map</NavLink>
-                    </ListItem>
+            <Box>
+            <List>
+                <ListItemButton component={NavLink} to="/dogs/view">
+                    Dog Profile
+                    </ListItemButton>
+                <ListItemButton component={NavLink} to="/health_records">
+                    Records
+                </ListItemButton>
+                <ListItemButton component={NavLink} to="/calendar">
+                    Calendar
+                </ListItemButton>
+                <ListItemButton component={NavLink} to="/map">
+                    Map
+                </ListItemButton>
                 </List>
-            )}
-        </Box>
+            </Box>
+        </Drawer>
     );
 };
 
