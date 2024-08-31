@@ -8,11 +8,11 @@ export const lightTheme = createTheme({
             main: "#FFCA00",
         },
         secondary: {
-            main: "#FFFFFF",
+            main: "#9bd7fb",
         },
         background: {
-            default: "#121212",
-            paper: "#1e1e1e",
+            default: "#f7f7f7",
+            paper: "#f7f7f7",
         },
         text: {
             primary: "#000000 ",
@@ -107,7 +107,7 @@ export const lightTheme = createTheme({
             styleOverrides: {
                 root: {
                     backgroundColor: "transparent",
-                    color: "#FFFFFF", // White text for menu items
+                    color: "#text.primary", // White text for menu items
                     "&:hover": {
                         backgroundColor: "rgba(255, 255, 255, 0.1)", // Light white shade when hovered
                         color: "rgba(255, 255, 255, 0.8)", // Darker white text when hovered
@@ -135,8 +135,8 @@ export const darkTheme = createTheme({
             main: "#373848",
         },
         background: {
-            default: "#121212",
-            paper: "#1e1e1e",
+            default: "#81dffb",
+            paper: "#373848",
         },
         text: {
             primary: "#ffffff ",
@@ -181,7 +181,7 @@ export const darkTheme = createTheme({
                 },
                 input: {
                     color: "#ffffff", // Text color inside the input
-                    backgroundColor: "#1e1e1e", // Set a consistent background for dark theme
+                    backgroundColor: "#81dffb", // Set a consistent background for dark theme
                 },
                 notchedOutline: {
                     borderColor: "rgba(255, 255, 255, 0.6)", // Outline color

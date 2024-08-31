@@ -39,7 +39,7 @@ const App = ({ isDark, setIsDark }) => {
                         minHeight: '100vh',
                         display: 'flex',
                         flexDirection: 'column',
-                        backgroundColor: 'background.main',
+                        backgroundColor: 'background.paper',
                     }}
                 >
                     <Navbar toggleTheme={toggleTheme} isMed={isMed} toggleRail={toggleRail} />

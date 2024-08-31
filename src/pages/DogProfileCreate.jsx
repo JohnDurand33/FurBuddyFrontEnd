@@ -5,8 +5,11 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getToken } from '../utils/token';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config.js';
+import { useNavigate } from 'react-router-dom';
+
 
 const DogProfileCreate = () => {
+    const navigate = useNavigate()
     console.log("DogProfileCreate component rendered"); // Initial render log
 
     const [formValues, setFormValues] = useState({
@@ -58,9 +61,6 @@ const DogProfileCreate = () => {
         }
         if (!formValues.date_of_birth) {
             formErrors.date_of_birth = 'Date of Birth is required';
-        }
-        if (!formValues.image_path) {
-            formErrors.image_path = 'Image is required';
         }
 
         setErrors(formErrors);
@@ -133,6 +133,7 @@ const DogProfileCreate = () => {
                 });
                 setErrors({});
                 setImage(null);
+                navigate("/dogs/view")
             } else {
                 console.error('Error creating dog profile:', response.data);
                 setErrors({ submit: response.data.message });
@@ -144,8 +145,10 @@ const DogProfileCreate = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+        <Box display="flex" flexdirection="column"justifyContent="center" alignItems="center"sx={{mb:20}}> 
+        <Box width="80%">
+        <form onSubmit={handleSubmit} >
+                <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
                 {/* Avatar and Upload Button */}
                 <Grid item xs={12} container justifyContent="center">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', ml: '10%' }}>
@@ -287,7 +290,9 @@ const DogProfileCreate = () => {
                     </Button>
                 </Grid>
             </Grid>
-        </form>
+            </form>
+            </Box>
+        </Box>
     );
 };
 
