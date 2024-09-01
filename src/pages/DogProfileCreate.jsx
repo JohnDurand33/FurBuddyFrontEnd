@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Checkbox, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Typography, Alert } from '@mui/material';
 import axios from 'axios';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../config/firebase.js';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ import { backEndUrl } from '../utils/config.js';
 import { getToken } from '../utils/localStorage.js';
 
 const DogProfileCreate = () => {
-    const { userId, setCurrDogId, setDogProfile, localCurrDogIdSetter } = useAuth();
+    const { userId, setCurrDogId, setDogProfileData, setLocalCurrDogId } = useAuth();
     const navigate = useNavigate();
     const [formValues, setFormValues] = useState({
         name: '',
@@ -30,6 +30,12 @@ const DogProfileCreate = () => {
     const [image, setImage] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState(null);
+
+    useEffect(() => {
+        if (!userId) {
+            navigate('/login');
+        };
+    },[]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -121,8 +127,10 @@ const DogProfileCreate = () => {
                     vet_clinic_email: ''
                 });
                 setErrors({});
+                setDogProfileData(response.data);
+                console.log('Dog profile ID:', response.data.id);
                 setCurrDogId(response.data.id);
-                setProfileData(response.data);
+                setLocalCurrDogId(response.data.id);
                 navigate("/dogs/view");
             } else {
                 setErrors({ submit: response.data.message });
@@ -179,7 +187,7 @@ const DogProfileCreate = () => {
                         </Grid>
 
                         {/* Dog Information Fields */}
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <TextField
                                 fullWidth
                                 name="name"
@@ -191,7 +199,7 @@ const DogProfileCreate = () => {
                                 helperText={errors.name}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <TextField
                                 fullWidth
                                 name="breed"
@@ -203,7 +211,7 @@ const DogProfileCreate = () => {
                                 helperText={errors.breed}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <TextField
                                 fullWidth
                                 name="date_of_birth"
@@ -217,7 +225,7 @@ const DogProfileCreate = () => {
                                 helperText={errors.date_of_birth}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <TextField
                                 fullWidth
                                 name="weight"
@@ -229,7 +237,7 @@ const DogProfileCreate = () => {
                                 helperText={errors.weight}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={12} md={6}>
                             <FormControl fullWidth variant="outlined" error={Boolean(errors.sex)}>
                                 <InputLabel>Sex</InputLabel>
                                 <Select
@@ -248,24 +256,26 @@ const DogProfileCreate = () => {
                                 )}
                             </FormControl>
                         </Grid>
-                        <Grid item xs={12}>
+                            <Grid item xs={12} md={6}>
+                                <TextField
+                                    fullWidth
+                                    name="chip_number"
+                                    label="Chip No."
+                                    variant="outlined"
+                                    value={formValues.chip_number}
+                                    onChange={handleChange}
+                                    error={Boolean(errors.chip_number)}
+                                    helperText={errors.chip_number}
+                                />
+                            </Grid>
+                        
+                        <Grid item xs={12} >
                             <FormControlLabel
                                 control={<Checkbox checked={formValues.fixed} onChange={handleChange} name="fixed" />}
                                 label="Fixed"
                             />
                         </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                name="chip_number"
-                                label="Chip No."
-                                variant="outlined"
-                                value={formValues.chip_number}
-                                onChange={handleChange}
-                                error={Boolean(errors.chip_number)}
-                                helperText={errors.chip_number}
-                            />
-                        </Grid>
+                        
 
                         {/* Vet Information Header */}
                         <Grid item xs={12} sx={{ mt: 4 }}>

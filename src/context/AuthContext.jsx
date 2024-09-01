@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState({});
     const [currDogId, setCurrDogId] = useState();
     const [fireUser, setFireUser] = useState(null);
-    const [dogProfile, setDogProfile] = useState({});
+    const [dogProfileData, setDogProfileData] = useState({});
     const [dogProfiles, setDogProfiles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState();
@@ -39,10 +39,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     const localCurrDogIdStateSetter = () => {
-            const dogId = getCurrDogId();
-            setCurrDogId(dogId);
+        const currDogId = getCurrDogId();
+        setCurrDogId(currDogId);
         };
-    };
 
     const localTokenStateSetter = () => {
         const currToken = getToken();
@@ -50,17 +49,44 @@ export const AuthProvider = ({ children }) => {
         };
 
     const localUserIdStateSetter = () => {
-        const uId = getUserId();
-        setUserId(uId);
+        const currUserId = getUserId();
+        setUserId(currUserId);
         };
 
     const localStateSetter = () => {
         if (!token) {
+            console.log('token not set', token);
             localTokenStateSetter();
+            console.log('token set', token);
         } else if (!userId) {
+            console.log('userId not set', userId);
             localUserIdStateSetter();
+            console.log('userId set', userId);
         } else if (!currDogId) {
+            console.log('currDogId not set', currDogId);
             localCurrDogIdStateSetter();
+            console.log('currDogId set', currDogId);
+        }
+    };
+
+    const localVarTokenSetter = () => {
+        if (!token) {
+            const varToken = getToken();
+            return varToken
+        }
+    };
+
+    const localVarUserSetter = () => {
+        if (!token) {
+            const varUser = getUser();
+            return varUser
+        }
+    };
+
+    const localVarDogIdSetter = () => {
+        if (!token) {
+            const varUser = getUser();
+            return varUser
         }
     };
 
@@ -95,7 +121,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ token, setToken, backEndUrl, user, setUser, userId, setUserId, fireUser, setFireUser, currDogId, setCurrDogId, dogProfile, setDogProfile, dogProfiles, setDogProfiles, loginUserBE, loading, setLoading, handleLogout, handleTokenError, currUserStateSetter, localStateSetter  }}>
+        <AuthContext.Provider value={{ token, setToken, backEndUrl, user, setUser, userId, setUserId, fireUser, setFireUser, currDogId, setCurrDogId, setLocalCurrDogId, setLocalUserId, dogProfileData, setDogProfileData, dogProfiles, setDogProfiles, loginUserBE, loading, setLoading, handleLogout, handleTokenError, currUserStateSetter, localStateSetter  }}>
             {children}
         </AuthContext.Provider>
     );
