@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Grid, Box, Avatar, Button, TextField, Typography, Checkbox, FormControlLabel, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { storage } from '../config/firebase.js';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getToken } from '../utils/token';
+import { Avatar, Box, Button, Checkbox, FormControl, FormControlLabel, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import axios from 'axios';
-import { backEndUrl } from '../utils/config.js';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { storage } from '../config/firebase.js';
+import { useAuth } from '../context/AuthContext';
+import { backEndUrl } from '../utils/config.js';
+import { getToken, getUserId } from '../utils/localStorage.js';
 
 
 const DogProfileCreate = () => {
+    const { userId } = useAuth();
     const navigate = useNavigate()
     console.log("DogProfileCreate component rendered"); // Initial render log
 
@@ -25,11 +27,24 @@ const DogProfileCreate = () => {
 
     const [errors, setErrors] = useState({});
     const [image, setImage] = useState(null);
+    const [imagePath, setImagePath] = useState(null);
 
     const handleImageChange = (e) => {
-        console.log("Image selected:", e.target.files[0]); // Log selected image
-        if (e.target.files[0]) {
-            setImage(e.target.files[0]);
+        const file = e.target.files[0];
+        console.log("Image selected:", file); // Log selected image
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = () => {
+            setImage(file);
+            setFormValues((prevValues) => ({
+                ...prevValues,
+                image_path: reader.result // This will be the base64-encoded image
+            }));
+        };
+        reader.readAsDataURL(file); // Read the image as a data URL
+        console.log("Image path:", reader.result); // Log the image path
         }
     };
 
@@ -39,6 +54,7 @@ const DogProfileCreate = () => {
             const storageRef = ref(storage, `dog_images/${image.name}`);
             await uploadBytes(storageRef, image);
             const url = await getDownloadURL(storageRef);
+            setImagePath(url);
             console.log('Image uploaded:', url); // Log after upload
 
             // Update formValues with the image path after successful upload
@@ -46,7 +62,6 @@ const DogProfileCreate = () => {
                 ...prevValues,
                 image_path: url
             }));
-
             return url;
         }
         return null;
@@ -104,11 +119,10 @@ const DogProfileCreate = () => {
 
         try {
             const submissionData = { ...formValues };
-
+            
             console.log("Submitting form data:", submissionData); // Log data being submitted
-
             const response = await axios.post(
-                `${backEndUrl}/profiles/new`,
+                `${backEndUrl}/owners/owner/${userId}/profiles`,
                 submissionData,
                 {
                     headers: {
@@ -156,7 +170,7 @@ const DogProfileCreate = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Avatar
                                 alt="Dog's Image"
-                                src={formValues.image_path || ""}
+                                src={formValues.image_path || ''}
                                 sx={{ width: 100, height: 100 }}
                             />
                         </Box>

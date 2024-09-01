@@ -11,10 +11,10 @@ import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { backEndUrl } from '../utils/config';
 import { GC_ID } from '../utils/config.js';
-import { removeToken, setLocalToken } from '../utils/token';
+import { removeToken, setLocalToken } from '../utils/localStorage.js';
 
 const Login = (isDark) => {
-    const { user, setUser, fireUser, setFireUser, loginUserBE } = useAuth();
+    const { user, setUser, userId, setUserId, fireUser, setFireUser, loginUserBE } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
 
@@ -43,7 +43,8 @@ const Login = (isDark) => {
                     'Content-Type': 'application/json',
                 }
             });
-            setUser(res.data.owner.owner_email)
+            setUser(res.data.owner)
+            setUserId(res.data.owner.id)
             setLocalToken(res.data.auth_token);
             navigate('/dogs/new');
         } catch (err) {

@@ -7,7 +7,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = ({ toggleTheme, isDark, isMed, toggleRail }) => {
+const Navbar = ({ toggleTheme, isDark, toggleRail }) => {
     const { isAuthenticated, logout } = useAuth();
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
@@ -17,7 +17,7 @@ const Navbar = ({ toggleTheme, isDark, isMed, toggleRail }) => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleAccountMenuClose = (event) => {
+    const handleAccountMenuClose = () => {
         setAnchorEl(null);
     };
 
@@ -34,41 +34,28 @@ const Navbar = ({ toggleTheme, isDark, isMed, toggleRail }) => {
     const handleServiceMenuClose = () => {
         setMenuAnchorEl(null);
     };
-    
 
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main', maxHeight: '8vh', width: '100%' }}>
             <Toolbar>
-                <Grid position="static" container alignItems="center">
+                <Grid container alignItems="center">
                     {/* Left Section */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {!isMed ? (
-                            <>
-                                <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleServiceMenuOpen}  >
-                                    <MenuIcon />
-                                </IconButton>
-                                <Menu
-                                    anchorEl={menuAnchorEl}          
-                                    open={Boolean(menuAnchorEl)}
-                                    onClose={handleServiceMenuClose}
-                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                                >
-                                    <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/dogs/view">Dog Profile
-                                        </MenuItem>
-                                    <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/health_records">Records
-                                        </MenuItem>
-                                    <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/calendar">Calendar
-                                        </MenuItem>
-                                    <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/map">Map
-                                        </MenuItem>
-                                </Menu>
-                            </>
-                        ) : (
-                                <IconButton edge="start" color="inherit" aria-label="toggle-rail" onClick={toggleRail}>
-                                    {<MenuIcon />}
-                            </IconButton>
-                        )}
+                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleServiceMenuOpen}>
+                            <MenuIcon />
+                        </IconButton>
+                        <Menu
+                            anchorEl={menuAnchorEl}
+                            open={Boolean(menuAnchorEl)}
+                            onClose={handleServiceMenuClose}
+                            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                        >
+                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/dogs/view">Dog Profile</MenuItem>
+                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/health_records">Records</MenuItem>
+                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/calendar">Calendar</MenuItem>
+                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/map">Map</MenuItem>
+                        </Menu>
                     </Grid>
 
                     {/* Center Section */}
@@ -110,13 +97,16 @@ const Navbar = ({ toggleTheme, isDark, isMed, toggleRail }) => {
                                     </MenuItem>
                                 </div>
                             ) : (
-                                    <div>
-                                        <MenuItem component={NavLink} onClick={handleAccountMenuClose} to="/login" style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                Log In
-                                        </MenuItem>
-                                        <MenuItem component={NavLink} onClick={handleAccountMenuClose} to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
-                                            Sign Up
-                                        </MenuItem>
+                                <div>
+                                        <MenuItem
+                                            component={NavLink}
+                                            to="/login"
+                                            style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        Log In
+                                    </MenuItem>
+                                    <MenuItem component={NavLink} to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        Sign Up
+                                    </MenuItem>
                                 </div>
                             )}
                         </Menu>

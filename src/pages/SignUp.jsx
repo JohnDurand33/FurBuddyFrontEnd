@@ -10,10 +10,10 @@ import CustomButton from '../components/CustomButton';
 import { auth } from '../config/firebase.js'; // Import Firebase auth and providers
 import { useAuth } from '../context/AuthContext';
 import { backEndUrl } from '../utils/config';
-import { removeToken, setLocalToken, getToken } from '../utils/token';
+import { removeToken, setLocalToken, setLocalUserId, removeUserId } from '../utils/localStorage.js';
 
 const SignUpForm = (isDark) => {
-    const { user, setUser, fireUser, setFireUser } = useAuth();
+    const { user, setUser, userId, setUserId, fireUser, setFireUser } = useAuth();
     const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
@@ -30,13 +30,12 @@ const SignUpForm = (isDark) => {
 
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null); // Reset server error on new submission
-        removeToken('colab32Access'); // Remove any existing token in storage
         try {
             // Create a new user with email and password using Firebase
             const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-            const user = userCredential.user;
-            console.log('Firebase user created:', user);
-            setFireUser(user)
+            const fireUser = userCredential.user;
+            console.log('Firebase user created:', fireUser);
+            setFireUser(fireUser)
 
             // Backend signup
             const payload = {
@@ -46,20 +45,24 @@ const SignUpForm = (isDark) => {
                 "owner_phone": values.ownerPhone
             };
 
-            const res = await axios.post(`${backEndUrl}/owner/signup`, payload, {
+            const res = await axios.post(`${backEndUrl}/owners/signup`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
 
-            setUser(res.data.owner.owner_email)
+            setUser(res.data.owner)
+            setUserId(res.data.owner.id)
+            setLocalUserId(res.data.owner.id)
+            console.log('Backend user created:', res.data.owner);
+            console.log('User state', user)
+            console.log('in case user state not updated, owner.id returned:', res.data.owner.id)
             setLocalToken(res.data.auth_token);
             navigate('/dogs/new');
         } catch (err) {
             setServerError(err.message || 'Sign-up failed. Please try again.');
         } finally {
             setSubmitting(false);
-            console.log('Firebase user logged in:', user);
         }
     };
 
@@ -75,7 +78,7 @@ const SignUpForm = (isDark) => {
             console.log('Firebase Google user signed in:', user);
 
             // You may want to send additional user details to your backend
-            const res = await axios.post(`${backEndUrl}/owner/google-signup`, {
+            const res = await axios.post(`${backEndUrl}/owners/google-signup`, {
                 token: credential,
                 provider: 'google',
             });

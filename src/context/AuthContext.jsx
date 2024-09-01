@@ -1,49 +1,26 @@
-import axios from 'axios';
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getToken, setLocalToken, removeToken } from "../utils/token";
 import { backEndUrl } from "../utils/config";
+import { removeToken, setLocalToken, getToken, removeUserId, setLocalUserId, getUserId } from "../utils/localStorage";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const backendUrl = backEndUrl;
-    const [user, setUser] = useState({
-        id: '',
-        owner_email: '',
-        password: '',
-        owner_name: '',
-        owner_phone: '',
-    });
+    const [user, setUser] = useState({});
+    const [userId, setUserId] = useState();
     const [fireUser, setFireUser ] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-
-    //fetchUser Uses token passed in to function to setUser information
-    const fetchUser = async (token) => {
+    const loginUserBE = async () => {
         try {
-            const response = await axios.get(`${backendUrl}/owners`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.status === 200) {
-                setUser(response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching user:', error);
-        }
-    }
-    const loginUserBE = async (owner_email, password) => {
-        try {
-            const response = await fetch(`${backEndUrl}/login`, {
+            const response = await fetch(`${backEndUrl}/owners/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ owner_email, password }),
+
             });
 
             if (response.ok) {
@@ -61,6 +38,7 @@ export const AuthProvider = ({ children }) => {
         removeToken();
         setFireUser(null);
         setUser(null);
+        setUserId(null);
         navigate('/login');
     };
 
@@ -73,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ backEndUrl, user, setUser, fireUser, setFireUser, loginUserBE, loading, setLoading, handleLogout, handleTokenError }}>
+        <AuthContext.Provider value={{ backEndUrl, user, setUser, userId, setUserId, fireUser, setFireUser, loginUserBE, loading, setLoading, handleLogout, handleTokenError }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ThemeProvider, CssBaseline, useMediaQuery } from '@mui/material';
+import { lightTheme, darkTheme } from './utils/theme';
 import { AuthProvider } from './context/AuthContext';
-import { Box, Drawer } from '@mui/material';
+import { RailStateProvider } from './context/RailStateContext';
+import { Box } from '@mui/material';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import Navbar from './components/NavBar';
 import MenuRail from './components/MenuRail';
@@ -13,15 +16,12 @@ import DogProfileViewPage from './pages/DogProfileViewPage';
 import MyCalendar from './components/MyCalendar';
 import RecordsViewPage from './pages/RecordsViewPage';
 import Map from './components/Map';
-import { useMediaQuery } from '@mui/material';
 
-const App = ({ isDark, setIsDark }) => {
-    const isMed = useMediaQuery('(min-width:768px)');
-    const [isRailOpen, setIsRailOpen] = useState(isMed);
-
-    useEffect(() => {
-        setIsRailOpen(isMed);
-    }, [isMed]);
+function App() {
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const [isDark, setIsDark] = useState(prefersDarkMode);
+    const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
+    
 
     const toggleTheme = () => {
         setIsDark((prevDark) => !prevDark);
@@ -33,22 +33,17 @@ const App = ({ isDark, setIsDark }) => {
 
     return (
         <Router>
-            <AuthProvider>
-                <Box
-                    sx={{
-                        minHeight: '100vh',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        backgroundColor: 'background.paper',
-                    }}
-                >
-                    <Navbar toggleTheme={toggleTheme} isMed={isMed} toggleRail={toggleRail} />
-                    <MenuRail setIsRailOpen={setIsRailOpen} isOpen={isRailOpen} onClose={toggleRail} />
-                    <Box sx={{ flexGrow: 1, paddingLeft: isMed && isRailOpen ? '200px' : '0px' }}>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+                <AuthProvider>
+                    <RailStateProvider>
+                    <MenuRail />
+                    <Navbar toggleTheme={toggleTheme} toggleRail={toggleRail} />
+                    <Box sx={{ flexGrow: 1 }}>
                         <Routes>
                             <Route path="/" element={<HeroPage />} />
-                            <Route path="/signup" element={<SignUp isDark={isDark} />} />
-                            <Route path="/login" element={<LogIn isDark={isDark} />} />
+                            <Route path="/signup" element={<SignUp />} />
+                            <Route path="/login" element={<LogIn />} />
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/dogs/new" element={<DogProfileCreate />} />
                             <Route path="/dogs/view" element={<DogProfileViewPage />} />
@@ -56,9 +51,10 @@ const App = ({ isDark, setIsDark }) => {
                             <Route path="/calendar" element={<MyCalendar />} />
                             <Route path="/map" element={<Map />} />
                         </Routes>
-                    </Box>
-                </Box>
-            </AuthProvider>
+                            </Box>
+                    </RailStateProvider>
+                </AuthProvider>
+            </ThemeProvider>
         </Router>
     );
 };
