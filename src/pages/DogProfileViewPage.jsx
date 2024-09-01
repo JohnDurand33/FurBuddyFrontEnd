@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Box, Avatar, Button, TextField, Typography, FormControlLabel, Checkbox, Select, MenuItem, FormControl, InputLabel, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import TokenRequiredApiCall from '../utils/TokenRequiredApiCall';
 import { storage } from '../config/firebase.js';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '../context/AuthContext';
+
 
 const DogProfileView = () => {
+    const { userId, currDogId, localStateSetter } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [serverError, setServerError] = useState(null);
     const [dogProfileData, setDogProfileData] = useState({
         name: '',
         breed: '',
@@ -26,6 +30,21 @@ const DogProfileView = () => {
     const [imageUrl, setImageUrl] = useState(dogProfileData.img_url);
     const theme = useTheme();
     const isLargeScreen = useMediaQuery(theme.breakpoints.up('sm')); // Breakpoint for larger screens
+
+    useEffect(() => {
+        const fetchDogProfile = async () => {
+            await localStateSetter();
+            
+            const response = await TokenRequiredApiCall.get(`/profiles/owner/${userId}/profiles/${currDogId}`);
+            if (response.status !== 200) {
+                console.error('Failed to fetch dog profile');
+                return;
+            }
+            setDogProfileData(response.data);
+            setImageUrl(response.data.img_url);
+        };
+    fetchDogProfile();
+}, [userId, currDogId]);
 
     const getWeightInLbs = (weightCategory) => {
         switch (weightCategory) {
@@ -63,7 +82,7 @@ const DogProfileView = () => {
         const img_url = await handleImageUpload();
         const updatedData = { ...dogProfileData, img_url };
 
-        const response = await TokenRequiredApiCall.post('/profile/update', updatedData);
+        const response = await axios.post(`/profiles/owner/${profileId}update`, updatedData);
         if (response.status !== 200) {
             console.error('Failed to update profile');
             return;
@@ -77,8 +96,9 @@ const DogProfileView = () => {
     };
 
     return (
-        <Box sx={{ padding: 3, color:'text.primary' }}>
-            <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+        <Box sx={{ padding: 3, color: 'text.primary' }}>
+            <Grid container justifyContent="center">
+            <Grid container maxWidth='80%' alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
                 {/* Avatar and Upload Button */}
                 <Grid item xs={12} container justifyContent="center">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: 'fit-content' }}>
@@ -103,7 +123,11 @@ const DogProfileView = () => {
                         )}
                     </Box>
                 </Grid>
-
+                {serverError && (
+                    <Box mb={2}>
+                        <Alert severity="error">{serverError}</Alert>
+                    </Box>
+                )}
                 {/* Dog Information Header */}
                 <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
                     <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
@@ -250,6 +274,7 @@ const DogProfileView = () => {
                             </Button>
                         </>
                     )}
+                </Grid>
                 </Grid>
             </Grid>
         </Box>

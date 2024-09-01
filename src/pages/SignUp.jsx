@@ -13,7 +13,7 @@ import { backEndUrl } from '../utils/config';
 import { removeToken, setLocalToken, setLocalUserId, removeUserId } from '../utils/localStorage.js';
 
 const SignUpForm = (isDark) => {
-    const { user, setUser, userId, setUserId, fireUser, setFireUser } = useAuth();
+    const { user, setUser, setUserId, setFireUser, setToken } = useAuth();
     const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
@@ -55,8 +55,9 @@ const SignUpForm = (isDark) => {
             setUserId(res.data.owner.id)
             setLocalUserId(res.data.owner.id)
             console.log('Backend user created:', res.data.owner);
-            console.log('User state', user)
-            console.log('in case user state not updated, owner.id returned:', res.data.owner.id)
+            console.log('User state', user);
+            console.log('in case user state not updated, owner.id returned:', res.data.owner.id);
+            setToken(res.data.auth_token);
             setLocalToken(res.data.auth_token);
             navigate('/dogs/new');
         } catch (err) {

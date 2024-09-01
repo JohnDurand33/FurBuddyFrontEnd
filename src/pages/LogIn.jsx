@@ -11,7 +11,7 @@ import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { backEndUrl } from '../utils/config';
 import { GC_ID } from '../utils/config.js';
-import { removeToken, setLocalToken } from '../utils/localStorage.js';
+import { removeToken, setLocalToken, setLocalUserId } from '../utils/localStorage.js';
 
 const Login = (isDark) => {
     const { user, setUser, userId, setUserId, fireUser, setFireUser, loginUserBE } = useAuth();
@@ -45,6 +45,7 @@ const Login = (isDark) => {
             });
             setUser(res.data.owner)
             setUserId(res.data.owner.id)
+            setLocalUserId(res.data.owner.id)
             setLocalToken(res.data.auth_token);
             navigate('/dogs/new');
         } catch (err) {
