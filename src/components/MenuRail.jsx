@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, ListItemButton } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { Icon } from '@iconify/react';
@@ -17,10 +17,11 @@ import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
+const MenuRail = ({ isMobile, isOpen, toggleRail }) => {
+    const drawerRef = useRef(null);
     const theme = useTheme();
-    const { authed, userID, setLocalUserId, getUserId, handleLogout } = useAuth();  // Get authentication status
-
+    const [isExpanded, setIsExpanded] = useState(false);    
+    const { authed, user, userID, setLocalUserId, getUserId, handleLogout } = useAuth();  // Get authentication status
     const [isPetsOpen, setIsPetsOpen] = useState(true);  // State for the pets dropdown
     const [dogProfiles, setDogProfiles] = useState([]);  // State for the dog profiles
 
@@ -32,18 +33,43 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
         return null;
     }
 
+    useEffect(() => {
+        // Function to handle click events
+        const handleClickOutside = (event) => {
+            if (drawerRef.current && !drawerRef.current.contains(event.target)) {
+                toggleRail(); // Close the drawer if click is outside
+            }
+        };
+
+        // Add the event listener if the drawer is open
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        // Cleanup the event listener when component unmounts or when isOpen changes
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+
+    if (!authed) return null;
+
     return (
         <Drawer
+            ref={drawerRef}
             variant={isMobile ? 'temporary' : 'permanent'}
             anchor="left"
             open={isOpen}
+            onClose={toggleRail}
             PaperProps={{
                 sx: {
-                    width: isMin ? '64px' : '200px',  // Width based on state
+                    width: isMobile && isExpanded ? '64px' : isExpanded ? '200px' : 0,  // Width based on state
                     transition: 'width 0.5s ease-in-out',
                     backgroundColor: "#H7CA57",
                     color: (theme) => theme.palette.text.primary,
-                    overflowX: 'hidden',
+                    // overflowX: 'hidden',
                 },
             }}
         >
@@ -53,28 +79,28 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
                     <ListItemIcon sx={{ minWidth: 'auto' }}>
                         <Icon icon="mdi:paw" width="30" height="30" />
                     </ListItemIcon>
-                    {!isMin && <ListItemText primary="FurBuddy" />}
+                    {!isMobile && <ListItemText primary="FurBuddy" />}
                     <IconButton onClick={toggleRail} sx={{ marginLeft: 'auto' }}>
-                        <Icon icon={isMin ? ChevronRightIcon : ChevronLeftIcon} />
+                        <Icon icon={isMobile ? ChevronRightIcon : ChevronLeftIcon} />
                     </IconButton>
                 </ListItemButton>
 
                 {/* Navigation Links */}
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={DashboardIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Dashboard" />}
+                    {!isMobile && <ListItemText primary="Dashboard" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={CalendarIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Calendar" />}
+                    {!isMobile && <ListItemText primary="Calendar" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={RecordsIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Medical Records" />}
+                    {!isMobile && <ListItemText primary="Medical Records" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '16px' }}>
                     <ListItemIcon><Icon icon={MapIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Map" />}
+                    {!isMobile && <ListItemText primary="Map" />}
                 </ListItemButton>
 
                 <Divider sx={{ marginBottom: '16px' }} />
@@ -82,8 +108,8 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
                 {/* Pets Dropdown */}
                 <ListItemButton onClick={togglePetsDropdown} sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={PetsIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Pets" />}
-                    {!isMin && (
+                    {!isMobile && <ListItemText primary="Pets" />}
+                    {!isMobile && (
                         <IconButton sx={{ marginLeft: 'auto' }}>
                             <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
                         </IconButton>
@@ -103,13 +129,13 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
                         <ListItemIcon>
                             {dog.imagePath ? <Avatar src={dog.imagePath} /> : <Avatar>{dog.name[0]}</Avatar>}
                         </ListItemIcon>
-                        {!isMin && <ListItemText primary={dog.name} />}
+                        {!isMobile && <ListItemText primary={dog.name} />}
                     </ListItemButton>
                 ))}
                 {isPetsOpen && (
                     <ListItemButton sx={{ marginBottom: '16px' }}>
                         <ListItemIcon><Icon icon={AddIcon} /></ListItemIcon>
-                        {!isMin && <ListItemText primary="Add Dog" />}
+                        {!isMobile && <ListItemText primary="Add Dog" />}
                     </ListItemButton>
                 )}
 
@@ -118,11 +144,11 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
                 {/* Settings & Logout */}
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={SettingsIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Settings" />}
+                    {!isMobile && <ListItemText primary="Settings" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '16px' }} onClick={handleLogout}>
                     <ListItemIcon><Icon icon={LogoutIcon} /></ListItemIcon>
-                    {!isMin && <ListItemText primary="Logout" />}
+                    {!isMobile && <ListItemText primary="Logout" />}
                 </ListItemButton>
 
                 <Divider sx={{ marginBottom: '16px' }} />
@@ -132,7 +158,7 @@ const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
                     <ListItemIcon>
                         <Avatar src="/static/images/avatar/1.jpg" alt="User Avatar" />
                     </ListItemIcon>
-                    {!isMin && user.owner_name && user.owner_email ? <ListItemText primary={user.owner_name} secondary={user.owner_email} /> : !isMin && user.owner_email ? <ListItemText primary={user.owner_email} /> : <ListItemText secondary={user.owner_email} />}
+                    {!isMobile && user.owner_name && user.owner_email ? <ListItemText primary={user.owner_name} secondary={user.owner_email} /> : !isMobile && user.owner_email ? <ListItemText primary={user.owner_email} /> : <ListItemText secondary={user.owner_email} />}
                 </ListItemButton>
             </List>
         </Drawer>

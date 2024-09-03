@@ -12,6 +12,8 @@ import { GC_ID } from '../utils/config.js';
 
 const LoginForm = () => {
     const {
+        authed,
+        setAuthed,
         clearAllStateAndLocalStorage,
         updateUser,
         updateUserId,
@@ -53,7 +55,7 @@ const LoginForm = () => {
             updateUser(res.data.owner);
             updateUserId(res.data.owner.id);
             updateToken(res.data.auth_token);
-
+            setAuthed(true);
             navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
             setServerError(err.message || 'Login failed. Please try again.');

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
-import PreAuthNavbar from '../components/PreAuthNavBar';
+import Navbar from '../components/NavBar';
 import MenuRail from '../components/MenuRail';
 import HeroPage from './HeroPage';
 import SignUp from './SignUp';
@@ -15,20 +15,8 @@ import Map from '../components/Map';
 
 function MainView({ toggleTheme, isDark }) {
     const [isRailOpen, setIsRailOpen] = useState(false);
-    const [isMin, setIsMin] = useState(true); // Start minimized by default
-
-
     const isMobile = useMediaQuery('(max-width:600px)');
-    
 
-    useEffect(() => {
-        // Adjust the rail state based on screen size after authentication
-        if (isMobile) {
-            setIsMin(true); // Minimize on mobile
-        } else {
-            setIsMin(false); // Expand on larger screens
-        }
-    }, [isMobile]);
 
 
     const toggleRail = () => {
@@ -37,8 +25,8 @@ function MainView({ toggleTheme, isDark }) {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            <PreAuthNavbar toggleTheme={toggleTheme} isMobile={isMobile} toggleRail={toggleRail} />
-            <MenuRail isMobile={isMobile} isOpen={isRailOpen} toggleRail={toggleRail} isMin={isMin}/>
+            <Navbar toggleTheme={toggleTheme} isMobile={isMobile} toggleRail={toggleRail} />
+            <MenuRail isMobile={isMobile} isOpen={isRailOpen} toggleRail={toggleRail} />
             <Box
                 sx={{
                     flexGrow: 1,

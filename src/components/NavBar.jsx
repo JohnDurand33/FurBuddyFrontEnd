@@ -7,7 +7,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 
-const PreAuthNavbar = ({toggleRail, toggleTheme, isDark}) => {
+const Navbar = ({toggleRail, toggleTheme, isDark}) => {
     const { isAuthenticated, logout } = useAuth();
 
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
@@ -118,4 +118,4 @@ const PreAuthNavbar = ({toggleRail, toggleTheme, isDark}) => {
     );
 };
 
-export default PreAuthNavbar;
+export default Navbar;
