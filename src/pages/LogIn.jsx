@@ -1,20 +1,24 @@
-import { Alert, Box, CircularProgress, Grid, TextField, Typography } from '@mui/material';
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import axios from 'axios';
-import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
+import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import CustomButton from '../components/CustomButton';
-import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
+import { auth } from '../config/firebase';
 import { backEndUrl } from '../utils/config';
 import { GC_ID } from '../utils/config.js';
-import { removeToken, setLocalToken, setLocalUserId } from '../utils/localStorage.js';
 
-const Login = (isDark) => {
-    const { user, setUser, userId, setUserId, fireUser, setFireUser, loginUserBE } = useAuth();
+const LoginForm = () => {
+    const {
+        clearAllStateAndLocalStorage,
+        updateUser,
+        updateUserId,
+        updateToken,
+        setFireUser,
+    } = useAuth();
+
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
 
@@ -25,17 +29,18 @@ const Login = (isDark) => {
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null);
-        removeToken('colab32Access');
+        clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
+
         try {
             // Authenticate with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
             const fireBaseUser = userCredential.user;
-            setFireUser(fireBaseUser)
-            
-            // BackendLogin
+            setFireUser(fireBaseUser);
+
+            // Backend login
             const payload = {
-                "owner_email": values.email,
-                "password": values.password,
+                owner_email: values.email,
+                password: values.password,
             };
 
             const res = await axios.post(`${backEndUrl}/owners/login`, payload, {
@@ -43,11 +48,13 @@ const Login = (isDark) => {
                     'Content-Type': 'application/json',
                 }
             });
-            setUser(res.data.owner)
-            setUserId(res.data.owner.id)
-            setLocalUserId(res.data.owner.id)
-            setLocalToken(res.data.auth_token);
-            navigate('/dogs/new');
+
+            // Update context state and sync to localStorage
+            updateUser(res.data.owner);
+            updateUserId(res.data.owner.id);
+            updateToken(res.data.auth_token);
+
+            navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
             setServerError(err.message || 'Login failed. Please try again.');
         } finally {
@@ -57,101 +64,109 @@ const Login = (isDark) => {
 
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null);
-        removeToken('colab32Access');
+        clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
+
         try {
             const { credential } = credentialResponse;
             const googleCredential = GoogleAuthProvider.credential(credential);
             const userCredential = await signInWithCredential(auth, googleCredential);
-            const user = userCredential.user;
-            setUser(user)
-            console.log('Firebase Google user logged in:', user);
+            const fireUser = userCredential.user;
+            setFireUser(fireUser);
 
-            const res = await axiosInstanceCORS.post(`owners/login`, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+            // Backend login for Google user
+            const res = await axios.post(`${backEndUrl}/owners/google-login`, {
+                token: credential,
+                provider: 'google',
             });
 
-            setLocalToken(res.data.access_token);
-            navigate('/dogs/new');
+            // Update context state and sync to localStorage
+            updateUser(res.data.owner);
+            updateUserId(res.data.owner.id);
+            updateToken(res.data.auth_token);
+
+            navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
             setServerError('Google login failed. Please try again.');
         }
     };
 
     return (
-        <Box sx={{ maxWidth: '80%', minHeight: '90vh', mx: 'auto', mt: 4 }}>
+        <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={validationSchema}
                 onSubmit={handleEmailPasswordLogin}
             >
-                {({ isSubmitting }) => (
+                {({ errors, touched, isSubmitting }) => (
                     <Form>
-                        <Box mb={2}>
-                            <Typography variant="h5" component="h1" align="center" color="text.primary">
-                                Login Form
-                            </Typography>
-                        </Box>
+                        <div style={{ marginBottom: '2rem' }}>
+                            <h1 style={{ textAlign: 'center', color: '#333' }}>Login Form</h1>
+                        </div>
+
                         {serverError && (
-                            <Box mb={2}>
-                                <Alert severity="error">{serverError}</Alert>
-                            </Box>
+                            <div style={{ marginBottom: '2rem', color: 'red' }}>{serverError}</div>
                         )}
-                        <Box mb={2}>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="email">Email</label>
                             <Field
                                 type="email"
+                                id="email"
                                 name="email"
-                                as={TextField}
-                                label="Email"
-                                fullWidth
-                                required
+                                style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
                             />
-                            <ErrorMessage name="email" component="div" className="error" />
-                        </Box>
-                        <Box mb={2}>
+                            {touched.email && errors.email && (
+                                <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.email}</div>
+                            )}
+                        </div>
+
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label htmlFor="password">Password</label>
                             <Field
                                 type="password"
+                                id="password"
                                 name="password"
-                                as={TextField}
-                                label="Password"
-                                fullWidth
-                                required
+                                style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
                             />
-                            <ErrorMessage name="password" component="div" className="error" />
-                        </Box>
-                        <CustomButton
-                            isDark={isDark}
+                            {touched.password && errors.password && (
+                                <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.password}</div>
+                            )}
+                        </div>
+
+                        <button
                             type="submit"
-                            fullWidth
-                            variant="contained"
                             disabled={isSubmitting}
-                            sx={{ mb: 2 }}
+                            style={{
+                                width: '50%',
+                                padding: '0.75rem',
+                                backgroundColor: '#F7CA57',
+                                color: 'black',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                            }}
                         >
-                            {isSubmitting ? <CircularProgress size={24} /> : 'Login'}
-                        </CustomButton>
+                            {isSubmitting ? 'Submitting...' : 'Login'}
+                        </button>
+
                     </Form>
                 )}
             </Formik>
 
-            <Box sx={{ my: 2 }}>
+            <div style={{ margin: '2rem' }}>
                 <hr />
-            </Box>
+            </div>
 
-            <Grid container spacing={2} justifyContent="center">
-                <Grid item>
-                    <GoogleOAuthProvider clientId={GC_ID}>
-                        <GoogleLogin
-                            onSuccess={handleGoogleLoginSuccess}
-                            onError={() => {
-                                setServerError('Google Login Failed. Please try again.');
-                            }}
-                        />
-                    </GoogleOAuthProvider>
-                </Grid>
-            </Grid>
-        </Box>
+            <div style={{ textAlign: 'center' }}>
+                <GoogleOAuthProvider clientId={GC_ID}>
+                    <GoogleLogin
+                        onSuccess={handleGoogleLoginSuccess}
+                        onError={() => setServerError('Google Login Failed. Please try again.')}
+                    />
+                </GoogleOAuthProvider>
+            </div>
+        </div>
     );
 };
 
-export default Login;
+export default LoginForm;

@@ -1,45 +1,61 @@
-export const setLocalToken = (token) => {
-    localStorage.setItem("colab32Access", token);
+// utils/localStorage.js
+
+// Save functions
+export const setLocalToken = (currToken) => {
+    localStorage.setItem("colab32Access", currToken);
 };
 
-export const getToken = () => {
-    return localStorage.getItem("colab32Access");
-}
-    ;
-export const removeToken = () => {
-    localStorage.removeItem("colab32Access");
+export const setLocalUserId = (currUserId) => {
+    localStorage.setItem("colab32Uid", currUserId);
 };
 
-export const setLocalUserId = (UserId) => {
-    localStorage.setItem("colab32Uid", UserId);
+export const setLocalCurrDogId = (currDogId) => {
+    localStorage.setItem("colab32DogUid", currDogId);
 };
 
-export const getUserId = () => {
-    return localStorage.getItem("colab32Uid");
-};
-export const removeUserId = () => {
-    localStorage.removeItem("colab32Uid");
+export const setLocalUser = (currUser) => {
+    localStorage.setItem("colab32User", JSON.stringify(currUser)); // Convert object to string
 };
 
-export const setLocalCurrDogId = (currDogUid) => {
-    localStorage.setItem("colab32DogUid", currDogUid);
+export const setLocalDogProfile = (dogProfile) => {
+    localStorage.setItem("colab32DogProfile", JSON.stringify(dogProfile)); // Convert object to string
 };
 
-export const getCurrDogId = () => {
-    return localStorage.getItem("colab32DogUid");
-};
-export const removeCurrDogId = () => {
-    localStorage.removeItem("colab32DogUid");
-};
+// Get functions
+export const getToken = () => localStorage.getItem("colab32Access");
 
-export const setLocalUser = (user) => {
-    localStorage.setItem("colab32User", user);
-};
+export const getUserId = () => localStorage.getItem("colab32Uid");
+
+export const getCurrDogId = () => localStorage.getItem("colab32DogUid");
 
 export const getUser = () => {
-    return localStorage.getItem("colab32User");
-};
-export const removeUser = () => {
-    localStorage.removeItem("colab32User");
+    const user = localStorage.getItem("colab32User");
+    return user ? JSON.parse(user) : null; // Parse back to object
 };
 
+export const getDogProfile = () => {
+    const dogProfile = localStorage.getItem("colab32DogProfile");
+    return dogProfile ? JSON.parse(dogProfile) : null; // Parse back to object
+};
+
+// Remove functions
+export const removeLocalToken = () => localStorage.removeItem("colab32Access");
+
+export const removeLocalUserId = () => localStorage.removeItem("colab32Uid");
+
+export const removeLocalCurrDogId = () =>
+    localStorage.removeItem("colab32DogUid");
+
+export const removeLocalUser = () => localStorage.removeItem("colab32User");
+
+export const removeLocalDogProfile = () =>
+    localStorage.removeItem("colab32DogProfile");
+
+// Clear all relevant localStorage data
+export const clearAllLocalStorage = () => {
+    removeLocalToken();
+    removeLocalUserId();
+    removeLocalCurrDogId();
+    removeLocalUser();
+    removeLocalDogProfile();
+};

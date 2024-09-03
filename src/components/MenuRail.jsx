@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, ListItemButton } from '@mui/material';
-import { useAuth } from '../context/AuthContext'; // Assuming you have this hook to manage auth state
+import { useAuth } from '../context/AuthContext';
 import { Icon } from '@iconify/react';
 import DashboardIcon from '@iconify-icons/mdi/view-dashboard-outline';
 import CalendarIcon from '@iconify-icons/mdi/calendar-outline';
@@ -11,44 +11,42 @@ import SettingsIcon from '@iconify-icons/mdi/cog-outline';
 import LogoutIcon from '@iconify-icons/mdi/logout';
 import ChevronRightIcon from '@iconify-icons/mdi/chevron-right';
 import ChevronLeftIcon from '@iconify-icons/mdi/chevron-left';
+import ChevronUpIcon from '@iconify-icons/mdi/chevron-up';
+import ChevronDownIcon from '@iconify-icons/mdi/chevron-down';
 import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
+import { useRailState } from '../context/RailStateContext';
+import { useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 const MenuRail = () => {
-    const { user, handleLogout } = useAuth();
-    const [isMinimized, setIsMinimized] = useState(false); // Default to expanded on desktop
-    const [isPetsOpen, setIsPetsOpen] = useState(false);
-    const [dogProfiles, setDogProfiles] = useState([]); // Dynamic list of dogs
+    const theme = useTheme();
+    const { user, authed, userID, setLocalUserId, getUserId, handleLogout } = useAuth();  // Get authentication status
+    const { isMin, toggleRail, isRailOpen } = useRailState();  // Get the rail state and toggle function
 
-    // Simulate fetching dog profiles from backend
+    const [isPetsOpen, setIsPetsOpen] = useState(true);  // State for the pets dropdown
+    const [dogProfiles, setDogProfiles] = useState([]);  // State for the dog profiles
+
+    const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);  // Toggle the pets dropdown
+
     useEffect(() => {
-        const fetchDogProfiles = async () => {
-            // Replace with actual API call
-            const dogs = [
-                { id: 1, name: 'Irene', imagePath: null },
-                { id: 2, name: 'Buddy', imagePath: '/static/images/dogs/buddy.jpg' }
-            ];
-            setDogProfiles(dogs);
-        };
+        
+    }, [])
+    
 
-        fetchDogProfiles();
-    }, []);
 
-    const toggleRail = () => setIsMinimized(!isMinimized);
-    const togglePetsDropdown = () => setIsPetsOpen(!isPetsOpen);
-
-    // Check if user is logged in by checking for a populated id or email
-    if (!user.id && !user.owner_email) {
+    // Render nothing if the user is not authenticated
+    if (!authed) {
         return null;
     }
 
     return (
         <Drawer
-            variant="permanent"
+            variant='permanent'  // Use permanent for desktop, temporary for mobile
             anchor="left"
-            open={!isMinimized}
+            open={user ? isRailOpen : false}
             PaperProps={{
                 sx: {
-                    width: isMinimized ? '64px' : '18%',
+                    width: isMin ? '64px' : '200px',  // Width based on state
                     transition: 'width 0.5s ease-in-out',
                     backgroundColor: (theme) => theme.palette.background.default,
                     color: (theme) => theme.palette.text.primary,
@@ -62,28 +60,28 @@ const MenuRail = () => {
                     <ListItemIcon sx={{ minWidth: 'auto' }}>
                         <Icon icon="mdi:paw" width="30" height="30" />
                     </ListItemIcon>
-                    {!isMinimized && <ListItemText primary="FurBuddy" />}
+                    {!isMin && <ListItemText primary="FurBuddy" />}
                     <IconButton onClick={toggleRail} sx={{ marginLeft: 'auto' }}>
-                        <Icon icon={isMinimized ? ChevronRightIcon : ChevronLeftIcon} />
+                        <Icon icon={isMin ? ChevronRightIcon : ChevronLeftIcon} />
                     </IconButton>
                 </ListItemButton>
 
                 {/* Navigation Links */}
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={DashboardIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Dashboard" />}
+                    {!isMin && <ListItemText primary="Dashboard" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={CalendarIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Calendar" />}
+                    {!isMin && <ListItemText primary="Calendar" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={RecordsIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Medical Records" />}
+                    {!isMin && <ListItemText primary="Medical Records" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '16px' }}>
                     <ListItemIcon><Icon icon={MapIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Map" />}
+                    {!isMin && <ListItemText primary="Map" />}
                 </ListItemButton>
 
                 <Divider sx={{ marginBottom: '16px' }} />
@@ -91,10 +89,10 @@ const MenuRail = () => {
                 {/* Pets Dropdown */}
                 <ListItemButton onClick={togglePetsDropdown} sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={PetsIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Pets" />}
-                    {!isMinimized && (
+                    {!isMin && <ListItemText primary="Pets" />}
+                    {!isMin && (
                         <IconButton sx={{ marginLeft: 'auto' }}>
-                            <Icon icon={isPetsOpen ? ChevronLeftIcon : ChevronRightIcon} />
+                            <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
                         </IconButton>
                     )}
                 </ListItemButton>
@@ -112,13 +110,13 @@ const MenuRail = () => {
                         <ListItemIcon>
                             {dog.imagePath ? <Avatar src={dog.imagePath} /> : <Avatar>{dog.name[0]}</Avatar>}
                         </ListItemIcon>
-                        {!isMinimized && <ListItemText primary={dog.name} />}
+                        {!isMin && <ListItemText primary={dog.name} />}
                     </ListItemButton>
                 ))}
                 {isPetsOpen && (
                     <ListItemButton sx={{ marginBottom: '16px' }}>
                         <ListItemIcon><Icon icon={AddIcon} /></ListItemIcon>
-                        {!isMinimized && <ListItemText primary="Add Dog" />}
+                        {!isMin && <ListItemText primary="Add Dog" />}
                     </ListItemButton>
                 )}
 
@@ -127,11 +125,11 @@ const MenuRail = () => {
                 {/* Settings & Logout */}
                 <ListItemButton sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={SettingsIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Settings" />}
+                    {!isMin && <ListItemText primary="Settings" />}
                 </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '16px' }} onClick={handleLogout}>
                     <ListItemIcon><Icon icon={LogoutIcon} /></ListItemIcon>
-                    {!isMinimized && <ListItemText primary="Logout" />}
+                    {!isMin && <ListItemText primary="Logout" />}
                 </ListItemButton>
 
                 <Divider sx={{ marginBottom: '16px' }} />
@@ -141,7 +139,7 @@ const MenuRail = () => {
                     <ListItemIcon>
                         <Avatar src="/static/images/avatar/1.jpg" alt="User Avatar" />
                     </ListItemIcon>
-                    {!isMinimized && <ListItemText primary={user.owner_name || "Hannah"} secondary={user.owner_email || "Hannah123@gmail.com"} />}
+                    {!isMin && user.owner_name && user.owner_email ? <ListItemText primary={user.owner_name} secondary={user.owner_email} /> : !isMin && user.owner_email ? <ListItemText primary={user.owner_email} /> : <ListItemText secondary={user.owner_email} />}
                 </ListItemButton>
             </List>
         </Drawer>

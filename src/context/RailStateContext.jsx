@@ -4,19 +4,23 @@ import { useMediaQuery } from '@mui/material';
 const RailStateContext = createContext();
 
 export const RailStateProvider = ({ children }) => {
-    const [isMinimized, setIsMinimized] = useState(false);
     const isMobile = useMediaQuery('(max-width:600px)');
+    const [isMin, setIsMin] = useState(true); // Start minimized by default
 
     useEffect(() => {
+        // Adjust the rail state based on screen size after authentication
         if (isMobile) {
-            setIsMinimized(true);
+            setIsMin(true); // Minimize on mobile
+        } else {
+            setIsMin(false); // Expand on larger screens
         }
     }, [isMobile]);
 
-    const toggleRail = () => setIsMinimized(!isMinimized);
+    const toggleRail = () => setIsMin((prev) => !prev);
+    const closeRail = () => setIsMin(true);  // Close to minimized state
 
     return (
-        <RailStateContext.Provider value={{ isMinimized, toggleRail }}>
+        <RailStateContext.Provider value={{ isMin, toggleRail, closeRail }}>
             {children}
         </RailStateContext.Provider>
     );

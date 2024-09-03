@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Grid, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Box, Grid, IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
+import { useRailState } from '../context/RailStateContext';
 
-const Navbar = ({ toggleTheme, isDark, toggleRail }) => {
+const PreAuthNavbar = ({toggleRail, toggleTheme, isDark}) => {
     const { isAuthenticated, logout } = useAuth();
+
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
 
@@ -36,15 +38,15 @@ const Navbar = ({ toggleTheme, isDark, toggleRail }) => {
     };
 
     return (
-        <AppBar position="static" sx={{ backgroundColor: 'primary.main', maxHeight: '8vh', width: '100%' }}>
-            <Toolbar>
+        <AppBar position="static" sx={{ backgroundColor: 'background.default', maxHeight: '8vh', width: '100%', boxShadow: 'none', borderBottom:"1px solid black" }}>
+            <Toolbar >
                 <Grid container alignItems="center">
                     {/* Left Section */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleServiceMenuOpen}>
+                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
                             <MenuIcon />
                         </IconButton>
-                        <Menu
+                        {/* <Menu
                             anchorEl={menuAnchorEl}
                             open={Boolean(menuAnchorEl)}
                             onClose={handleServiceMenuClose}
@@ -55,24 +57,24 @@ const Navbar = ({ toggleTheme, isDark, toggleRail }) => {
                             <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/health_records">Records</MenuItem>
                             <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/calendar">Calendar</MenuItem>
                             <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/map">Map</MenuItem>
-                        </Menu>
+                        </Menu> */}
                     </Grid>
 
                     {/* Center Section */}
                     <Grid item xs={4} container justifyContent="center">
-                        <Typography variant="h6" sx={{ mx: 'auto' }}>
-                            Brand Logo
-                        </Typography>
+                        <Box sx={{ transform: 'scale(.5)' }}>
+                            <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725216810/qhyvoiduxqw8kxtqspqr.png" alt="" />
+                        </Box>
                     </Grid>
 
                     {/* Right Section */}
                     <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
-                            {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+                        <IconButton sx={{ ml: 1, color:"secondary.main" }} onClick={toggleTheme} >
+                            {isDark ? <Brightness7Icon sx={{ color: "secondary.main" }} /> : <Brightness4Icon sx={{ ml: 1, color: "secondary.main" }} />}
                         </IconButton>
                         <IconButton
                             edge="end"
-                            color="inherit"
+                            color="primary.main"
                             aria-label="account"
                             onClick={handleAccountMenuOpen}
                         >
@@ -117,4 +119,4 @@ const Navbar = ({ toggleTheme, isDark, toggleRail }) => {
     );
 };
 
-export default Navbar;
+export default PreAuthNavbar;

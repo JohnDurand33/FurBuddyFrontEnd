@@ -55,9 +55,10 @@ const darkTheme = createTheme({
         mode: "dark", // Switch to dark mode
         primary: {
             main: "#F7A35C", // Lighter orange from the Rail (Swapped)
+            hover: "#F7CA57", // Yellow-gold color
         },
         secondary: {
-            main: "#F7CA57", // Yellow-gold color (Swapped)
+            main: "#F7A35C", // Yellow-gold color (Swapped)
         },
         background: {
             default: "#333333", // Charcoal-like color for dark mode
