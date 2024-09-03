@@ -6,7 +6,6 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
-import { useRailState } from '../context/RailStateContext';
 
 const PreAuthNavbar = ({toggleRail, toggleTheme, isDark}) => {
     const { isAuthenticated, logout } = useAuth();
@@ -62,8 +61,8 @@ const PreAuthNavbar = ({toggleRail, toggleTheme, isDark}) => {
 
                     {/* Center Section */}
                     <Grid item xs={4} container justifyContent="center">
-                        <Box sx={{ transform: 'scale(.5)' }}>
-                            <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725216810/qhyvoiduxqw8kxtqspqr.png" alt="" />
+                        <Box sx={{ transform: '' }}>
+                            <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="" />
                         </Box>
                     </Grid>
 

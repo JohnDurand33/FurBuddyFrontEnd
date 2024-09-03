@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import PreAuthNavbar from '../components/PreAuthNavBar';
@@ -12,22 +12,33 @@ import DogProfileViewPage from './DogProfileViewPage';
 import MyCalendar from '../components/MyCalendar';
 import RecordsViewPage from './RecordsViewPage';
 import Map from '../components/Map';
-import { useRailState } from '../context/RailStateContext';
 
-function MainView({ toggleTheme}) {
-    const { isRailOpen, toggleRail, closeRail } = useRailState();
+function MainView({ toggleTheme, isDark }) {
+    const [isRailOpen, setIsRailOpen] = useState(false);
+    const [isMin, setIsMin] = useState(true); // Start minimized by default
+
+
     const isMobile = useMediaQuery('(max-width:600px)');
+    
 
     useEffect(() => {
-        if (!isMobile) {
-            closeRail(); // Ensure the rail is closed on non-mobile devices when switching to desktop view
+        // Adjust the rail state based on screen size after authentication
+        if (isMobile) {
+            setIsMin(true); // Minimize on mobile
+        } else {
+            setIsMin(false); // Expand on larger screens
         }
-    }, [isMobile, closeRail]);
+    }, [isMobile]);
+
+
+    const toggleRail = () => {
+        setIsRailOpen((prev) => !prev);
+    }
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
             <PreAuthNavbar toggleTheme={toggleTheme} isMobile={isMobile} toggleRail={toggleRail} />
-            <MenuRail isMobile={isMobile} isOpen={isRailOpen} onClose={closeRail}  toggleRail={toggleRail}/>
+            <MenuRail isMobile={isMobile} isOpen={isRailOpen} toggleRail={toggleRail} isMin={isMin}/>
             <Box
                 sx={{
                     flexGrow: 1,

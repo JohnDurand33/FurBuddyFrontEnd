@@ -14,24 +14,17 @@ import ChevronLeftIcon from '@iconify-icons/mdi/chevron-left';
 import ChevronUpIcon from '@iconify-icons/mdi/chevron-up';
 import ChevronDownIcon from '@iconify-icons/mdi/chevron-down';
 import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
-import { useRailState } from '../context/RailStateContext';
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
-const MenuRail = () => {
+const MenuRail = ({ isMobile , isOpen , toggleRail, isMin}) => {
     const theme = useTheme();
-    const { user, authed, userID, setLocalUserId, getUserId, handleLogout } = useAuth();  // Get authentication status
-    const { isMin, toggleRail, isRailOpen } = useRailState();  // Get the rail state and toggle function
+    const { authed, userID, setLocalUserId, getUserId, handleLogout } = useAuth();  // Get authentication status
 
     const [isPetsOpen, setIsPetsOpen] = useState(true);  // State for the pets dropdown
     const [dogProfiles, setDogProfiles] = useState([]);  // State for the dog profiles
 
     const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);  // Toggle the pets dropdown
-
-    useEffect(() => {
-        
-    }, [])
-    
 
 
     // Render nothing if the user is not authenticated
@@ -41,14 +34,14 @@ const MenuRail = () => {
 
     return (
         <Drawer
-            variant='permanent'  // Use permanent for desktop, temporary for mobile
+            variant={isMobile ? 'temporary' : 'permanent'}
             anchor="left"
-            open={user ? isRailOpen : false}
+            open={isOpen}
             PaperProps={{
                 sx: {
                     width: isMin ? '64px' : '200px',  // Width based on state
                     transition: 'width 0.5s ease-in-out',
-                    backgroundColor: (theme) => theme.palette.background.default,
+                    backgroundColor: "#H7CA57",
                     color: (theme) => theme.palette.text.primary,
                     overflowX: 'hidden',
                 },

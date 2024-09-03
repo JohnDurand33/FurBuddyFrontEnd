@@ -1,16 +1,14 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { useRailState } from '../context/RailStateContext';
 
 const Dashboard = () => {
-    const { isMinimized } = useRailState(); // Get the state of MenuRail
 
     return (
         <Box
             sx={{
-                marginLeft: isMinimized ? '64px' : '18%', // Adjust margin based on rail state
+                marginLeft: isMin ? '64px' : '18%', // Adjust margin based on rail state
                 transition: 'margin-left 0.5s ease-in-out', // Smooth transition when toggling
-                width: `calc(100% - ${isMinimized ? '64px' : '18%'})`, // Adjust width accordingly
+                width: `calc(100% - ${isMin ? '64px' : '18%'})`, // Adjust width accordingly
                 padding: '16px', // Padding inside the MainView
                 boxSizing: 'border-box', // Ensure padding is included in the width calculation
             }}
