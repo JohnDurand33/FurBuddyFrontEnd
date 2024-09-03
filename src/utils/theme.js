@@ -16,7 +16,7 @@ const lightTheme = createTheme({
             main: "#F7A35C", // Lighter orange from the Rail
         },
         background: {
-            default: "#F8FFF3", // Light paper-like color
+            default: "#FFFFFF", // Light paper-like color
         },
         text: {
             primary: "#000000", // Black text

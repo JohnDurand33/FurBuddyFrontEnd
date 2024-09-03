@@ -6,10 +6,13 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import MainView from './pages/MainView';
 
 
-    function App() {
+function App() {
+       
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     const [isDark, setIsDark] = useState(prefersDarkMode);
     const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
+
+    
     
     const toggleTheme = () => {
         setIsDark((prevDark) => !prevDark);
@@ -20,7 +23,7 @@ import MainView from './pages/MainView';
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <AuthProvider>
-                        <MainView toggleTheme={toggleTheme} isDark={isDark}/>
+                        <MainView toggleTheme={toggleTheme} isDark={isDark} />
                 </AuthProvider>
             </ThemeProvider>
         </Router>

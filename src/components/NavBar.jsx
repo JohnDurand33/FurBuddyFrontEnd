@@ -7,8 +7,8 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = ({toggleRail, toggleTheme, isDark}) => {
-    const { isAuthenticated, logout } = useAuth();
+const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
+    const { isAuthenticated, logout, authed, user } = useAuth();
 
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
@@ -37,14 +37,23 @@ const Navbar = ({toggleRail, toggleTheme, isDark}) => {
     };
 
     return (
-        <AppBar position="static" sx={{ backgroundColor: 'background.default', maxHeight: '8vh', width: '100%', boxShadow: 'none', borderBottom:"1px solid black" }}>
+        <AppBar
+            position="static"
+            sx={{
+                mt:2,
+                backgroundColor: 'background.default',
+                maxHeight: '8vh',
+                width: '100%',
+                boxShadow: 'none', 
+                borderBottom: isMobile ? null : '1px solid grey',
+            }}>
             <Toolbar >
                 <Grid container alignItems="center">
                     {/* Left Section */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
+                        {isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
                             <MenuIcon />
-                        </IconButton>
+                    </IconButton>}
                         {/* <Menu
                             anchorEl={menuAnchorEl}
                             open={Boolean(menuAnchorEl)}
@@ -77,8 +86,10 @@ const Navbar = ({toggleRail, toggleTheme, isDark}) => {
                             aria-label="account"
                             onClick={handleAccountMenuOpen}
                         >
-                            <AccountCircle />
+                            <AccountCircle sx={{ color: "secondary.main" }}/>
                         </IconButton>
+
+                        
 
                         {/* Account Menu */}
                         <Menu
@@ -88,8 +99,8 @@ const Navbar = ({toggleRail, toggleTheme, isDark}) => {
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                         >
-                            {isAuthenticated ? (
-                                <div>
+                            {authed ? (
+                                <div >
                                     <MenuItem component={NavLink} to="/account" style={{ color: 'text.primary' }}>
                                         Account Settings
                                     </MenuItem>

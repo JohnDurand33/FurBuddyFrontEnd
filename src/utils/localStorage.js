@@ -22,7 +22,10 @@ export const setLocalDogProfile = (dogProfile) => {
 };
 
 // Get functions
-export const getToken = () => localStorage.getItem("colab32Access");
+export const getToken = () => {
+    const token = localStorage.getItem("colab32Access");
+    console.log('token', token)
+};
 
 export const getUserId = () => localStorage.getItem("colab32Uid");
 

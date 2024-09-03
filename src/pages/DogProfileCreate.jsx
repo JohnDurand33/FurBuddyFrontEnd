@@ -4,13 +4,15 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../config/firebase';
-import { Avatar } from '@mui/material'; // Using MUI Avatar component for image
+import { Avatar, Box, IconButton } from '@mui/material';
+import { Icon } from '@iconify/react';
+import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { getUserId, getToken, setLocalDogProfile } from '../utils/localStorage';
 import { backEndUrl } from '../utils/config';
 
-const DogProfileCreate = () => {
+const DogProfileCreate = ({ isMobile }) => {
     const { userId, dogId,
         updateUser,
         updateUserId,
@@ -117,7 +119,10 @@ const DogProfileCreate = () => {
 
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', padding: '2rem' }}>
-            <h1 style={{ textAlign: 'start' }}>Input Your Pet's Information Below</h1>
+            <h1 style={{
+                textAlign: isMobile ? 'center' : 'start',
+                fontSize: isMobile ? '1.5rem' : '2rem',
+             }}>Input Your Pet's Information Below</h1>
 
             <Formik
                 initialValues={{
@@ -144,18 +149,29 @@ const DogProfileCreate = () => {
                             <Avatar
                                 alt="Dog Avatar"
                                 src={imageUrl || values.image_path || "/static/images/avatar/1.jpg"} // Placeholder image URL or local preview
-                                sx={{ width: 100, height: 100 }}
+                                sx={{ width: 200, height: 200 }}
                             />
-                            <label htmlFor="image_upload" style={{ cursor: 'pointer', backgroundColor: '#F7CA57', padding: '0.5rem 1rem', borderRadius: '5px', color: '#fff', marginLeft: '1rem' }}>
-                                Upload Photo
+                            <Box display="flex" alignItems="center">
+                                <IconButton
+                                    sx={{
+                                        height: '20px',
+                                        borderRadius: '50%',
+                                        marginLeft: '10px',
+                                        backgroundColor: 'transparent',
+                                        '&:hover': { backgroundColor: 'transparent' }
+                                    }}
+                                >
+                                    <Icon icon={CameraOutlineIcon} width="24" height="24" />
+                                </IconButton>
+                                <label htmlFor="image_upload" style={{ marginLeft: '10px' }}>Upload Image:</label>
                                 <input
                                     type="file"
                                     id="image_upload"
-                                    name="image_path"
-                                    hidden
+                                    name="image_upload"
+                                    style={{ display: 'none' }} // Hide the actual file input
                                     onChange={(e) => handleImageChange(e, setFieldValue)}
                                 />
-                            </label>
+                            </Box>
                         </div>
 
                         <h2 style={{ borderBottom: '1px solid #ccc', paddingBottom: '0.5rem' }}>Basic Pet Information</h2>
@@ -297,7 +313,7 @@ const DogProfileCreate = () => {
 
                             {/* Veterinarian Name */}
                             <div>
-                                <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Veterinarian Name</label>
+                                <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Name</label>
                                 <Field
                                     type="text"
                                     id="vet_doctor_name"
@@ -310,7 +326,7 @@ const DogProfileCreate = () => {
 
                             {/* Vet Clinic Phone */}
                             <div>
-                                <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}>Contact Phone Number</label>
+                                <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}> Phone</label>
                                 <Field
                                     type="text"
                                     id="vet_clinic_phone"

@@ -50,6 +50,7 @@ const SignUpForm = () => {
             updateUser(res.data.owner);
             updateUserId(res.data.owner.id);
             updateToken(res.data.auth_token);
+
             setAuthed(true);
             navigate('/dogs/new');
         } catch (err) {

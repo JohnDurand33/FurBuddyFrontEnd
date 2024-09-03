@@ -69,6 +69,20 @@ export const AuthProvider = ({ children }) => {
 
     // Function to initialize state from localStorage if empty
     const updateEmptyStateFromLocalStorage = () => {
+        if (!user) {
+            const storedUser = getUser();
+            if (storedUser) {
+                console.log("User loaded from localStorage");
+                setUser(storedUser);
+            }
+        }
+        if (!dogProfile) {
+            const storedDogProfile = getDogProfile();
+            if (storedDogProfile) {
+                console.log("Dog Profile loaded from localStorage");
+                setDogProfile(storedDogProfile);
+            }
+        }
         if (!token) {
             const storedToken = getToken();
             if (storedToken) {
@@ -90,20 +104,7 @@ export const AuthProvider = ({ children }) => {
                 setCurrDogId(storedCurrDogId);
             }
         }
-        if (!user) {
-            const storedUser = getUser();
-            if (storedUser) {
-                console.log("User loaded from localStorage");
-                setUser(storedUser);
-            }
-        }
-        if (!dogProfile) {
-            const storedDogProfile = getDogProfile();
-            if (storedDogProfile) {
-                console.log("Dog Profile loaded from localStorage");
-                setDogProfile(storedDogProfile);
-            }
-        }
+        
     };
 
     // Function to update all states and localStorage entries

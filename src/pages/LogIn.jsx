@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { Formik, Form, Field } from 'formik';
@@ -10,7 +10,7 @@ import { auth } from '../config/firebase';
 import { backEndUrl } from '../utils/config';
 import { GC_ID } from '../utils/config.js';
 
-const LoginForm = () => {
+const LoginForm = (isMobile) => {
     const {
         authed,
         setAuthed,
@@ -134,11 +134,13 @@ const LoginForm = () => {
                                 <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.password}</div>
                             )}
                         </div>
-
+                        <div style={{display: 'flex',
+                                justifyContent: isMobile ? 'start' : 'cener',
+                            }}>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            style={{
+                                style={{
                                 width: '50%',
                                 padding: '0.75rem',
                                 backgroundColor: '#F7CA57',
@@ -149,13 +151,19 @@ const LoginForm = () => {
                             }}
                         >
                             {isSubmitting ? 'Submitting...' : 'Login'}
-                        </button>
+                            </button>
+                        </div>
 
                     </Form>
                 )}
             </Formik>
+            <div style={{ textAlign: 'center', marginTop: '1rem', display: 'flex' }}>
+                <Link to="/signup" style={{ color: 'grey', textDecoration: 'underline', hover:'dark grey' }}>
+                    Don't have an account? Sign up here.
+                </Link>
+            </div>
 
-            <div style={{ margin: '2rem' }}>
+            <div style={{ margin: isMobile ? '0px' : '2rem',}}>
                 <hr />
             </div>
 
