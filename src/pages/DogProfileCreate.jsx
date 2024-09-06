@@ -92,9 +92,7 @@ const DogProfileCreate = ({ isMobile }) => {
             );
             console.log("response.data", response.data);
             updateCurrDogId(response.data.id);
-            
             updateDogProfile(response.data);
-
             navigate("/dogs/view");
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
