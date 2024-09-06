@@ -9,16 +9,12 @@ import { Icon } from '@iconify/react';
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { getUserId, getToken, setLocalDogProfile } from '../utils/localStorage';
 import { backEndUrl } from '../utils/config';
 
 const DogProfileCreate = ({ isMobile }) => {
-    const { userId, dogId,
-        updateUser,
-        updateUserId,
-        updateToken,
-        updateCurrDogId,
-        updateDogProfile, setDogProfile, setLocalDogProfile,  token, getToken } = useAuth();
+    const { currUserId, currDogId, token, setAuthed,
+        updateEmptyUserStateFromLocalStorage,
+        updateCurrDogId, updateDogProfile } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
@@ -32,17 +28,6 @@ const DogProfileCreate = ({ isMobile }) => {
 
     const fixedLabel = values => values.sex === 'Female' ? 'Spayed' : 'Neutered';
 
-    useEffect(() => {
-        if (!userId) {
-            const ID = getUserId();
-            if (ID) updateUserId(ID);
-        }
-        if (!token) {
-            const currToken = getToken();
-            if (currToken) updateToken(currToken);
-        }
-    }, []);
-
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
         breed: Yup.string(),
@@ -50,6 +35,7 @@ const DogProfileCreate = ({ isMobile }) => {
         weight: Yup.number().positive('Weight must be positive'),
         sex: Yup.string().oneOf(['Male', 'Female'], 'Invalid Gender').required('Gender is required'),
         chip_number: Yup.string(),
+        image_path: Yup.string(),
         vet_clinic_name: Yup.string(),
         vet_doctor_name: Yup.string(),
         vet_clinic_phone: Yup.string(),
@@ -70,10 +56,11 @@ const DogProfileCreate = ({ isMobile }) => {
     };
 
     const handleImageUpload = async () => {
-        if (!image) return null;
-        const storageRef = ref(storage, `dog_images/${Date.now()}_${image.name}`);
-        const snapshot = await uploadBytes(storageRef, image);
-        return await getDownloadURL(snapshot.ref);
+        if (image) {
+            const storageRef = ref(storage, `dog_images/${Date.now()}_${image.name}`);
+            const snapshot = await uploadBytes(storageRef, image);
+            return await getDownloadURL(snapshot.ref);
+        };
     };
 
     const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -94,7 +81,7 @@ const DogProfileCreate = ({ isMobile }) => {
 
         try {
             const response = await axios.post(
-                `${backEndUrl}/profiles/owner/${userId}/profiles`,
+                `${backEndUrl}/profiles/owner/${currUserId}/profiles`,
                 submissionData,
                 {
                     headers: {
@@ -105,10 +92,9 @@ const DogProfileCreate = ({ isMobile }) => {
             );
             console.log("response.data", response.data);
             updateCurrDogId(response.data.id);
-            console.log('id', response.data.id);
+            
             updateDogProfile(response.data);
-            console.log("dogProfie", response.data);
-            console.log("navigating to /dogs/view");
+
             navigate("/dogs/view");
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
@@ -122,7 +108,7 @@ const DogProfileCreate = ({ isMobile }) => {
             <h1 style={{
                 textAlign: isMobile ? 'center' : 'start',
                 fontSize: isMobile ? '1.5rem' : '2rem',
-             }}>Input Your Pet's Information Below</h1>
+            }}>Input Your Pet's Information Below</h1>
 
             <Formik
                 initialValues={{
@@ -149,7 +135,7 @@ const DogProfileCreate = ({ isMobile }) => {
                             <Avatar
                                 alt="Dog Avatar"
                                 src={imageUrl || values.image_path || "/static/images/avatar/1.jpg"} // Placeholder image URL or local preview
-                                sx={{ width: 200, height: 200 }}
+                                sx={{ width: 100, height: 100 }}
                             />
                             <Box display="flex" alignItems="center">
                                 <IconButton
@@ -163,11 +149,11 @@ const DogProfileCreate = ({ isMobile }) => {
                                 >
                                     <Icon icon={CameraOutlineIcon} width="24" height="24" />
                                 </IconButton>
-                                <label htmlFor="image_upload" style={{ marginLeft: '10px' }}>Upload Image:</label>
+                                <label htmlFor="image_path" style={{ marginLeft: '10px' }}>Upload Image:</label>
                                 <input
                                     type="file"
-                                    id="image_upload"
-                                    name="image_upload"
+                                    id="image_path"
+                                    name="image_path"
                                     style={{ display: 'none' }} // Hide the actual file input
                                     onChange={(e) => handleImageChange(e, setFieldValue)}
                                 />

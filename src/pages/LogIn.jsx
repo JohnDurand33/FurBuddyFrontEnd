@@ -7,22 +7,18 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
-import { backEndUrl } from '../utils/config';
-import { GC_ID } from '../utils/config.js';
+import { backEndUrl, GC_ID } from '../utils/config';
 
-const LoginForm = (isMobile) => {
-    const {
+const LoginForm = ({ isMobile }) => {
+    const { clearAllStateAndLocalStorage,
+        updateCurrUser,
+        updateCurrUserId,
+        updateToken,
         authed,
         setAuthed,
-        clearAllStateAndLocalStorage,
-        updateUser,
-        updateUserId,
-        updateToken,
-        setFireUser,
-    } = useAuth();
-
-    const navigate = useNavigate();
+        setFireUser } = useAuth();
     const [serverError, setServerError] = useState(null);
+    const navigate = useNavigate();
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -45,18 +41,23 @@ const LoginForm = (isMobile) => {
                 password: values.password,
             };
 
-            const res = await axios.post(`${backEndUrl}/owners/login`, payload, {
+            const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
 
-            // Update context state and sync to localStorage
-            updateUser(res.data.owner);
-            updateUserId(res.data.owner.id);
+            // Update the user, userId, and token in AuthContext
+            console.log('User', res.data.owner);
+            updateCurrUser(res.data.owner);
+            console.log('User ID', res.data.owner.id);
+            updateCurrUserId(res.data.owner.id);
+            console.log('Token', res.data.auth_token);
             updateToken(res.data.auth_token);
+
+            // Set user as authenticated in AuthContext and navigate to login
             setAuthed(true);
-            navigate('/dogs/new'); // Redirect to the "new dog" profile page
+            navigate('/dogs/new');  // Redirect to dashboard
         } catch (err) {
             setServerError(err.message || 'Login failed. Please try again.');
         } finally {
@@ -82,9 +83,10 @@ const LoginForm = (isMobile) => {
             });
 
             // Update context state and sync to localStorage
-            updateUser(res.data.owner);
-            updateUserId(res.data.owner.id);
+            updateCurrUser(res.data.owner);
+            updateCurrUserId(res.data.owner.id);
             updateToken(res.data.auth_token);
+            setAuthed(true);    
 
             navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
@@ -141,7 +143,7 @@ const LoginForm = (isMobile) => {
                             type="submit"
                             disabled={isSubmitting}
                                 style={{
-                                width: '50%',
+                                width: '100%',
                                 padding: '0.75rem',
                                 backgroundColor: '#F7CA57',
                                 color: 'black',

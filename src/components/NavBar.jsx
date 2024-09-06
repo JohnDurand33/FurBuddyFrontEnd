@@ -8,10 +8,12 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
-    const { isAuthenticated, logout, authed, user } = useAuth();
+    const { logout, authed, user } = useAuth();
 
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
+
+    
 
     // Handle account menu open/close
     const handleAccountMenuOpen = (event) => {

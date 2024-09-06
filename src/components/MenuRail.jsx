@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, ListItemButton } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';  // Import Auth context
 import { Icon } from '@iconify/react';
 import DashboardIcon from '@iconify-icons/mdi/view-dashboard-outline';
 import CalendarIcon from '@iconify-icons/mdi/calendar-outline';
@@ -14,18 +14,16 @@ import ChevronLeftIcon from '@iconify-icons/mdi/chevron-left';
 import ChevronUpIcon from '@iconify-icons/mdi/chevron-up';
 import ChevronDownIcon from '@iconify-icons/mdi/chevron-down';
 import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
-import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
-    const { updateToken, updateUserId, getToken, getUserId, updateEmptyStateFromLocalStorage } = useAuth();  // Get authentication functions
+    const { authed, updateEmptyUserStateFromLocalStorage, updateEmptyDogStateFromLocalStorage, user, handleLogout } = useAuth();  // Get auth and state functions
     const theme = useTheme();
+    const [isPetsOpen, setIsPetsOpen] = useState(false);
+    const [dogProfiles, setDogProfiles] = useState([]);
+    const [loading, setLoading] = useState(true);  // State for managing loading
 
-    const { authed, user, handleLogout } = useAuth();  // Get authentication status
-    const [isPetsOpen, setIsPetsOpen] = useState(false);  // State for the pets dropdown
-    const [dogProfiles, setDogProfiles] = useState([]);  // State for the dog profiles
-
-    const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);  // Toggle the pets dropdown
+    const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);
 
     const getDrawerWidth = () => {
         if (!authed) {
@@ -38,8 +36,19 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     };
 
     useEffect(() => {
-        updateEmptyStateFromLocalStorage();
-    }, []);
+        const fetchData = async () => {
+            setLoading(true);
+            await updateEmptyUserStateFromLocalStorage();  
+            await updateEmptyDogStateFromLocalStorage();   
+            setLoading(false);  
+        };
+
+        fetchData();
+    }, []);  // Ensure the effect runs when these change
+
+    if (loading) {
+        return <div>Loading...</div>;  // Optionally show a loading state
+    }
 
     return (
         <Drawer
@@ -103,11 +112,9 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                 <ListItemButton onClick={togglePetsDropdown} sx={{ marginBottom: '12px' }}>
                     <ListItemIcon><Icon icon={PetsIcon} /></ListItemIcon>
                     {!isMobile && !isCollapsed && <ListItemText primary="Pets" />}
-                    {!isCollapsed && (
-                        <IconButton sx={{ marginLeft: 'auto' }}>
-                            <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
-                        </IconButton>
-                    )}
+                    <IconButton sx={{ marginLeft: 'auto' }}>
+                        <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
+                    </IconButton>
                 </ListItemButton>
                 {isPetsOpen && dogProfiles.map(dog => (
                     <ListItemButton
@@ -120,14 +127,14 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                             },
                         }}
                     >
-                        <ListItemIcon>
+                        <ListItemIcon sx={{ textAlign: isMobile ? 'center' : 'start' }}>
                             {dog.imagePath ? <Avatar src={dog.imagePath} /> : <Avatar>{dog.name[0]}</Avatar>}
                         </ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary={dog.name} />}
                     </ListItemButton>
                 ))}
                 {isPetsOpen && (
-                    <ListItemButton sx={{ marginBottom: '16px' }} onClick={togglePetsDropdown}>
+                    <ListItemButton sx={{ marginBottom: '16px', textAlign: isMobile ? 'center' : 'start' }} onClick={togglePetsDropdown}>
                         <ListItemIcon><Icon icon={AddIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Add Dog" />}
                     </ListItemButton>

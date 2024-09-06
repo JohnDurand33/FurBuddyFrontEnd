@@ -6,12 +6,9 @@ import MenuRail from '../components/MenuRail';
 import HeroPage from './HeroPage';
 import SignUp from './SignUp';
 import LogIn from './LogIn';
-import Dashboard from './Dashboard';
 import DogProfileCreate from './DogProfileCreate';
 import DogProfileViewPage from './DogProfileViewPage';
 import MyCalendar from '../components/MyCalendar';
-import RecordsViewPage from './RecordsViewPage';
-import Map from '../components/Map';
 import { useAuth } from '../context/AuthContext';
 
 function MainView({ toggleTheme, isDark }) {
@@ -65,12 +62,12 @@ function MainView({ toggleTheme, isDark }) {
                     <Route path="/" element={<SignUp />} />
                     <Route path="/signup" element={<SignUp isMobile={isMobile} />} />
                     <Route path="/login" element={<LogIn isMobile={isMobile}/>} />
-                    <Route path="/dashboard" element={<Dashboard />} />
+                
                     <Route path="/dogs/new" element={<DogProfileCreate isMobile={isMobile} />} />
                     <Route path="/dogs/view" element={<DogProfileViewPage isMobile={isMobile} getMarginLeft={getMarginLeft} isRailOpen={isRailOpen}/>} />
-                    <Route path="/health_records" element={<RecordsViewPage />} />
-                    <Route path="/calendar" element={<MyCalendar />} />
-                    <Route path="/map" element={<Map />} />
+                    {/* <Route path="/health_records" element={<RecordsViewPage />} /> */}
+                    {/* <Route path="/calendar" element={<MyCalendar />} />
+                    <Route path="/map" element={<Map />} /> */}
                 </Routes>
             </Box>
         </Box>

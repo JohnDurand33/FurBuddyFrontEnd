@@ -10,50 +10,17 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { backEndUrl } from '../utils/config';
 import { Icon } from '@iconify/react';
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
+import { useNavigate } from 'react-router-dom';
 
 
 const DogProfileView = ({ getMarginLeft, isMobile }) => {
-
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
-    const [loading, setLoading] = useState(true); // New loading state
     const theme = useTheme();
 
-    const { userId, token, currDogId, dogProfile, updateEmptyStateFromLocalStorage, getCurrDogId, getUserId, getToken, getUser, getDogProfile, updateDogProfile, setDogProfile, setLocalDogProfile, setCurrDogId, setLocalCurrDogId } = useAuth();
-
-    useEffect(() => {
-        updateEmptyStateFromLocalStorage(); // Update state from local storage
-    }, []);
-
-    useEffect(() => {
-        const fetchDogProfile = async () => {
-            setLoading(true);
-            const storedDogProfile = getDogProfile();
-
-            if (storedDogProfile) {
-                console.log('Loaded dog profile:', storedDogProfile);
-                setDogProfile(storedDogProfile);
-                setImageUrl(storedDogProfile.image_path); // Set the image URL if available
-            } else {
-                console.warn('No dog profile found in local storage.');
-            }
-
-            setLoading(false); // Ensure loading is false even if there's no profile
-        };
-
-        fetchDogProfile();
-    }, [getDogProfile]);
-
-    if (loading) {
-        console.log('Loading state active...');
-        return <Typography>Loading...</Typography>;
-    }
-
-    if (!dogProfile) {
-        console.log('No dog profile data available.');
-        return <Typography>No dog profile found. Please create one.</Typography>;
-    }
+    const { currUserId, token, currDogId, dogProfile, updateDogProfile, updatecurrDogCurrDogId } = useAuth();
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
@@ -103,22 +70,16 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                     },
                 }
             );
-            if (response.status !== 200) {
-                console.error('Failed to update profile');
-                return;
-            }
             updateDogProfile(updatedData);
-            setDogProfile(updatedData);
             setLocalDogProfile(updatedData);
             setImageUrl(updatedData.image_path);
-            setLocalCurrDogId(updatedData.id);
-            setCurrDogId(updatedData.id);
+            updateCurrDogId(updatedData.id);
             setIsEditing(false);
-        } catch (err) {
-            console.error('Error updating profile:', err);
+        } catch (error) {
+            console.error('Error updating dog profile:', error);
         } finally {
             setSubmitting(false);
-        }
+        };
     };
 
     const handleEditToggle = () => {
@@ -135,14 +96,14 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
         <Box sx={{
             padding: 3,
             color: 'text.primary',
-            ml: isMobile ? '20px' : 0,
+            ml: isMobile ? '50px' : 0,
         }}>
             <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
                 <Grid item xs={12} container justifyContent="center">
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: 'fit-content' }}>
                         <Avatar
                             alt="Dog's Image"
-                            src={imageUrl || dogProfile.amiage_path || ""}
+                            src={imageUrl || dogProfile.image_path || ""}
                             sx={{ width: 150, height: 150, color: 'text.primary' }}
                         />
                         {isEditing && (
@@ -158,11 +119,11 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                                 >
                                     <Icon icon={CameraOutlineIcon} width="24" height="24" />
                                 </IconButton>
-                                <label htmlFor="image_upload" style={{ marginLeft: '10px' }}>Upload Image:</label>
+                                <label htmlFor="image_path" style={{ marginLeft: '10px' }}>Upload Image:</label>
                                 <input
                                     type="file"
-                                    id="image_upload"
-                                    name="image_upload"
+                                    id="image_path"
+                                    name="image_path"
                                     style={{ display: 'none' }} // Hide the actual file input
                                     onChange={(e) => handleImageChange(e, setFieldValue)}
                                 />
