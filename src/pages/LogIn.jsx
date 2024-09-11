@@ -8,15 +8,20 @@ import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
 import { backEndUrl, GC_ID } from '../utils/config';
+import DogProfileView from './DogProfileView';
 
-const LoginForm = ({ isMobile }) => {
-    const { clearAllStateAndLocalStorage,
-        updateCurrUser,
-        updateCurrUserId,
-        updateToken,
-        authed,
+const LoginForm = ({ isMobile, toggleRail }) => {
+    const {
+        clearAllStateAndLocalStorage,
+        fetchUserDataWithToken,
+        fetchDogProfilesFromApi,
         setAuthed,
-        setFireUser } = useAuth();
+        setFireUser,
+        setLocalCurrUser,
+        setLocalToken,
+        dogProfiles
+    } = useAuth();
+
     const [serverError, setServerError] = useState(null);
     const navigate = useNavigate();
 
@@ -42,22 +47,26 @@ const LoginForm = ({ isMobile }) => {
             };
 
             const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: { 'Content-Type': 'application/json' },
             });
+            const { data } = res;
+            console.log('Login response:', data);
 
-            // Update the user, userId, and token in AuthContext
-            console.log('User', res.data.owner);
-            updateCurrUser(res.data.owner);
-            console.log('User ID', res.data.owner.id);
-            updateCurrUserId(res.data.owner.id);
-            console.log('Token', res.data.auth_token);
-            updateToken(res.data.auth_token);
+            setLocalToken(data.auth_token);
+            const loginToken = data.auth_token;
 
-            // Set user as authenticated in AuthContext and navigate to login
+            const loggedInToken = await fetchUserDataWithToken(loginToken);
             setAuthed(true);
-            navigate('/dogs/new');  // Redirect to dashboard
+            await fetchDogProfilesFromApi();
+            if (dogProfiles.length > 0) {
+                toggleRail();
+                navigate('/dogs/view');
+            } else {
+                toggleRail();
+                navigate('/dogs/new');
+            }
+            // Set user as authenticated and navigate to dashboard
+            
         } catch (err) {
             setServerError(err.message || 'Login failed. Please try again.');
         } finally {
@@ -77,16 +86,16 @@ const LoginForm = ({ isMobile }) => {
             setFireUser(fireUser);
 
             // Backend login for Google user
-            const res = await axios.post(`${backEndUrl}/owners/google-login`, {
+            const res = await axios.post(`${backEndUrl}/owner/google-login`, {
                 token: credential,
                 provider: 'google',
             });
 
             // Update context state and sync to localStorage
-            updateCurrUser(res.data.owner);
+            setLocal(res.data.owner);
             updateCurrUserId(res.data.owner.id);
             updateToken(res.data.auth_token);
-            setAuthed(true);    
+            setAuthed(true);
 
             navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
@@ -136,13 +145,11 @@ const LoginForm = ({ isMobile }) => {
                                 <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.password}</div>
                             )}
                         </div>
-                        <div style={{display: 'flex',
-                                justifyContent: isMobile ? 'start' : 'cener',
-                            }}>
+
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                                style={{
+                            style={{
                                 width: '100%',
                                 padding: '0.75rem',
                                 backgroundColor: '#F7CA57',
@@ -153,23 +160,18 @@ const LoginForm = ({ isMobile }) => {
                             }}
                         >
                             {isSubmitting ? 'Submitting...' : 'Login'}
-                            </button>
-                        </div>
-
+                        </button>
                     </Form>
                 )}
             </Formik>
-            <div style={{ textAlign: 'center', marginTop: '1rem', display: 'flex' }}>
-                <Link to="/signup" style={{ color: 'grey', textDecoration: 'underline', hover:'dark grey' }}>
+
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                <Link to="/signup" style={{ color: 'grey', textDecoration: 'underline' }}>
                     Don't have an account? Sign up here.
                 </Link>
             </div>
 
-            <div style={{ margin: isMobile ? '0px' : '2rem',}}>
-                <hr />
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                 <GoogleOAuthProvider clientId={GC_ID}>
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}

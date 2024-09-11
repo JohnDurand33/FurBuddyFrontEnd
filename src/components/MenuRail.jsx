@@ -17,7 +17,7 @@ import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
 import { useTheme } from '@mui/material/styles';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
-    const { authed, updateEmptyUserStateFromLocalStorage, updateEmptyDogStateFromLocalStorage, user, handleLogout } = useAuth();  // Get auth and state functions
+    const { authed, user, handleLogout } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(false);
     const [dogProfiles, setDogProfiles] = useState([]);
@@ -26,7 +26,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);
 
     const getDrawerWidth = () => {
-        if (!authed) {
+        if (!authed || !isRailOpen) {
             return '0px';
         } else if (isMobile) {
             return '64px';
@@ -37,18 +37,12 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true);
-            await updateEmptyUserStateFromLocalStorage();  
-            await updateEmptyDogStateFromLocalStorage();   
+            setLoading(true); 
             setLoading(false);  
         };
 
         fetchData();
     }, []);  // Ensure the effect runs when these change
-
-    if (loading) {
-        return <div>Loading...</div>;  // Optionally show a loading state
-    }
 
     return (
         <Drawer
@@ -76,17 +70,23 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         >
             <List >
                 {/* Logo and Toggle Button */}
-                <ListItemButton sx={{ marginBottom: '16px', justifyContent: 'center' }}>
+                <ListItemButton sx={{ marginBottom: '16px', display: 'flex', justifyContent:'center' }}>
                     <ListItemIcon sx={{ minWidth: 'auto' }}>
                         <Icon icon="mdi:paw" width="30" height="30" />
                     </ListItemIcon>
-
-                    {!isMobile && !isCollapsed && <ListItemText primary="PawHub" />}  {/* Conditionally render text */}
+{/* 
+                    {!isMobile && !isCollapsed && <ListItemText primary="PawHub" sx={{
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        color: theme.palette.text.primary,
+                    }} />}  Conditionally render text */}
 
                     {!isMobile && <IconButton onClick={toggleCollapse} sx={{ marginLeft: 'auto' }}>
                         <Icon icon={!isCollapsed ? ChevronLeftIcon : ChevronRightIcon} />
                     </IconButton>}
                 </ListItemButton>
+
+                <Divider sx={{ marginBottom: '16px' }} />
 
                 {/* Navigation Links */}
                 <ListItemButton sx={{ marginBottom: '12px' }}>

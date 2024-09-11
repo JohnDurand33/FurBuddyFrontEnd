@@ -5,16 +5,14 @@ import axios from 'axios';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { useAuth } from '../context/AuthContext';  // Importing useAuth from context
+import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
 import { backEndUrl } from '../utils/config';
 
 const SignUpForm = () => {
-    // Destructure functions from the AuthContext
     const {
         clearAllStateAndLocalStorage,
         updateCurrUser,
-        updateCurrUserId,
         updateToken,
         setAuthed,
         setFireUser,
@@ -24,7 +22,6 @@ const SignUpForm = () => {
     const navigate = useNavigate();
     const GC_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    // Validation schema for the form
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
         password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
@@ -33,19 +30,15 @@ const SignUpForm = () => {
             .required('Confirm Password is required'),
     });
 
-    // Handle email/password sign-up
     const handleEmailPasswordSignUp = async (values, { setSubmitting }) => {
         setServerError(null);
         try {
-            // Clear existing state and localStorage before creating a new user
             clearAllStateAndLocalStorage();
 
-            // Create a new user with Firebase authentication (email/password)
             const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
             const fireUser = userCredential.user;
             setFireUser(fireUser);
 
-            // Backend signup - Send new user data to your backend for processing
             const payload = {
                 owner_email: values.email,
                 password: values.password,
@@ -57,25 +50,14 @@ const SignUpForm = () => {
                 headers: { 'Content-Type': 'application/json' },
             });
 
-            // Update the user, userId, and token in AuthContext
-            console.log('User', res.data.owner);
-            updateCurrUser(res.data.owner);
-            console.log('User ID', res.data.owner.id);
-            updateCurrUserId(res.data.owner.id);
-            console.log('Token', res.data.auth_token);
-            updateToken(res.data.auth_token);
-
-            // Set user as authenticated in AuthContext and navigate to login
-            setAuthed(true);
-            navigate('/login');  // Redirect to login or dashboard after sign-up
+            navigate('/login');
         } catch (err) {
             setServerError(err.message || 'Sign-up failed. Please try again.');
         } finally {
-            setSubmitting(false); // Stop the submission loading spinner
+            setSubmitting(false);
         }
     };
 
-    // Handle Google sign-up
     const handleGoogleSignUpSuccess = async (credentialResponse) => {
         setServerError(null);
         try {
@@ -83,21 +65,18 @@ const SignUpForm = () => {
             const googleCredential = GoogleAuthProvider.credential(credential);
             const userCredential = await signInWithCredential(auth, googleCredential);
             const fireUser = userCredential.user;
+            setFireUser(fireUser);
 
-            // Backend signup for Google authentication
-            const res = await axios.post(`${backEndUrl}/owners/google-signup`, {
+            const res = await axios.post(`${backEndUrl}/owner/google-signup`, {
                 token: credential,
                 provider: 'google',
             });
 
-            // Update user, token, and userId in AuthContext
-            updateUser(res.data.owner);
-            updateCurrUserId(res.data.owner.id);
+            updateCurrUser(res.data.owner);
             updateToken(res.data.auth_token);
 
-            // Set user as authenticated and navigate to login
             setAuthed(true);
-            navigate('/login');  // Redirect to login or dashboard after Google sign-up
+            navigate('/login');
         } catch (err) {
             setServerError('Google sign-up failed. Please try again.');
         }
@@ -159,7 +138,6 @@ const SignUpForm = () => {
                             )}
                         </div>
 
-                        
                         <button
                             type="submit"
                             disabled={isSubmitting}
@@ -174,8 +152,7 @@ const SignUpForm = () => {
                             }}
                         >
                             {isSubmitting ? 'Submitting...' : 'Sign Up'}
-                            </button>
-
+                        </button>
                     </Form>
                 )}
             </Formik>
@@ -189,7 +166,6 @@ const SignUpForm = () => {
                     <GoogleLogin
                         onSuccess={handleGoogleSignUpSuccess}
                         onError={() => setServerError('Google Sign-up Failed. Please try again.')}
-                        theme="grey"
                     />
                 </GoogleOAuthProvider>
             </div>

@@ -12,15 +12,22 @@ import * as Yup from 'yup';
 import { backEndUrl } from '../utils/config';
 
 const DogProfileCreate = ({ isMobile }) => {
-    const { currUserId, currDogId, token, setAuthed,
-        updateEmptyUserStateFromLocalStorage,
-        updateCurrDogId, updateDogProfile } = useAuth();
+    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFixed, setIsFixed] = useState(null);
+
+    useEffect(() => {
+        if (!authed) {
+            navigate('/login');
+            if (!currUser) {
+                fetchUserDataWithToken(token);
+            }
+        };
+    }, []);
 
     const handleFixedChange = (event) => {
         setIsFixed(event.target.value === 'yes');
@@ -80,8 +87,7 @@ const DogProfileCreate = ({ isMobile }) => {
         console.log("submissionData", submissionData);
 
         try {
-            const response = await axios.post(
-                `${backEndUrl}/profiles/owner/${currUserId}/profiles`,
+            const response = await axios.post(`${backEndUrl}/profile/profiles`,
                 submissionData,
                 {
                     headers: {
@@ -91,13 +97,13 @@ const DogProfileCreate = ({ isMobile }) => {
                 }
             );
             console.log("response.data", response.data);
-            updateCurrDogId(response.data.id);
-            updateDogProfile(response.data);
-            navigate("/dogs/view");
+            setLocalCurrDog(response.data);
+            navigate(`/dogs/view`);
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
         } finally {
-            setIsSubmitting(false);
+            setSubmitting(false);
+            resetForm();
         }
     };
 
@@ -114,7 +120,7 @@ const DogProfileCreate = ({ isMobile }) => {
                     breed: '',
                     date_of_birth: '',
                     weight: '',
-                    sex: '', // Ensure this is empty by default
+                    sex: '',
                     fixed: true,
                     chip_number: '',
                     image_path: '',

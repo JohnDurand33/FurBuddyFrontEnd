@@ -1,133 +1,56 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { backEndUrl } from '../utils/config';
 
-// Create AuthContext
 const AuthContext = createContext();
 
-// Custom hook to use the AuthContext
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    // User and authentication state
     const [authed, setAuthed] = useState(false);
     const [token, setToken] = useState(null);
-    const [currUser, setCurrUser] = useState({});
-    const [currUserId, setCurrUserId] = useState(null);
+    const [currUser, setCurrUser] = useState(null);
     const [fireUser, setFireUser] = useState(null);
-
-    // Dog profile state
-    const [currDog, setCurrDog] = useState({});
-    const [currDogId, setCurrDogId] = useState(null);
-
-    const [loadingUser, setLoadingUser] = useState(true); // Loading state for user-related data
-    const [loadingDog, setLoadingDog] = useState(true); // Loading state for dog-related data
-    const [dogProfiles, setDogProfiles] = useState([]); // State for the dog profiles
+    const [currDog, setCurrDog] = useState(null);
+    const [dogProfiles, setDogProfiles] = useState([]);
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [loadingDog, setLoadingDog] = useState(true);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const updateCurrUser = (currUser) => {
-        setCurrUser(currUser);
-        localStorage.setItem('currUser', JSON.stringify(currUser));
-    };
 
-    const updateCurrUserId = (currUserId) => {
-        setCurrUserId(currUserId);
-        localStorage.setItem('currUserId', JSON.stringify(currUserId));
-    };
-
-    const updateToken = (token) => {
+    // Helper functions to update state and save to localStorage
+    const setLocalToken = (token) => {
         setToken(token);
-        localStorage.setItem('token', JSON.stringify(token));
+        localStorage.setItem('token', token);
     };
 
-    const updateCurrDogId = (currDogId) => {
-        setToken(currDogId);
-        localStorage.setItem('currDogId', JSON.stringify(token));
+    const setLocalCurrUser = (user) => {
+        setCurrUser(user);
+        localStorage.setItem('currUser', JSON.stringify(user));
     };
 
-    const updateCurrDogProfile = (currDogProfile) => {
-        setCurrDog(currDogProfile);
-        localStorage.setItem('currDogProfile', JSON.stringify(token));
+    const setLocalCurrDog = (dog) => {
+        setCurrDog(dog);
+        localStorage.setItem('currDog', JSON.stringify(dog));
     };
 
-    // Helper to load user/token data from localStorage if state is empty
-    const updateEmptyUserStateFromLocalStorage = () => {
-            const storedUser = JSON.parse(localStorage.getItem('currUser'));
-            if (storedUser) setCurrUser(storedUser);
-
-            const storedUserId = JSON.parse(localStorage.getItem('currUserId'));
-            if (storedUserId) setCurrUserId(storedUserId);
-
-        if (!token) {
-            const storedToken = JSON.parse(localStorage.getItem('token'));
-            if (storedToken) setToken(storedToken);
-        }
-    };
-
-    // Helper to load dog data from localStorage if state is empty
-    const updateEmptyDogStateFromLocalStorage = () => {
-        if (!currDog) {
-            const storedDog = JSON.parse(localStorage.getItem('currDog'));
-            if (storedDog) setCurrDog(storedDog);
-        }
-        if (!currDogId) {
-            const storedDogId = JSON.parse(localStorage.getItem('currDogId'));
-            if (storedDogId) setCurrDogId(storedDogId);
-        }
-    };
-
-    // API call to fetch user data (e.g., token, currUser, currUserId)
-    const fetchUserDataFromApi = async () => {
-        try {
-            setLoadingUser(true);
-            const response = await fetch('/api/user-data'); // Replace with actual API URL
-            const data = await response.json();
-            if (data.owner) {
-                setCurrUser(data.owner);
-                localStorage.setItem('currUser', JSON.stringify(data.owner));
-            }
-            if (data.owner.id) {
-                setCurrUserId(data.owner.id);
-                localStorage.setItem('currUserId', JSON.stringify(data.owner.id));
-            }
-            if (data.auth_token) {
-                setToken(data.auth_token);
-                localStorage.setItem('token', JSON.stringify(data.auth_token));
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        } finally {
-            setLoadingUser(false);
-        }
-    };
-
-    // API call to fetch dog profile data (e.g., currDog, currDogId)
-    const fetchDogProfileFromApi = async () => {
-        try {
-            setLoadingDog(true);
-            const response = await fetch(`/profiles/owner/${currUserId}/profiles`); // Replace with actual API URL
-            const data = await response.json();
-            if (data) {
-                setCurrDog(data);
-                localStorage.setItem('currDog', JSON.stringify(data));
-            }
-            if (data.id) {
-                setCurrDogId(data.id);
-                localStorage.setItem('currDogId', JSON.stringify(data.dogId));
-            }
-        } catch (error) {
-            console.error('Error fetching dog profile data:', error);
-        } finally {
-            setLoadingDog(false);
-        }
+    const setLocalDogProfiles = (dogProfiles) => {
+        setDogProfiles(dogProfiles);
+        localStorage.setItem('currDogProfiles', JSON.stringify(dogProfiles));
     };
 
     const clearAllStateAndLocalStorage = () => {
         setAuthed(false);
-        setCurrUser(null);
-        setCurrUserId(null);
         setToken(null);
+        setLocalToken(null);
+        setCurrUser(null);
+        setLocalCurrUser(null);
+        setFireUser(null);
         setCurrDog(null);
-        setCurrDogId(null);
-        localStorage.clear();
+        setLocalCurrDog(null);
+        setDogProfiles([]);
+        localStorage.clear(); // Clears all stored items
     };
 
     const logout = () => {
@@ -135,57 +58,121 @@ export const AuthProvider = ({ children }) => {
         navigate('/login');
     };
 
-
-        // Load user/token data and dog profile data separately from localStorage and optionally call API
-        useEffect(() => {
-            updateEmptyUserStateFromLocalStorage();
-            setLoadingUser(false)// Load user data from localStorage
-         // Optionally refresh user data from API
-        }, []);
-
-    useEffect(() => {
-        updateEmptyDogStateFromLocalStorage();
-        setLoadingDog(false)// Load dog profile from localStorage
-        // Optionally refresh dog profile from API
-        }, []);
-
-        return (
-            <AuthContext.Provider
-                value={{
-                    authed,
-                    setAuthed,
-                    token,
-                    setToken,
-                    currUser,
-                    setCurrUser,
-                    currUserId,
-                    setCurrUserId,
-                    fireUser,
-                    setFireUser,
-                    currDog,
-                    currDogId,
-                    dogProfiles,
-                    updateCurrUser,
-                    updateCurrUserId,
-                    updateToken,
-                    updateCurrDogId,
-                    updateCurrDogProfile,
-                    setDogProfiles,
-                    clearAllStateAndLocalStorage,
-                    updateEmptyUserStateFromLocalStorage,
-                    updateEmptyDogStateFromLocalStorage,
-                    fetchUserDataFromApi, // Expose API fetch for user
-                    fetchDogProfileFromApi, // Expose API fetch for dog
-                    loadingUser, // Separate loading state for user data
-                    loadingDog,  // Separate loading state for dog profile data
-                    setLoadingUser,
-                    setLoadingDog,
-                    logout
-                }}
-            >
-                {loadingUser || loadingDog ? <div>Loading...</div> : children}
-            </AuthContext.Provider>
-        );
+    const fetchUserDataWithToken = async (token) => {
+        try {
+            const response = await axios.get(`${backEndUrl}/owner/owners/current`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            console.log('Fetched user data:', response.data);
+            setLocalCurrUser(response.data); // Store user
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching user data:', err);
+            setError('Failed to fetch user data', err);
+            clearAllStateAndLocalStorage();
+            navigate('/login');
+        }
     };
+
+
+    const fetchDogProfilesFromApi = async (currUser, token) => {
+        if (currUser) {
+            try {
+                const response = await axios.get(`${backEndUrl}/profile/profiles`, {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                });
+                if (response.data.length > 0) {
+                    setLocalDogProfiles(response.data);
+                    setLocalCurrDog(response.data[0]);  
+                    return response.data
+                } else {
+                    console.log('No dog profiles found for user:', currUser);
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error fetching dog profiles:', error);
+                return null;
+            }
+        }
+    };
+
+    const loadUserandDogfromLocalOrApi = async () => {
+        setLoadingUser(true);
+        setLoadingDog(true);
+        const storedUser = localStorage.getItem('currUser');
+        const storedToken = localStorage.getItem('token');
+        const storedDog = localStorage.getItem('currDog');
+
+        if (storedUser && storedToken) {
+            // Use localStorage if user data is already stored
+            setCurrUser(storedUser);
+            setToken(storedToken);
+        } else if (storedToken) {
+            const fetchedUser = await fetchUserDataWithToken(storedToken);
+            setCurrUser(fetchedUser);
+            console.log('Fetched user data:', fetchedUser);
+            setToken(storedToken);
+        } else {
+            console.log("No user data or token found. Navigating to login page.");
+            clearAllStateAndLocalStorage();
+            navigate('/login');
+            return;
+        }
+        // Optionally load the dog profile from localStorage or Api
+        if (storedDog) {
+            setCurrDog(JSON.parse(storedDog));
+        } else {
+            const profiles = await fetchDogProfilesFromApi();
+            console.log('Fetched dog profiles, could be null if no dogs in db', profiles);
+            if (profiles && profiles.length > 0) {
+                setLocalDogProfiles(profiles);
+                setLocalCurrDog(profiles[0]); // Set the first dog as current
+            } else {
+                console.log('No dog profiles found for user:', currUser);
+            }
+        };
+        setLoadingUser(false);
+        setLoadingDog(false);
+    };
+
+    // Load user and dog profile from localStorage on component mount
+    useEffect(() => {
+        loadUserandDogfromLocalOrApi();
+        setLoadingUser(false);
+        setLoadingDog(false);
+    }, []);
+
+    
+
+    return (
+        <AuthContext.Provider
+            value={{
+                authed,
+                setAuthed,
+                token,
+                setLocalToken,
+                currUser,
+                setLocalCurrUser,
+                fireUser,
+                setFireUser,
+                currDog,
+                setLocalCurrDog,
+                dogProfiles,
+                setDogProfiles,
+                loadingUser,
+                loadingDog,
+                clearAllStateAndLocalStorage,
+                loadUserandDogfromLocalOrApi,
+                fetchUserDataWithToken,
+                fetchDogProfilesFromApi,
+                logout
+            }}
+        >
+            {loadingUser || loadingDog ? <div>Loading...</div> : children}
+        </AuthContext.Provider>
+    );
+};
 
 export default AuthProvider;

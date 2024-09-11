@@ -7,7 +7,7 @@ import HeroPage from './HeroPage';
 import SignUp from './SignUp';
 import LogIn from './LogIn';
 import DogProfileCreate from './DogProfileCreate';
-import DogProfileViewPage from './DogProfileViewPage';
+import DogProfileViewPage from './DogProfileView';
 import MyCalendar from '../components/MyCalendar';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,16 +28,14 @@ function MainView({ toggleTheme, isDark }) {
     };
 
     const getMarginLeft = () => {
-        if (!authed) {
-            return '0px';
-        } else if (isMobile) {
-            return '64px';
+        if (!authed) return '0px'
+        else {
+            if (!isMobile) {
+                if (isRailOpen) {
+                    return isCollapsed ? '64px' : '240px';
+                }
+            } else return '64px';
         }
-        if (isCollapsed === true) {
-            return '64px';
-        } else if (isCollapsed === false) {
-            return '240px';
-        };
     };
 
     return (
@@ -59,9 +57,9 @@ function MainView({ toggleTheme, isDark }) {
                 }}
             >
                 <Routes>
-                    <Route path="/" element={<SignUp />} />
-                    <Route path="/signup" element={<SignUp isMobile={isMobile} />} />
-                    <Route path="/login" element={<LogIn isMobile={isMobile}/>} />
+                    <Route path="/" element={<SignUp  />} />
+                    <Route path="/signup" element={<SignUp isMobile={isMobile} toggleRail={toggleRail} />} />
+                    <Route path="/login" element={<LogIn isMobile={isMobile} toggleRail={toggleRail} />} />
                 
                     <Route path="/dogs/new" element={<DogProfileCreate isMobile={isMobile} />} />
                     <Route path="/dogs/view" element={<DogProfileViewPage isMobile={isMobile} getMarginLeft={getMarginLeft} isRailOpen={isRailOpen}/>} />

@@ -1,67 +1,82 @@
-import React, { useEffect, useState } from 'react';
-import { Grid, Box, Avatar, Button, Typography, IconButton } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+import React, { useState } from 'react';
+import { Grid, Box, Avatar, Typography, IconButton, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { Formik, Form, Field } from 'formik'; // Ensure Formik is imported
+import * as Yup from 'yup'; // Yup for validation schema
 import { useAuth } from '../context/AuthContext';
-import * as Yup from 'yup';
 import axios from 'axios';
-import { auth, storage } from '../config/firebase';
+import { storage } from '../config/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { backEndUrl } from '../utils/config';
 import { Icon } from '@iconify/react';
+import editIcon from '@iconify-icons/mdi/pencil-outline'; // Iconify edit icon
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { useNavigate } from 'react-router-dom';
 
-
-const DogProfileView = ({ getMarginLeft, isMobile }) => {
+const DogProfileView = ({ isMobile }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
     const theme = useTheme();
 
-    const { currUserId, token, currDogId, dogProfile, updateDogProfile, updatecurrDogCurrDogId } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog } = useAuth();
 
-    const validationSchema = Yup.object().shape({
-        name: Yup.string().required('Name is required'),
-        breed: Yup.string(),
-        date_of_birth: Yup.string().required('Date of Birth is required'),
-        weight: Yup.number().positive('Weight must be positive'),
-        sex: Yup.string().oneOf(['Male', 'Female'], 'Invalid Gender').required('Gender is required'),
-        chip_number: Yup.string(),
-        vet_clinic_name: Yup.string(),
-        vet_doctor_name: Yup.string(),
-        vet_clinic_phone: Yup.string(),
-        vet_clinic_email: Yup.string().email('Invalid email'),
-    });
+    // Toggle Edit mode
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
 
-    const handleImageChange = (e, setFieldValue) => {
+    // Handle image changes
+    const handleImageChange = (e) => {
         if (e.target.files[0]) {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = () => {
                 setImage(file);
                 setImageUrl(reader.result); // Base64 string for preview
-                setFieldValue('image_path', reader.result); // Update Formik field value
             };
             reader.readAsDataURL(file);
         }
     };
 
+    // Handle image upload to Firebase Storage
     const handleImageUpload = async () => {
-        if (!image) return dogProfile.img_url;
+        if (!image) return currDog.image_path;
         const storageRef = ref(storage, `dog_images/${Date.now()}_${image.name}`);
         const snapshot = await uploadBytes(storageRef, image);
         return await getDownloadURL(snapshot.ref);
     };
 
-    const handleSave = async (values, { setSubmitting }) => {
+    // Handle deleting profile
+    const handleDeleteProfile = async () => {
+        try {
+            await axios.delete(`${backEndUrl}/profiles/owner/${currUser.id}/profiles/${currDog.id}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Error deleting dog profile:', error);
+        }
+    };
+
+    const fixedLabel = (values) => {
+        if (values.sex === 'Male') return 'Neutered';
+        if (values.sex === 'Female') return 'Spayed';
+        return 'Spayed'; // Default label
+    };
+
+    // Handle saving updated data
+    const handleSave = async (values) => {
         const img_url = await handleImageUpload();
-        const updatedData = { ...values, image_path: img_url };
+        const updatedData = { ...currDog, image_path: img_url };
 
         try {
             const response = await axios.put(
-                `${backEndUrl}/profiles/owner/${userId}/profiles/${currDogId}`,
+                `${backEndUrl}/profiles/owner/${currUser.id}/profiles/${currDog.id}`,
                 updatedData,
                 {
                     headers: {
@@ -70,141 +85,150 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                     },
                 }
             );
-            updateDogProfile(updatedData);
-            setLocalDogProfile(updatedData);
+            setLocalCurrDog(updatedData);
             setImageUrl(updatedData.image_path);
-            updateCurrDogId(updatedData.id);
             setIsEditing(false);
         } catch (error) {
             console.error('Error updating dog profile:', error);
-        } finally {
-            setSubmitting(false);
-        };
+        }
     };
 
-    const handleEditToggle = () => {
-        setIsEditing(!isEditing);
-    };
-
-    const fixedLabel = values => values.sex === 'Female' ? 'Spayed' : 'Neutered';
-
-    if (loading) {
-        return <Typography>Loading...</Typography>; // Simple loading indicator
-    }
+    // Yup validation schema for form
+    const validationSchema = Yup.object().shape({
+        name: Yup.string().required('Pet Name is required'),
+        breed: Yup.string(),
+        date_of_birth: Yup.date().required('Date of Birth is required'),
+        weight: Yup.number().required('Weight is required'),
+        chip_number: Yup.string(),
+        vet_clinic_name: Yup.string(),
+        vet_doctor_name: Yup.string(),
+        vet_clinic_phone: Yup.string(),
+        vet_clinic_email: Yup.string().email('Invalid email format')
+    });
 
     return (
-        <Box sx={{
-            padding: 3,
-            color: 'text.primary',
-            ml: isMobile ? '50px' : 0,
-        }}>
-            <Grid container alignItems="center" justifyContent="center" spacing={2} sx={{ pt: 5 }}>
+        <Box sx={{ padding: 3, color: 'text.primary', ml: isMobile ? '50px' : 0 }}>
+            <Grid container alignItems="center" justifyContent="center" spacing={4} sx={{ pt: 5 }}>
+
+                {/* Profile image and Edit Button in top-right corner */}
                 <Grid item xs={12} container justifyContent="center">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', width: 'fit-content' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', paddingRight: '30px' }}>
+                        {/* Dog Image */}
                         <Avatar
                             alt="Dog's Image"
-                            src={imageUrl || dogProfile.image_path || ""}
+                            src={imageUrl || currDog.image_path || ""}
                             sx={{ width: 150, height: 150, color: 'text.primary' }}
                         />
-                        {isEditing && (
-                            <Box display="flex" alignItems="center">
-                                <IconButton
-                                    sx={{
-                                        height: '20px',
-                                        borderRadius: '50%',
-                                        marginLeft: '10px',
-                                        backgroundColor: 'transparent',
-                                        '&:hover': { backgroundColor: 'transparent' }
-                                    }}
-                                >
-                                    <Icon icon={CameraOutlineIcon} width="24" height="24" />
-                                </IconButton>
-                                <label htmlFor="image_path" style={{ marginLeft: '10px' }}>Upload Image:</label>
-                                <input
-                                    type="file"
-                                    id="image_path"
-                                    name="image_path"
-                                    style={{ display: 'none' }} // Hide the actual file input
-                                    onChange={(e) => handleImageChange(e, setFieldValue)}
-                                />
-                            </Box>
+
+                        {/* Show Edit Button only when not editing */}
+                        {!isEditing && (
+                            <IconButton
+                                sx={{ position: 'absolute', top: 0, right: 0 }}
+                                onClick={handleEditToggle}
+                            >
+                                <Icon icon={editIcon} width="24" height="24" />
+                            </IconButton>
                         )}
                     </Box>
                 </Grid>
 
-                <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                    <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                        Dog Information
-                    </Typography>
-                </Grid>
-
+                {/* Non-Editing Mode */}
                 {!isEditing ? (
                     <>
-                        {/* View Mode */}
-                        <Grid container spacing={2} style={{ margin: '0 auto', width: '80%' }}>
+                        <Grid container spacing={4} justifyContent="center" style={{ marginTop: '1rem', width: '80%' }}>
                             <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Name: {dogProfile.name}</Typography>
+                                <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+                                    Dog Information
+                                </Typography>
+                                <Box sx={{
+                                    backgroundColor: theme.palette.secondary.main,
+                                    borderRadius: '10px',
+                                    padding: '2rem', // Add padding
+                                    minHeight: '180px'
+                                }}>
+                                    <Grid container spacing={3}> {/* Increase spacing */}
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog.name}</Typography> {/* Add margin-bottom */}
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog.breed}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>DOB: {currDog.date_of_birth}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog.weight}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog.sex}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog.fixed ? 'Yes' : 'No'}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog.chip_number}</Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
                             </Grid>
+
+                            {/* Vet Information */}
                             <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Breed: {dogProfile.breed}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">DOB: {dogProfile.date_of_birth}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Weight: {dogProfile.weight}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Sex: {dogProfile.sex}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Fixed: {dogProfile.fixed ? 'Yes' : 'No'}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Chip Number: {dogProfile.chip_number}</Typography>
+                                <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+                                    Vet Information
+                                </Typography>
+                                <Box sx={{
+                                    backgroundColor: theme.palette.secondary.main,
+                                    borderRadius: '10px',
+                                    padding: '2rem', // Add padding
+                                    minHeight: '180px'
+                                }}>
+                                    <Grid container spacing={3}> {/* Increase spacing */}
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog.vet_clinic_name}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog.vet_doctor_name}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog.vet_clinic_phone}</Typography>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog.vet_clinic_email}</Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Box>
                             </Grid>
                         </Grid>
 
-                        <Grid item xs={12} style={{ margin: '0 auto', width: '80%' }}>
-                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                                Vet Information
-                            </Typography>
-                        </Grid>
-
-                        <Grid container spacing={2} style={{ margin: '0 auto', width: '80%' }}>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Vet Clinic Name: {dogProfile.vet_clinic_name}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Vet Doctor Name: {dogProfile.vet_doctor_name}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Vet Clinic Phone: {dogProfile.vet_clinic_phone}</Typography>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="body1">Vet Clinic Email: {dogProfile.vet_clinic_email}</Typography>
-                            </Grid>
-                        </Grid>
-
-                        <Grid item xs={12} style={{ textAlign: 'center', marginTop: '2rem' }}>
-                            <Button variant="contained" color="primary" onClick={handleEditToggle}>
-                                Edit Profile
+                        {/* Delete Profile Button */}
+                        <Grid container justifyContent="center" sx={{ mt: 4 }}>
+                            <Button variant="outlined" color="error" onClick={handleDeleteProfile}>
+                                Delete Profile
                             </Button>
                         </Grid>
                     </>
                 ) : (
-                    <>
+                        <>
                         {/* Edit Mode */}
                         <Formik
-                            initialValues={dogProfile}
+                            initialValues={currDog}
                             validationSchema={validationSchema}
                             enableReinitialize={true}
                             onSubmit={handleSave}
                         >
                             {({ values, errors, touched, setFieldValue, isSubmitting }) => (
-                                <Form style={{ margin: '0 auto', width: '80%' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                                    <Form style={{ margin: '0 auto', width: '80%' }}>
                                         <div>
+                                        <Grid item xs={12} style={{ marginLeft: '-10%', width: '80%' }}>
+                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                                                Dog Information
+                                            </Typography>
+                                        </Grid>
+                                        
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                                            <div>
+                                                
                                             <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Pet Name</label>
                                             <Field
                                                 type="text"
@@ -229,7 +253,7 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                                         </div>
 
                                         <div>
-                                            <label htmlFor="date_of_birth" style={{ display: 'block', marginBottom: '0.5rem' }}>DOB</label>
+                                            <label htmlFor="date_of_birth" style={{ display: 'block', marginBottom: '0.5rem' }}>Date Of Birth</label>
                                             <Field
                                                 type="date"
                                                 id="date_of_birth"
@@ -315,8 +339,13 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                                         </div>
                                     </div>
 
-                                    <h2 style={{ borderBottom: '1px solid #ccc', paddingBottom: '0.5rem' }}>Vet Information</h2>
-
+                                        <Grid item xs={12} style={{ marginLeft:'-10%', width: '80%' }}>
+                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                                                Vet Information
+                                            </Typography>
+                                            </Grid>
+                                        </div>
+                                        <div>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                                         <div>
                                             <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Name</label>
@@ -384,7 +413,8 @@ const DogProfileView = ({ getMarginLeft, isMobile }) => {
                                         >
                                             Cancel
                                         </Button>
-                                    </div>
+                                            </div>
+                                        </div>
                                 </Form>
                             )}
                         </Formik>
