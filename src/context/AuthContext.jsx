@@ -19,6 +19,15 @@ export const AuthProvider = ({ children }) => {
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!authed) {
+            navigate('/login');
+            if (token) {
+                fetchUserDataWithToken(token);
+            }
+        };
+    }, [authed]);
+
     // Helper functions to update state and save to localStorage
     const setLocalToken = (token) => {
         setToken(token);
@@ -77,13 +86,13 @@ export const AuthProvider = ({ children }) => {
     };
 
 
-    const fetchDogProfilesFromApi = async (currUser, token) => {
-        if (currUser) {
+    const fetchDogProfilesFromApi = async (token) => {
             try {
                 const response = await axios.get(`${backEndUrl}/profile/profiles`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
                 if (response.data.length > 0) {
+                    console.log('Fetched dog profiles:', response.data);
                     setLocalDogProfiles(response.data);
                     setLocalCurrDog(response.data[0]);  
                     return response.data
@@ -94,7 +103,6 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error('Error fetching dog profiles:', error);
                 return null;
-            }
         }
     };
 
@@ -161,6 +169,7 @@ export const AuthProvider = ({ children }) => {
                 setLocalCurrDog,
                 dogProfiles,
                 setDogProfiles,
+                setLocalDogProfiles,
                 loadingUser,
                 loadingDog,
                 clearAllStateAndLocalStorage,

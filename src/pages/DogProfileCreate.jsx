@@ -20,14 +20,7 @@ const DogProfileCreate = ({ isMobile }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFixed, setIsFixed] = useState(null);
 
-    useEffect(() => {
-        if (!authed) {
-            navigate('/login');
-            if (!currUser) {
-                fetchUserDataWithToken(token);
-            }
-        };
-    }, []);
+
 
     const handleFixedChange = (event) => {
         setIsFixed(event.target.value === 'yes');
@@ -138,7 +131,7 @@ const DogProfileCreate = ({ isMobile }) => {
                         <div style={{ display: 'flex', justifyContent: 'start', alignItems: 'center', marginBottom: '2rem' }}>
                             <Avatar
                                 alt="Dog Avatar"
-                                src={imageUrl || values.image_path || "/static/images/avatar/1.jpg"} // Placeholder image URL or local preview
+                                src={imageUrl || values.image_path || "/static/images/avatar/1.jpg"} 
                                 sx={{ width: 100, height: 100 }}
                             />
                             <Box display="flex" alignItems="center">
@@ -290,7 +283,7 @@ const DogProfileCreate = ({ isMobile }) => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
                             {/* Vet Clinic Name */}
                             <div>
-                                <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Name</label>
+                                <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Clinic Name</label>
                                 <Field
                                     type="text"
                                     id="vet_clinic_name"
@@ -316,7 +309,7 @@ const DogProfileCreate = ({ isMobile }) => {
 
                             {/* Vet Clinic Phone */}
                             <div>
-                                <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}> Phone</label>
+                                <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Phone</label>
                                 <Field
                                     type="text"
                                     id="vet_clinic_phone"
@@ -329,7 +322,7 @@ const DogProfileCreate = ({ isMobile }) => {
 
                             {/* Vet Clinic Email */}
                             <div>
-                                <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem' }}>Email Address</label>
+                                <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Email</label>
                                 <Field
                                     type="email"
                                     id="vet_clinic_email"

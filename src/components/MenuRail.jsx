@@ -15,13 +15,27 @@ import ChevronUpIcon from '@iconify-icons/mdi/chevron-up';
 import ChevronDownIcon from '@iconify-icons/mdi/chevron-down';
 import AddIcon from '@iconify-icons/mdi/plus-circle-outline';
 import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
-    const { authed, user, handleLogout } = useAuth();  // Get auth and state functions
+    const navigate = useNavigate();
+    const { authed, token, user, handleLogout , currDogProfiles, currDog, fetchDogProfilesFromApi} = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(false);
-    const [dogProfiles, setDogProfiles] = useState([]);
-    const [loading, setLoading] = useState(true);  // State for managing loading
+    const [loading, setLoading] = useState(true);  
+
+    // Fetch dog profiles after login
+    useEffect(() => {
+        const fetchData = async () => {
+            if (authed && token) {
+                const profiles = await fetchDogProfilesFromApi(token); 
+                if (profiles) {
+                    setLoading(false); 
+                }
+            }
+        };
+        fetchData();
+    }, [authed, token]);
 
     const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);
 
@@ -35,20 +49,11 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true); 
-            setLoading(false);  
-        };
-
-        fetchData();
-    }, []);  // Ensure the effect runs when these change
-
     return (
         <Drawer
             variant='permanent'  // Use 'temporary' for mobile, 'permanent' otherwise
             anchor="left"
-            open={authed && (isMobile ? isRailOpen : true)}  // Control open state based on authed and isRailOpen
+            open={authed}  // Control open state based on authed and isRailOpen
             onClose={toggleRail}  // Handle closing on mobile when clicking outside
             ModalProps={{
                 keepMounted: true,  // Keep the Drawer mounted when closed
@@ -74,12 +79,6 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     <ListItemIcon sx={{ minWidth: 'auto' }}>
                         <Icon icon="mdi:paw" width="30" height="30" />
                     </ListItemIcon>
-{/* 
-                    {!isMobile && !isCollapsed && <ListItemText primary="PawHub" sx={{
-                        fontSize: '1.5rem',
-                        fontWeight: 'bold',
-                        color: theme.palette.text.primary,
-                    }} />}  Conditionally render text */}
 
                     {!isMobile && <IconButton onClick={toggleCollapse} sx={{ marginLeft: 'auto' }}>
                         <Icon icon={!isCollapsed ? ChevronLeftIcon : ChevronRightIcon} />
@@ -116,7 +115,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                         <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
                     </IconButton>
                 </ListItemButton>
-                {isPetsOpen && dogProfiles.map(dog => (
+                {isPetsOpen && currDogProfiles && currDogProfiles.map(dog => (
                     <ListItemButton
                         key={dog.id}
                         sx={{
@@ -128,7 +127,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                         }}
                     >
                         <ListItemIcon sx={{ textAlign: isMobile ? 'center' : 'start' }}>
-                            {dog.imagePath ? <Avatar src={dog.imagePath} /> : <Avatar>{dog.name[0]}</Avatar>}
+                            {dog.image_path ? <Avatar src={dog.image_path} /> : <Avatar>{dog.name[0]}</Avatar>}
                         </ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary={dog.name} />}
                     </ListItemButton>

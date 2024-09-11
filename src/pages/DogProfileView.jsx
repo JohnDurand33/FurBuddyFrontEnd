@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid, Box, Avatar, Typography, IconButton, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Formik, Form, Field } from 'formik'; // Ensure Formik is imported
-import * as Yup from 'yup'; // Yup for validation schema
+import { Formik, Form, Field } from 'formik'; 
+import * as Yup from 'yup'; 
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { storage } from '../config/firebase';
@@ -20,7 +20,7 @@ const DogProfileView = ({ isMobile }) => {
     const [imageUrl, setImageUrl] = useState('');
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, currDogProfiles, fetchDogProfilesFromApi } = useAuth();
 
     // Toggle Edit mode
     const handleEditToggle = () => {
@@ -51,13 +51,13 @@ const DogProfileView = ({ isMobile }) => {
     // Handle deleting profile
     const handleDeleteProfile = async () => {
         try {
-            await axios.delete(`${backEndUrl}/profiles/owner/${currUser.id}/profiles/${currDog.id}`, {
+            await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
             });
-            navigate('/dashboard');
+            navigate('/heropage');
         } catch (error) {
             console.error('Error deleting dog profile:', error);
         }
@@ -66,17 +66,17 @@ const DogProfileView = ({ isMobile }) => {
     const fixedLabel = (values) => {
         if (values.sex === 'Male') return 'Neutered';
         if (values.sex === 'Female') return 'Spayed';
-        return 'Spayed'; // Default label
+        return 'Spayed'; 
     };
 
     // Handle saving updated data
     const handleSave = async (values) => {
-        const img_url = await handleImageUpload();
-        const updatedData = { ...currDog, image_path: img_url };
+        const imgUrl = await handleImageUpload();
+        const updatedData = { ...currDog, image_path: imgUrl };
 
         try {
             const response = await axios.put(
-                `${backEndUrl}/profiles/owner/${currUser.id}/profiles/${currDog.id}`,
+                `${backEndUrl}/profile/profiles/${currDog.id}`,
                 updatedData,
                 {
                     headers: {
@@ -111,30 +111,27 @@ const DogProfileView = ({ isMobile }) => {
             <Grid container alignItems="center" justifyContent="center" spacing={4} sx={{ pt: 5 }}>
 
                 {/* Profile image and Edit Button in top-right corner */}
-                <Grid item xs={12} container justifyContent="center">
+                {!isEditing ? (
+                    <>
+                    <Grid item xs={12} container justifyContent="center">
                     <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', paddingRight: '30px' }}>
                         {/* Dog Image */}
                         <Avatar
                             alt="Dog's Image"
-                            src={imageUrl || currDog.image_path || ""}
+                            src={currDog.image_path || "/static/images/avatar/1.jpg"}
                             sx={{ width: 150, height: 150, color: 'text.primary' }}
                         />
 
                         {/* Show Edit Button only when not editing */}
-                        {!isEditing && (
                             <IconButton
                                 sx={{ position: 'absolute', top: 0, right: 0 }}
                                 onClick={handleEditToggle}
                             >
                                 <Icon icon={editIcon} width="24" height="24" />
                             </IconButton>
-                        )}
                     </Box>
                 </Grid>
 
-                {/* Non-Editing Mode */}
-                {!isEditing ? (
-                    <>
                         <Grid container spacing={4} justifyContent="center" style={{ marginTop: '1rem', width: '80%' }}>
                             <Grid item xs={12} md={6}>
                                 <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
@@ -200,8 +197,6 @@ const DogProfileView = ({ isMobile }) => {
                                 </Box>
                             </Grid>
                         </Grid>
-
-                        {/* Delete Profile Button */}
                         <Grid container justifyContent="center" sx={{ mt: 4 }}>
                             <Button variant="outlined" color="error" onClick={handleDeleteProfile}>
                                 Delete Profile
@@ -210,6 +205,49 @@ const DogProfileView = ({ isMobile }) => {
                     </>
                 ) : (
                         <>
+                            {/* Avatar and Edit Button Positioned at the Top */}
+                            <Grid item xs={12}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+                                    <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                                        <Avatar
+                                            alt="Dog's Image"
+                                            src={imageUrl || currDog.image_path || ""}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* File Input Hidden */}
+                                    <input
+                                        accept="image/*"
+                                        id="file-upload"
+                                        type="file"
+                                        style={{ display: 'none' }}
+                                        onChange={handleImageChange}
+                                    />
+                                    <label htmlFor="file-upload">
+                                        <IconButton
+                                            component="span"
+                                            style={{
+                                                marginLeft: '1rem',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                                borderRadius: '50%',
+                                                color: 'white',
+                                                padding: '5px',
+                                            }}
+                                        >
+                                            <Icon icon={CameraOutlineIcon} width="24" height="24" />
+                                        </IconButton>
+                                        <label marginLeft='10px'>Add Image</label>
+                                    </label>
+                                </div>
+                            </Grid>
+
+
                         {/* Edit Mode */}
                         <Formik
                             initialValues={currDog}

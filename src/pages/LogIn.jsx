@@ -10,7 +10,7 @@ import { auth } from '../config/firebase';
 import { backEndUrl, GC_ID } from '../utils/config';
 import DogProfileView from './DogProfileView';
 
-const LoginForm = ({ isMobile, toggleRail }) => {
+const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
     const {
         clearAllStateAndLocalStorage,
         fetchUserDataWithToken,
@@ -19,7 +19,8 @@ const LoginForm = ({ isMobile, toggleRail }) => {
         setFireUser,
         setLocalCurrUser,
         setLocalToken,
-        dogProfiles
+        currDogProfiles,
+        setLocalDogProfiles
     } = useAuth();
 
     const [serverError, setServerError] = useState(null);
@@ -55,16 +56,25 @@ const LoginForm = ({ isMobile, toggleRail }) => {
             setLocalToken(data.auth_token);
             const loginToken = data.auth_token;
 
-            const loggedInToken = await fetchUserDataWithToken(loginToken);
+            const loggedInUser = await fetchUserDataWithToken(loginToken);
+            console.log('Logged in user:', loggedInUser);
+            setLocalCurrUser(loggedInUser);
             setAuthed(true);
-            await fetchDogProfilesFromApi();
-            if (dogProfiles.length > 0) {
-                toggleRail();
+
+            const fetchedDogs = await fetchDogProfilesFromApi(loginToken);
+            console.log('Fetched dogs:', fetchedDogs);
+
+            if (fetchedDogs) {
+                setLocalDogProfiles(fetchedDogs);
                 navigate('/dogs/view');
+                setIsRailOpen(true);
             } else {
-                toggleRail();
                 navigate('/dogs/new');
+                setIsRailOpen(true);
             }
+            console.log('Fetched dogs:', fetchedDogs);
+
+            
             // Set user as authenticated and navigate to dashboard
             
         } catch (err) {
