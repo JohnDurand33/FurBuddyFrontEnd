@@ -19,6 +19,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setLocalCurrUser,
         setLocalToken,
         currDog,
+        token,
         dogProfiles,
         setLocalDogProfiles,
         setLocalCurrDog,
@@ -36,18 +37,20 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setServerError(null);
         clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
 
+        
+        // Authenticate with Firebase
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const fireBaseUser = userCredential.user;
+        setFireUser(fireBaseUser);
+
+        // Backend login
+        const payload = {
+            owner_email: values.email,
+            password: values.password,
+        };
+
+        //Authenticate with backend
         try {
-            // Authenticate with Firebase
-            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-            const fireBaseUser = userCredential.user;
-            setFireUser(fireBaseUser);
-
-            // Backend login
-            const payload = {
-                owner_email: values.email,
-                password: values.password,
-            };
-
             const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -64,36 +67,36 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             const fetchedDogs = await fetchDogProfilesFromApi(loginToken);
             console.log('Fetched dogs:', fetchedDogs);
 
-            if (fetchedDogs) {
-                console.log('Fetched dogs in setting phase:', fetchedDogs);
-                if (!Array.isArray(fetchedDogs)) {
-                    fetchedDogs = [fetchedDogs];
-                    setLocalDogProfiles(fetchedDogs);
-                    setLocalCurrDog(fetchedDogs[0]);
-                    navigate('/dogs/view');
-                    setIsRailOpen(true);
-                } else {
-                    setLocalDogProfiles(fetchedDogs);
-                    setLocalCurrDog(fetchedDogs[0]);
-                    navigate('/dogs/view');
-                    setIsRailOpen(true);
-                }
+            if (fetchedDogs && fetchedDogs.length > 0) {
+                setLocalDogProfiles(fetchedDogs);
+                setLocalCurrDog(fetchedDogs[0]);
+                navigate('/dogs/view');
             } else {
                 navigate('/dogs/new');
-                setIsRailOpen(true);
-            }
+            } 
             console.log('Current dog profiles:', dogProfiles);
             console.log('Current dog:', currDog);
+            setAuthed(true);
+            setIsRailOpen(true);
 
+        } catch (err) {
+            setServerError(err.message || 'Login failed. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+
+        // Fetch dog profiles
+        try {
             
             // Set user as authenticated and navigate to dashboard
-            
+
         } catch (err) {
             setServerError(err.message || 'Login failed. Please try again.');
         } finally {
             setSubmitting(false);
         }
     };
+            
 
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null);
@@ -116,6 +119,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             setLocalCurrUser(res.data.owner);
             updateToken(res.data.auth_token);
             setAuthed(true);
+            setIsRailOpen(true);
 
             navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid, Box, Avatar, Typography, IconButton, Button } from '@mui/material';
+import { Grid, Box, Avatar, Typography, IconButton, Button, Modal } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Formik, Form, Field } from 'formik'; 
 import * as Yup from 'yup'; 
@@ -15,13 +15,24 @@ import { useNavigate } from 'react-router-dom';
 
 const DogProfileView = ({ isMobile }) => {
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [image, setImage] = useState(null);
     const [imageUrl, setImageUrl] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, currDogProfiles, fetchDogProfilesFromApi } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchDogProfilesFromApi } = useAuth();
 
+    const handleOpenModal = () => {
+        setIsModalOpen(true);
+    };
+
+    // Close the modal
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
     // Toggle Edit mode
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
@@ -51,17 +62,30 @@ const DogProfileView = ({ isMobile }) => {
     // Handle deleting profile
     const handleDeleteProfile = async () => {
         try {
-            await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
+            console.log('Deleting dog profile:', currDog);
+            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
             });
-            const newProfiles = currDogProfiles.filter((dog) => dog.id !== currDog.id);
-            setLocalDogProfiles(newProfiles);
-            navigate('/heropage');
+            console.log('Delete response:', response.data);
+            const newBackendProfiles = await fetchDogProfilesFromApi(token);
+            console.log('Deleted dog profile:', currDog);
+            console.log('Updated dog profiles:', newBackendProfiles);
+            setLocalDogProfiles(newBackendProfiles);
+            if (newBackendProfiles.length == []) {
+                navigate('/dogs/new');
+            } else if (newBackendProfiles.length > 0) {
+                setLocalCurrDog(newBackendProfiles[0]);
+                navigate('/dogs/view');
+            } else {
+                console.log('No dog profiles found for user:', currUser);
+            }
         } catch (error) {
             console.error('Error deleting dog profile:', error);
+        } finally {
+            
         }
     };
 
@@ -72,9 +96,12 @@ const DogProfileView = ({ isMobile }) => {
     };
 
     // Handle saving updated data
-    const handleSave = async (values) => {
+    const handleSave = async (values, { setSubmitting, resetForm }) => {
+        setSubmitting(true);
+        console.log("Saving form data:", values);
         const imgUrl = await handleImageUpload();
-        const updatedData = { ...currDog, image_path: imgUrl };
+        const updatedData = { ...values, image_path: imgUrl };
+        console.log('Updated form data?:', updatedData);
 
         try {
             const response = await axios.put(
@@ -88,13 +115,26 @@ const DogProfileView = ({ isMobile }) => {
                 }
             );
             if (response.status === 200) {
-            console.log('Updated dog profile successfully:', response.data);
-            setLocalCurrDog(response.data);
-            setImageUrl(updatedData.image_path);
-                setIsEditing(false);
+                console.log('Updated dog profile successfully:', response.data);
+                setLocalCurrDog(response.data);
+                setImageUrl(response.data.image_path);
+
+                const dogs = await fetchDogProfilesFromApi(token);
+                setLocalDogProfiles(dogs);
+                if (dogs && dogs.length > 0) {
+                    navigate('/dogs/view');
+                } else {
+                    navigate('/dogs/new');
+                }
             }
         } catch (error) {
             console.error('Error updating dog profile:', error);
+        } finally {
+            console.log('Updated dog profile:', currDog);
+            console.log('Updated dog profiles:', dogProfiles);
+            setIsEditing(false);
+            setSubmitting(false);
+            resetForm();
         }
     };
 
@@ -102,7 +142,7 @@ const DogProfileView = ({ isMobile }) => {
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Pet Name is required'),
         breed: Yup.string(),
-        date_of_birth: Yup.date().required('Date of Birth is required'),
+        age: Yup.number().required('Age is required'),
         weight: Yup.number().required('Weight is required'),
         chip_number: Yup.string(),
         vet_clinic_name: Yup.string(),
@@ -129,10 +169,11 @@ const DogProfileView = ({ isMobile }) => {
 
                         {/* Show Edit Button only when not editing */}
                             <IconButton
-                                sx={{ position: 'absolute', top: 0, right: 0 }}
+                                sx={{ position: 'absolute', top: 0, right: 0, borderColor:'grey' }}
                                 onClick={handleEditToggle}
                             >
-                                <Icon icon={editIcon} width="24" height="24" />
+                                    <Icon icon={editIcon} width="24" height="24" />
+                                    <Typography>Edit</Typography>
                             </IconButton>
                     </Box>
                 </Grid>
@@ -157,7 +198,7 @@ const DogProfileView = ({ isMobile }) => {
                                             <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog.breed}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>DOB: {currDog.date_of_birth}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog.age}</Typography> {/* Add margin-bottom */}
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog.weight}</Typography>
@@ -215,6 +256,51 @@ const DogProfileView = ({ isMobile }) => {
                                 }}>
                                 Delete Profile
                             </Button>
+                            <Modal
+                                open={isModalOpen}
+                                onClose={handleCloseModal}
+                                aria-labelledby="delete-confirmation-modal"
+                                aria-describedby="ask-for-confirmation"
+                            >
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        width: 400,
+                                        bgcolor: 'background.paper',
+                                        borderRadius: 2,
+                                        boxShadow: 24,
+                                        p: 4,
+                                    }}
+                                >
+                                    <Typography id="delete-confirmation-modal" variant="h6" component="h2">
+                                        Are you sure you want to delete this profile?
+                                    </Typography>
+                                    <Typography id="ask-for-confirmation" sx={{ mt: 2 }}>
+                                        This action cannot be undone.
+                                    </Typography>
+                                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleDeleteProfile}
+                                            disabled={submitting}
+                                        >
+                                            {submitting ? 'Deleting...' : 'Confirm'}
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color="secondary"
+                                            onClick={handleCloseModal}
+                                            disabled={submitting}
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </Modal>
                         </Grid>
                     </>
                 ) : (
@@ -263,7 +349,17 @@ const DogProfileView = ({ isMobile }) => {
 
                         {/* Edit Mode */}
                         <Formik
-                            initialValues={currDog}
+                            initialValues={{
+                                name: currDog?.name || '',  
+                                breed: currDog?.breed || '',
+                                age: currDog?.age || '',  
+                                weight: currDog?.weight || '',
+                                chip_number: currDog?.chip_number || '',
+                                vet_clinic_name: currDog?.vet_clinic_name || '',
+                                vet_doctor_name: currDog?.vet_doctor_name || '',
+                                vet_clinic_phone: currDog?.vet_clinic_phone || '',
+                                vet_clinic_email: currDog?.vet_clinic_email || ''
+                            }}
                             validationSchema={validationSchema}
                             enableReinitialize={true}
                             onSubmit={handleSave}
@@ -304,15 +400,15 @@ const DogProfileView = ({ isMobile }) => {
                                         </div>
 
                                         <div>
-                                            <label htmlFor="date_of_birth" style={{ display: 'block', marginBottom: '0.5rem' }}>Date Of Birth</label>
+                                            <label htmlFor="age" style={{ display: 'block', marginBottom: '0.5rem' }}>Age</label>
                                             <Field
-                                                type="date"
-                                                id="date_of_birth"
-                                                name="date_of_birth"
+                                                type="text"
+                                                id="age"
+                                                name="age"
                                                 style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.date_of_birth && errors.date_of_birth ? 'error' : ''}
+                                                        className={touched.age && errors.age ? 'error' : ''}
                                             />
-                                            {touched.date_of_birth && errors.date_of_birth && <div style={{ color: 'red' }}>{errors.date_of_birth}</div>}
+                                                    {touched.age && errors.age && <div style={{ color: 'red' }}>{errors.age}</div>}
                                                 </div>
                                                 
                                                 

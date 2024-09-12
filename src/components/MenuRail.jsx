@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
     const navigate = useNavigate();
-    const { authed, token, currUser, handleLogout, dogProfiles, fetchDogProfilesFromApi, setLocalCurrDog, setLocalDogProfiles } = useAuth();  // Get auth and state functions
+    const { authed, token, currUser, currDog, handleLogout, dogProfiles, fetchDogProfilesFromApi, setLocalCurrDog, setLocalDogProfiles } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(false);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -40,9 +40,22 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     useEffect(() => {
         const fetchData = async () => {
             if (authed && token) {
-                const profiles = await fetchDogProfilesFromApi(token); // Fetch the dog profiles after login
-                if (profiles) {
-                    setLoading(false); // Profiles loaded, stop loading
+                try {
+                    const profiles = await fetchDogProfilesFromApi(token); // Fetch the dog profiles after login
+                    if (profiles && profiles.length > 0) {
+                        const validProfiles = Array.isArray(profiles) ? profiles : [profiles];
+                        setLocalDogProfiles(validProfiles);
+                        const isCurrDogInDogProfiles = validProfiles.some((dog) => dog.id === currDog.id);
+                        // If currDog is not in profiles, set the first dog in profiles as currDog
+                        if (!isCurrDogInDogProfiles) {
+                            setLocalCurrDog(validProfiles[0]); // Set the first dog in the list as currDog
+                            console.log('Setting first dog in profiles as currDog:', validProfiles[0]);
+                        }
+                        console.log('didn\'t delete currDog:', currDog);
+                    }
+                } catch (error) {
+                    console.error('Error fetching profiles:', error);
+                    // Handle error
                 }
             }
         };

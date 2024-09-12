@@ -68,7 +68,6 @@ const DogProfileCreate = ({ isMobile }) => {
     const handleSubmit = async (values, { setSubmitting, resetForm }) => {
         setServerError(null);
         setIsSubmitting(true);
-
         let imageUploadUrl = imageUrl;
         if (image) {
             imageUploadUrl = await handleImageUpload();
@@ -106,7 +105,7 @@ const DogProfileCreate = ({ isMobile }) => {
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
         } finally {
-            setSubmitting(false);
+            setIsSubmitting(false);
             resetForm();
         }
     };

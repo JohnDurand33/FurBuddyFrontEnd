@@ -94,24 +94,16 @@ export const AuthProvider = ({ children }) => {
                         'Authorization': `Bearer ${token}`
                     },
                 });
-                if (response.data && response.data.length === 1) {
+                if (response.data && response.data.length > 0) {
                     console.log('Fetched dog profiles:', response.data);
-                    if (!Array.isArray(response.data)) {
-                        const oneDogList = [response.data];
-                        return oneDogList
+                    const oneDogList = Array.isArray(response.data) ? response.data : [response.data];
+                    return oneDogList
                     };
-                } else if (response.data){
-                    console.log('Fetched dogSSS profiles:', response.data);
-                    return response.data;
-                    } else {
-                    console.log('No dog profiles found for user:', currUser);
+                } catch (error) {
+                    console.error('Error fetching dog profiles:', error);
                     return [];
                 }
-            } catch (error) {
-                console.error('Error fetching dog profiles:', error);
-                return null;
-        }
-    };
+            };
 
     const loadUserandDogfromLocalOrApi = async () => {
         setLoadingUser(true);
@@ -154,6 +146,8 @@ export const AuthProvider = ({ children }) => {
 
     // Load user and dog profile from localStorage on component mount
     useEffect(() => {
+        setLoadingUser(true);
+        setLoadingDog(true);
         loadUserandDogfromLocalOrApi();
         setLoadingUser(false);
         setLoadingDog(false);

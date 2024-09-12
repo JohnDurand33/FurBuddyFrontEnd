@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AppBar, Toolbar, Box, Grid, IconButton, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, Box, Grid, IconButton, Menu, MenuItem, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@emotion/react';
+import { useNavigate } from 'react-router-dom';
 
-const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
-    const { logout, authed, clearAllStateandLocalStorage } = useAuth();
+const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile }) => {
+    const { logout, authed, setAuthed, clearAllStateAndLocalStorage } = useAuth();
     const theme = useTheme();
-
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
 
@@ -24,9 +25,11 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
         setAnchorEl(null);
     };
 
-    const handleLogout = () => {
-        clearAllStateandLocalStorage();
+    const handleLogout = (e) => {
+        clearAllStateAndLocalStorage();
+        setAuthed(false);
         logout();
+        navigate('/login');
     };
 
     // Handle hamburger menu open/close
@@ -42,11 +45,11 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
         <AppBar
             position="static"
             sx={{
-                mt:2,
+                mt: 2,
                 backgroundColor: 'background.default',
                 maxHeight: '8vh',
                 width: '100%',
-                boxShadow: 'none', 
+                boxShadow: 'none',
                 borderBottom: isMobile ? null : '1px solid grey',
             }}>
             <Toolbar >
@@ -55,19 +58,7 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
                         {isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
                             <MenuIcon />
-                    </IconButton>}
-                        {/* <Menu
-                            anchorEl={menuAnchorEl}
-                            open={Boolean(menuAnchorEl)}
-                            onClose={handleServiceMenuClose}
-                            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                        >
-                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/dogs/view">Dog Profile</MenuItem>
-                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/health_records">Records</MenuItem>
-                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/calendar">Calendar</MenuItem>
-                            <MenuItem onClick={handleServiceMenuClose} component={NavLink} to="/map">Map</MenuItem>
-                        </Menu> */}
+                        </IconButton>}
                     </Grid>
 
                     {/* Center Section */}
@@ -79,47 +70,80 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
 
                     {/* Right Section */}
                     <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        <IconButton sx={{ ml: 1, color:"secondary" }} onClick={toggleTheme} >
+                        <IconButton sx={{ ml: 1, color: "secondary" }} onClick={toggleTheme}>
                             {isDark ? <Brightness7Icon sx={{ color: "secondary" }} /> : <Brightness4Icon sx={{ ml: 1, color: "grey" }} />}
                         </IconButton>
-                        <IconButton
-                            edge="end"
-                            color="primary"
-                            aria-label="account"
-                            onClick={handleAccountMenuOpen}
-                        >
-                            <AccountCircle sx={{ color: "grey" }}/>
-                        </IconButton>
 
-                        
+                        {/* Conditionally Render Log In/Sign Up or Account based on `authed` and screen size */}
+                        {isMobile ? (
+                            <IconButton
+                                edge="end"
+                                color="primary"
+                                aria-label="account"
+                                onClick={handleAccountMenuOpen}
+                            >
+                                <AccountCircle sx={{ color: "grey" }} />
+                            </IconButton>
+                        ) : (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
+                                {/* Render Log In / Sign Up or Account Settings / Logout */}
+                                {authed ? (
+                                    <>
+                                        <Button component={NavLink} to="/account" sx={{ ml: 1, color: theme.palette.text.primary }}>
+                                            Account Settings
+                                        </Button>
+                                        <Button onClick={handleLogout} sx={{ ml: 1, color: theme.palette.text.primary }}>
+                                            Logout
+                                        </Button>
+                                    </>
+                                ) : (
+                                            <>
+                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
+                                            Home
+                                        </Button>
+                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
+                                            About
+                                        </Button>
+                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
+                                            How It Works
+                                        </Button>
+                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
+                                            Blog
+                                        </Button>
+                                        <Button component={NavLink} to="/login" sx={{ ml: 1, color: theme.palette.text.primary }}>
+                                            Log In
+                                        </Button>
+                                        <Button component={NavLink} to="/signup" sx={{ ml: 1, color: theme.palette.secondary.main, backgroundColor: theme.palette.primary.main }}>
+                                            Sign Up
+                                        </Button>
+                                    </>
+                                )}
+                                </div>
+                        )}
 
-                        {/* Account Menu */}
+                        {/* Account Menu for Mobile */}
                         <Menu
                             anchorEl={anchorEl}
                             open={Boolean(anchorEl)}
                             onClose={handleAccountMenuClose}
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                            style={{ backgroundColor: 'primary' }}
                         >
                             {authed ? (
-                                <div >
+                                <div>
                                     <MenuItem component={NavLink} to="/account" style={{ color: 'text.primary' }}>
                                         Account Settings
                                     </MenuItem>
-                                    <MenuItem component={NavLink} onClick={handleLogout} style={{ color: 'text.primary' }}>
+                                    <MenuItem onClick={handleLogout} style={{ color: 'text.primary' }}>
                                         Logout
                                     </MenuItem>
                                 </div>
                             ) : (
-                                <div >
-                                        <MenuItem
-                                            component={NavLink}
-                                            to="/login"
-                                            style={{ textDecoration: 'none', color: 'primary',  }}>
+                                <div>
+                                    <MenuItem component={NavLink} to="/login" style={{ backgroundColor:'primary.main', textDecoration: 'none', color: 'text.primary',  }}>
                                         Log In
                                     </MenuItem>
-                                        <MenuItem component={NavLink} to="/signup" style={{ textDecoration: 'none', color: 'primary' }}>
+                                        <MenuItem component={NavLink} to="/signup" style={{ backgroundColor: 'primary.main', textDecoration: 'none', color: 'text.primary' }}>
                                         Sign Up
                                     </MenuItem>
                                 </div>
