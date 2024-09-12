@@ -10,9 +10,11 @@ import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { backEndUrl } from '../utils/config';
+import { useTheme } from '@mui/material/styles';
 
 const DogProfileCreate = ({ isMobile }) => {
-    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog } = useAuth();
+    const theme = useTheme();
+    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
@@ -89,8 +91,17 @@ const DogProfileCreate = ({ isMobile }) => {
                     },
                 }
             );
-            console.log("response.data", response.data);
+            console.log("creat dog response data", response.data);
             setLocalCurrDog(response.data);
+
+            const res = await axios.get(`${backEndUrl}/profile/profiles`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            console.log("fetch dogProfiles response data after create", res.data);
+            setLocalDogProfiles(res.data);
             navigate(`/dogs/view`);
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
@@ -99,6 +110,7 @@ const DogProfileCreate = ({ isMobile }) => {
             resetForm();
         }
     };
+
 
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', padding: '2rem' }}>
@@ -151,7 +163,7 @@ const DogProfileCreate = ({ isMobile }) => {
                                     type="file"
                                     id="image_path"
                                     name="image_path"
-                                    style={{ display: 'none' }} // Hide the actual file input
+                                    style={{ display: 'none' }} 
                                     onChange={(e) => handleImageChange(e, setFieldValue)}
                                 />
                             </Box>
@@ -341,10 +353,10 @@ const DogProfileCreate = ({ isMobile }) => {
                                 disabled={isSubmitting}
                                 style={{
                                     padding: '0.75rem 2rem',
-                                    backgroundColor: '#F7CA57',
+                                    backgroundColor: theme.palette.secondary.main,
                                     border: 'none',
                                     borderRadius: '5px',
-                                    color: '#fff',
+                                    color: 'black',
                                     cursor: 'pointer'
                                 }}
                             >

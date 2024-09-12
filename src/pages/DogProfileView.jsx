@@ -57,6 +57,8 @@ const DogProfileView = ({ isMobile }) => {
                     "Authorization": `Bearer ${token}`
                 },
             });
+            const newProfiles = currDogProfiles.filter((dog) => dog.id !== currDog.id);
+            setLocalDogProfiles(newProfiles);
             navigate('/heropage');
         } catch (error) {
             console.error('Error deleting dog profile:', error);
@@ -85,9 +87,12 @@ const DogProfileView = ({ isMobile }) => {
                     },
                 }
             );
-            setLocalCurrDog(updatedData);
+            if (response.status === 200) {
+            console.log('Updated dog profile successfully:', response.data);
+            setLocalCurrDog(response.data);
             setImageUrl(updatedData.image_path);
-            setIsEditing(false);
+                setIsEditing(false);
+            }
         } catch (error) {
             console.error('Error updating dog profile:', error);
         }
@@ -107,7 +112,7 @@ const DogProfileView = ({ isMobile }) => {
     });
 
     return (
-        <Box sx={{ padding: 3, color: 'text.primary', ml: isMobile ? '50px' : 0 }}>
+        <Box sx={{ padding: 3, color: 'text.primary', ml: isMobile ? '60px' : 0 }}>
             <Grid container alignItems="center" justifyContent="center" spacing={4} sx={{ pt: 5 }}>
 
                 {/* Profile image and Edit Button in top-right corner */}
@@ -118,7 +123,7 @@ const DogProfileView = ({ isMobile }) => {
                         {/* Dog Image */}
                         <Avatar
                             alt="Dog's Image"
-                            src={currDog.image_path || "/static/images/avatar/1.jpg"}
+                                    src={currDog ? currDog.image_path : "/static/images/avatar/1.jpg" }
                             sx={{ width: 150, height: 150, color: 'text.primary' }}
                         />
 
@@ -138,8 +143,9 @@ const DogProfileView = ({ isMobile }) => {
                                     Dog Information
                                 </Typography>
                                 <Box sx={{
-                                    backgroundColor: theme.palette.secondary.main,
+                                    backgroundColor: '#FFF5CD',
                                     borderRadius: '10px',
+                                    border: '1px solid #ccc',
                                     padding: '2rem', // Add padding
                                     minHeight: '180px'
                                 }}>
@@ -175,8 +181,9 @@ const DogProfileView = ({ isMobile }) => {
                                     Vet Information
                                 </Typography>
                                 <Box sx={{
-                                    backgroundColor: theme.palette.secondary.main,
+                                    backgroundColor: '#FFF5CD',
                                     borderRadius: '10px',
+                                    border: '1px solid #ccc',
                                     padding: '2rem', // Add padding
                                     minHeight: '180px'
                                 }}>
@@ -198,7 +205,14 @@ const DogProfileView = ({ isMobile }) => {
                             </Grid>
                         </Grid>
                         <Grid container justifyContent="center" sx={{ mt: 4 }}>
-                            <Button variant="outlined" color="error" onClick={handleDeleteProfile}>
+                            <Button
+                                onClick={handleDeleteProfile}
+                                sx={{
+                                    variant: "outlined",
+                                    color: "text.primary",
+                                    backgroundColor: theme.palette.secondary.main,
+                                    borderColor: "grey",
+                                }}>
                                 Delete Profile
                             </Button>
                         </Grid>
@@ -208,7 +222,7 @@ const DogProfileView = ({ isMobile }) => {
                             {/* Avatar and Edit Button Positioned at the Top */}
                             <Grid item xs={12}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-                                    <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                                    <div style={{ position: 'relative', width:  isMobile ? '150px' : '200px' , height: isMobile ? '150px' : '200px' }}>
                                         <Avatar
                                             alt="Dog's Image"
                                             src={imageUrl || currDog.image_path || ""}
@@ -241,8 +255,7 @@ const DogProfileView = ({ isMobile }) => {
                                             }}
                                         >
                                             <Icon icon={CameraOutlineIcon} width="24" height="24" />
-                                        </IconButton>
-                                        <label marginLeft='10px'>Add Image</label>
+                                        </IconButton><Typography sx={{fontSize:'1rem', textAlign:"center"}}>Image</Typography>
                                     </label>
                                 </div>
                             </Grid>
@@ -300,7 +313,9 @@ const DogProfileView = ({ isMobile }) => {
                                                 className={touched.date_of_birth && errors.date_of_birth ? 'error' : ''}
                                             />
                                             {touched.date_of_birth && errors.date_of_birth && <div style={{ color: 'red' }}>{errors.date_of_birth}</div>}
-                                        </div>
+                                                </div>
+                                                
+                                                
 
                                         <div>
                                             <label style={{ display: 'block', marginBottom: '0.5rem' }}>Gender</label>
@@ -434,20 +449,25 @@ const DogProfileView = ({ isMobile }) => {
                                         </div>
                                     </div>
 
-                                    <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', marginTop: '2rem' }}>
                                         <Button
                                             type="submit"
-                                            variant="contained"
-                                            color="primary"
-                                            disabled={isSubmitting}
-                                        >
+                                            sx={{
+                                                variant: "contained",
+                                                backgroundColor: theme.palette.secondary.main,
+                                                color: "text.primary",
+                                                border: "1px solid grey",
+                                            }}>
                                             {isSubmitting ? "Saving..." : "Save Changes"}
                                         </Button>
                                         <Button
-                                            variant="outlined"
-                                            color="secondary"
+                                            sx={{
+                                                variant: "outlined",
+                                                        color: "black",
+                                                border: "1px solid grey",
+                                                ml: 2,
+                                            }}
                                             onClick={handleEditToggle}
-                                            sx={{ ml: 2 }}
                                         >
                                             Cancel
                                         </Button>

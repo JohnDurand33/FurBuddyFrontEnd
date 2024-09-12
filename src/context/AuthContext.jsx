@@ -89,14 +89,21 @@ export const AuthProvider = ({ children }) => {
     const fetchDogProfilesFromApi = async (token) => {
             try {
                 const response = await axios.get(`${backEndUrl}/profile/profiles`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                 });
-                if (response.data.length > 0) {
+                if (response.data && response.data.length === 1) {
                     console.log('Fetched dog profiles:', response.data);
-                    setLocalDogProfiles(response.data);
-                    setLocalCurrDog(response.data[0]);  
-                    return response.data
-                } else {
+                    if (!Array.isArray(response.data)) {
+                        const oneDogList = [response.data];
+                        return oneDogList
+                    };
+                } else if (response.data){
+                    console.log('Fetched dogSSS profiles:', response.data);
+                    return response.data;
+                    } else {
                     console.log('No dog profiles found for user:', currUser);
                     return [];
                 }

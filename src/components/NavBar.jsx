@@ -6,9 +6,11 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '@emotion/react';
 
 const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
     const { logout, authed, clearAllStateandLocalStorage } = useAuth();
+    const theme = useTheme();
 
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
@@ -23,6 +25,7 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
     };
 
     const handleLogout = () => {
+        clearAllStateandLocalStorage();
         logout();
     };
 
@@ -76,16 +79,16 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
 
                     {/* Right Section */}
                     <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        <IconButton sx={{ ml: 1, color:"secondary.main" }} onClick={toggleTheme} >
-                            {isDark ? <Brightness7Icon sx={{ color: "secondary.main" }} /> : <Brightness4Icon sx={{ ml: 1, color: "secondary.main" }} />}
+                        <IconButton sx={{ ml: 1, color:"secondary" }} onClick={toggleTheme} >
+                            {isDark ? <Brightness7Icon sx={{ color: "secondary" }} /> : <Brightness4Icon sx={{ ml: 1, color: "grey" }} />}
                         </IconButton>
                         <IconButton
                             edge="end"
-                            color="primary.main"
+                            color="primary"
                             aria-label="account"
                             onClick={handleAccountMenuOpen}
                         >
-                            <AccountCircle sx={{ color: "secondary.main" }}/>
+                            <AccountCircle sx={{ color: "grey" }}/>
                         </IconButton>
 
                         
@@ -97,6 +100,7 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
                             onClose={handleAccountMenuClose}
                             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            style={{ backgroundColor: 'primary' }}
                         >
                             {authed ? (
                                 <div >
@@ -108,14 +112,14 @@ const Navbar = ({toggleRail, toggleTheme, isDark, isMobile}) => {
                                     </MenuItem>
                                 </div>
                             ) : (
-                                <div>
+                                <div >
                                         <MenuItem
                                             component={NavLink}
                                             to="/login"
-                                            style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            style={{ textDecoration: 'none', color: 'primary',  }}>
                                         Log In
                                     </MenuItem>
-                                    <MenuItem component={NavLink} to="/signup" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        <MenuItem component={NavLink} to="/signup" style={{ textDecoration: 'none', color: 'primary' }}>
                                         Sign Up
                                     </MenuItem>
                                 </div>

@@ -8,7 +8,6 @@ import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
 import { backEndUrl, GC_ID } from '../utils/config';
-import DogProfileView from './DogProfileView';
 
 const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
     const {
@@ -19,8 +18,10 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setFireUser,
         setLocalCurrUser,
         setLocalToken,
-        currDogProfiles,
-        setLocalDogProfiles
+        currDog,
+        dogProfiles,
+        setLocalDogProfiles,
+        setLocalCurrDog,
     } = useAuth();
 
     const [serverError, setServerError] = useState(null);
@@ -57,7 +58,6 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             const loginToken = data.auth_token;
 
             const loggedInUser = await fetchUserDataWithToken(loginToken);
-            console.log('Logged in user:', loggedInUser);
             setLocalCurrUser(loggedInUser);
             setAuthed(true);
 
@@ -65,14 +65,25 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             console.log('Fetched dogs:', fetchedDogs);
 
             if (fetchedDogs) {
-                setLocalDogProfiles(fetchedDogs);
-                navigate('/dogs/view');
-                setIsRailOpen(true);
+                console.log('Fetched dogs in setting phase:', fetchedDogs);
+                if (!Array.isArray(fetchedDogs)) {
+                    fetchedDogs = [fetchedDogs];
+                    setLocalDogProfiles(fetchedDogs);
+                    setLocalCurrDog(fetchedDogs[0]);
+                    navigate('/dogs/view');
+                    setIsRailOpen(true);
+                } else {
+                    setLocalDogProfiles(fetchedDogs);
+                    setLocalCurrDog(fetchedDogs[0]);
+                    navigate('/dogs/view');
+                    setIsRailOpen(true);
+                }
             } else {
                 navigate('/dogs/new');
                 setIsRailOpen(true);
             }
-            console.log('Fetched dogs:', fetchedDogs);
+            console.log('Current dog profiles:', dogProfiles);
+            console.log('Current dog:', currDog);
 
             
             // Set user as authenticated and navigate to dashboard
@@ -102,8 +113,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             });
 
             // Update context state and sync to localStorage
-            setLocal(res.data.owner);
-            updateCurrUserId(res.data.owner.id);
+            setLocalCurrUser(res.data.owner);
             updateToken(res.data.auth_token);
             setAuthed(true);
 

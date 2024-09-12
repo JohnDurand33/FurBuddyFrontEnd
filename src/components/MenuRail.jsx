@@ -19,23 +19,10 @@ import { useNavigate } from 'react-router-dom';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
     const navigate = useNavigate();
-    const { authed, token, user, handleLogout , currDogProfiles, currDog, fetchDogProfilesFromApi} = useAuth();  // Get auth and state functions
+    const { authed, token, currUser, handleLogout, dogProfiles, fetchDogProfilesFromApi, setLocalCurrDog, setLocalDogProfiles } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(false);
-    const [loading, setLoading] = useState(true);  
-
-    // Fetch dog profiles after login
-    useEffect(() => {
-        const fetchData = async () => {
-            if (authed && token) {
-                const profiles = await fetchDogProfilesFromApi(token); 
-                if (profiles) {
-                    setLoading(false); 
-                }
-            }
-        };
-        fetchData();
-    }, [authed, token]);
+    const [loading, setLoading] = useState(true);  // State for managing loading
 
     const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);
 
@@ -47,6 +34,32 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         } else {
             return isCollapsed ? '64px' : '240px';
         }
+    };
+
+    // Fetch dog profiles after login
+    useEffect(() => {
+        const fetchData = async () => {
+            if (authed && token) {
+                const profiles = await fetchDogProfilesFromApi(token); // Fetch the dog profiles after login
+                if (profiles) {
+                    setLoading(false); // Profiles loaded, stop loading
+                }
+            }
+        };
+        fetchData();
+    }, [authed, token]);
+
+    const handledogProfileLog = () => {
+        console.log('dogProfiles:', dogProfiles);
+    };
+
+    const handleCurrDogChange = (dog) => () => {
+        setLocalCurrDog(dog);
+        navigate('/dogs/view');
+    };
+
+    const handleAddDog = () => {
+        navigate('/dogs/new');
     };
 
     return (
@@ -73,96 +86,98 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                 },
             }}
         >
-            <List >
-                {/* Logo and Toggle Button */}
-                <ListItemButton sx={{ marginBottom: '16px', display: 'flex', justifyContent:'center' }}>
-                    <ListItemIcon sx={{ minWidth: 'auto' }}>
-                        <Icon icon="mdi:paw" width="30" height="30" />
-                    </ListItemIcon>
-
-                    {!isMobile && <IconButton onClick={toggleCollapse} sx={{ marginLeft: 'auto' }}>
-                        <Icon icon={!isCollapsed ? ChevronLeftIcon : ChevronRightIcon} />
-                    </IconButton>}
-                </ListItemButton>
-
-                <Divider sx={{ marginBottom: '16px' }} />
-
-                {/* Navigation Links */}
-                <ListItemButton sx={{ marginBottom: '12px' }}>
-                    <ListItemIcon><Icon icon={DashboardIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
-                </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '12px' }}>
-                    <ListItemIcon><Icon icon={CalendarIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Calendar" />}
-                </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '12px' }}>
-                    <ListItemIcon><Icon icon={RecordsIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Medical Records" />}
-                </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '16px' }}>
-                    <ListItemIcon><Icon icon={MapIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Map" />}
-                </ListItemButton>
-
-                <Divider sx={{ marginBottom: '16px' }} />
-
-                {/* Pets Dropdown */}
-                <ListItemButton onClick={togglePetsDropdown} sx={{ marginBottom: '12px' }}>
-                    <ListItemIcon><Icon icon={PetsIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Pets" />}
-                    <IconButton sx={{ marginLeft: 'auto' }}>
-                        <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
-                    </IconButton>
-                </ListItemButton>
-                {isPetsOpen && currDogProfiles && currDogProfiles.map(dog => (
-                    <ListItemButton
-                        key={dog.id}
-                        sx={{
-                            marginBottom: '12px',
-                            '&:hover': {
-                                backgroundColor: theme.palette.secondary.main,
-                                color: '#fff',
-                            },
-                        }}
-                    >
-                        <ListItemIcon sx={{ textAlign: isMobile ? 'center' : 'start' }}>
-                            {dog.image_path ? <Avatar src={dog.image_path} /> : <Avatar>{dog.name[0]}</Avatar>}
+                <List>
+                    {/* Logo and Toggle Button */}
+                    <ListItemButton sx={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+                        <ListItemIcon sx={{ minWidth: 'auto' }}>
+                            <Icon icon="mdi:paw" width="30" height="30" />
                         </ListItemIcon>
-                        {!isMobile && !isCollapsed && <ListItemText primary={dog.name} />}
+                        {!isMobile && <IconButton onClick={toggleCollapse} sx={{ marginLeft: 'auto' }}>
+                            <Icon icon={!isCollapsed ? ChevronLeftIcon : ChevronRightIcon} />
+                        </IconButton>}
                     </ListItemButton>
-                ))}
-                {isPetsOpen && (
-                    <ListItemButton sx={{ marginBottom: '16px', textAlign: isMobile ? 'center' : 'start' }} onClick={togglePetsDropdown}>
-                        <ListItemIcon><Icon icon={AddIcon} /></ListItemIcon>
-                        {!isMobile && !isCollapsed && <ListItemText primary="Add Dog" />}
+
+                    <Divider sx={{ marginBottom: '16px' }} />
+
+                    {/* Navigation Links */}
+                    <ListItemButton sx={{ marginBottom: '12px' }}>
+                        <ListItemIcon><Icon icon={DashboardIcon} onClick={handledogProfileLog}/></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
                     </ListItemButton>
-                )}
+                    <ListItemButton sx={{ marginBottom: '12px' }}>
+                        <ListItemIcon><Icon icon={CalendarIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Calendar" />}
+                    </ListItemButton>
+                    <ListItemButton sx={{ marginBottom: '12px' }}>
+                        <ListItemIcon><Icon icon={RecordsIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Medical Records" />}
+                    </ListItemButton>
+                    <ListItemButton sx={{ marginBottom: '16px' }}>
+                        <ListItemIcon><Icon icon={MapIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Map" />}
+                    </ListItemButton>
 
-                <Divider sx={{ marginBottom: '16px' }} />
+                    <Divider sx={{ marginBottom: '16px' }} />
 
-                {/* Settings & Logout */}
-                <ListItemButton sx={{ marginBottom: '12px' }}>
-                    <ListItemIcon><Icon icon={SettingsIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Settings" />}
-                </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '16px' }} onClick={handleLogout}>
-                    <ListItemIcon><Icon icon={LogoutIcon} /></ListItemIcon>
-                    {!isMobile && !isCollapsed && <ListItemText primary="Logout" />}
-                </ListItemButton>
-
-                <Divider sx={{ marginBottom: '16px' }} />
-
-                {/* User Account */}
-                <ListItemButton>
-                    <ListItemIcon>
-                        <Avatar src="/static/images/avatar/1.jpg" alt="User Avatar" />
-                    </ListItemIcon>
-                    {!isMobile && user && user.owner_email && (
-                        <ListItemText secondary={user.owner_email} />
+                    {/* Pets Dropdown */}
+                    <ListItemButton onClick={togglePetsDropdown} sx={{ marginBottom: '12px' }}>
+                        <ListItemIcon><Icon icon={PetsIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Pets" />}
+                        <IconButton sx={{ marginLeft: 'auto' }}>
+                            <Icon icon={isPetsOpen ? ChevronUpIcon : ChevronDownIcon} />
+                        </IconButton>
+                    </ListItemButton>
+                        {isPetsOpen && dogProfiles && dogProfiles.length > 0 && (
+                            console.log('Rendering dog profiles', dogProfiles),
+                            dogProfiles.map(dog => (
+                                <ListItemButton
+                                    onClick={handleCurrDogChange(dog)}
+                                    key={dog.id}
+                                    sx={{
+                                        marginBottom: '12px',
+                                        '&:hover': {
+                                            backgroundColor: theme.palette.secondary.main,
+                                            color: '#fff',
+                                        },
+                                    }}
+                                >
+                                <ListItemIcon sx={{ textAlign: isMobile ? 'center' : 'start' }}>
+                                    {dog.image_path ? <Avatar src={dog.image_path} /> : <Avatar>{dog.name[0]}</Avatar>}
+                                </ListItemIcon>
+                                {!isMobile && !isCollapsed && <ListItemText primary={dog.name} />}
+                            </ListItemButton>
+                    )))}
+                    {isPetsOpen && (
+                    <ListItemButton sx={{ marginBottom: '16px', textAlign: isMobile ? 'center' : 'start' }} onClick={handleAddDog}>
+                            <ListItemIcon><Icon icon={AddIcon} /></ListItemIcon>
+                            {!isMobile && !isCollapsed && <ListItemText primary="Add Dog" />}
+                        </ListItemButton>
                     )}
-                </ListItemButton>
-            </List>
+
+                    <Divider sx={{ marginBottom: '16px' }} />
+
+                    {/* Settings & Logout */}
+                    <ListItemButton sx={{ marginBottom: '12px' }}>
+                        <ListItemIcon><Icon icon={SettingsIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Settings" />}
+                    </ListItemButton>
+                    <ListItemButton sx={{ marginBottom: '16px' }} onClick={handleLogout}>
+                        <ListItemIcon><Icon icon={LogoutIcon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Logout" />}
+                    </ListItemButton>
+
+                    <Divider sx={{ marginBottom: '16px' }} />
+
+                    {/* User Account */}
+                    <ListItemButton>
+                        <ListItemIcon>
+                        <Avatar src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"} />
+                        </ListItemIcon>
+                        {!isMobile && currUser && currUser.owner_email && (
+                            <ListItemText primary={currUser.owner_email} />
+                        )}
+                    </ListItemButton>
+                </List>
         </Drawer>
     );
 };
