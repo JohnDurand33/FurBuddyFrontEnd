@@ -10,7 +10,7 @@ const lightTheme = createTheme({
     palette: {
         mode: "light", // This is the default for MUI, but it's good to be explicit
         primary: {
-            main: "#FFF5CD", // Yellow-gold color
+            main: "#FFFAE7", // Yellow-gold color
         },
         secondary: {
             main: "#F7CA57", // Lighter orange from the Rail
@@ -54,10 +54,10 @@ const darkTheme = createTheme({
     palette: {
         mode: "dark", // Switch to dark mode
         primary: {
-            main: "#F7CA57", // Lighter orange from the Rail (Swapped)
+            main: "#FFFAE7", // Lighter orange from the Rail (Swapped)
         },
         secondary: {
-            main: "#FFECA1", // Yellow-gold color (Swapped)
+            main: "#F7CA57", // Yellow-gold color (Swapped)
         },
         background: {
             default: "#333333", // Charcoal-like color for dark mode

@@ -1,0 +1,234 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f7f7f7;
+  color: #333;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Heading */
+h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Table Controls */
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.table-controls label {
+  font-size: 14px;
+}
+
+.table-controls select {
+  padding: 5px;
+  margin-left: 5px;
+}
+
+.btn {
+  padding: 10px 15px;
+  background-color: #f5a623;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn.add-btn {
+  margin-right: 10px;
+}
+
+.btn:hover {
+  background-color: #e59d22;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+thead th {
+  text-align: left;
+  background-color: #f1f1f1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+tbody tr {
+  border-bottom: 1px solid #ddd;
+}
+
+tbody tr td {
+  padding: 12px;
+}
+
+tbody tr td a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.delete-btn {
+  color: red;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+/* Drawer Styles */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.custom-drawer {
+  background-color: white;
+  width: 400px;
+  height: 100%;
+  padding: 30px;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.custom-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.drawer-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.drawer-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.drawer-form input,
+.drawer-form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.drawer-form .form-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-btn {
+  background-color: #f5a623;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background-color: #e59d22;
+}
+
+.cancel-btn {
+  background-color: #ccc;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background-color: #bbb;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  background-color: #f5a623;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #e5e5e5;
+  color: #999;
+}
+
+.pagination span {
+  padding: 5px;
+}

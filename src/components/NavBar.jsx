@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
 
-const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile }) => {
+const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile, isCollapsed }) => {
     const { logout, authed, setAuthed, clearAllStateAndLocalStorage } = useAuth();
     const theme = useTheme();
     const navigate = useNavigate();
@@ -64,7 +64,8 @@ const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile }) => {
                     {/* Center Section */}
                     <Grid item xs={4} container justifyContent="center">
                         <Box sx={{ transform: '' }}>
-                            <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="" />
+                            {!authed ? (<img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="Logo" />
+                            ) : ("")}
                         </Box>
                     </Grid>
 
@@ -104,7 +105,7 @@ const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile }) => {
                                         <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
                                             About
                                         </Button>
-                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
+                                        <Button component={NavLink} style={{ color: theme.palette.text.primary, textWrap:false }}>
                                             How It Works
                                         </Button>
                                         <Button component={NavLink} style={{ color: theme.palette.text.primary }}>

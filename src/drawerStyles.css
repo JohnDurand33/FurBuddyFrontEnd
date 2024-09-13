@@ -1,0 +1,149 @@
+/* Drawer overlay */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Custom drawer */
+.custom-drawer {
+    position: relative;
+    background-color: white;
+    width: 480px; /* Widen by 20% */
+    height: 100%;
+    padding-top: 40px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-drawer.open {
+    transform: translateX(0);
+}
+
+/* Form styling */
+.form-field {
+    margin-bottom: 30px; /* Increase the margin between fields */
+}
+
+.form-field label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-input.error {
+    border-color: red;
+}
+
+.error-message {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Buttons container */
+.form-buttons {
+    position: absolute;
+    bottom: 30px; /* Position buttons at the bottom */
+    left: 0;
+    width: 100%;
+    padding: 0 40px; /* Padding to match the drawer padding */
+    display: flex;
+    justify-content: space-between; /* Space out the buttons */
+}
+
+.form-buttons button {
+    width: auto; /* Auto width for compact buttons */
+    padding: 8px 20px; /* Button size adjusted */
+}
+
+/* Specific button styling */
+.save-btn {
+    background-color: #F4A261;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.save-btn:hover {
+    background-color: #e59d22;
+}
+
+.cancel-btn {
+    background-color: #ccc;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+
+/* Align the upload section as in the design */
+.upload-receipt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.upload-receipt label {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+}
+
+.file-upload input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.upload-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: space-around;
+}
+
+.upload-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    color: #007bff;
+}
+
+.upload-button:hover {
+    text-decoration: underline;
+}

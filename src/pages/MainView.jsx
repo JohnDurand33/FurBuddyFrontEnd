@@ -47,7 +47,7 @@ function MainView({ toggleTheme, isDark }) {
             height: '100vh',
             transition: 'margin-left 0.3s ease-in-out',
         }}>
-            <Navbar toggleTheme={toggleTheme} isMobile={isMobile} toggleRail={toggleRail} />
+            <Navbar toggleTheme={toggleTheme} isMobile={isMobile} toggleRail={toggleRail} isCollapsed={isCollapsed}/>
             <MenuRail isMobile={isMobile} isRailOpen={isRailOpen} toggleRail={toggleRail} isCollapsed={isCollapsed}
                 toggleCollapse={handleCollapseToggle} />
             <Box

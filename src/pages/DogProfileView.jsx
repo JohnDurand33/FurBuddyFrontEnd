@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Grid, Box, Avatar, Typography, IconButton, Button, Modal } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Formik, Form, Field } from 'formik'; 
@@ -174,7 +175,10 @@ const DogProfileView = ({ isMobile }) => {
                             >
                                     <Icon icon={editIcon} width="24" height="24" />
                                     <Typography>Edit</Typography>
-                            </IconButton>
+                                </IconButton>
+                                <Button component={NavLink} to='/records' sx={{ color: theme.palette.text.primary }}>
+                                    Home
+                                </Button>
                     </Box>
                 </Grid>
 
