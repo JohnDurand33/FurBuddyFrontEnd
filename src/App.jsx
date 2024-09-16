@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter as Router } from 'react-router-dom';
 import MainView from './pages/MainView';
 import { RecordsProvider } from './context/RecordsContext'; 
-import { FilterProvider } from './context/FilterContext';
 
 
 function App() {
@@ -26,9 +25,7 @@ function App() {
                 <CssBaseline />
                 <AuthProvider>
                     <RecordsProvider>
-                        <FilterProvider>
                             <MainView toggleTheme={toggleTheme} isDark={isDark} />
-                        </FilterProvider>
                     </RecordsProvider>
                 </AuthProvider>
             </ThemeProvider>

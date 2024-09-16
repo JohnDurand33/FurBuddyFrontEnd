@@ -12,6 +12,9 @@
   "dependencies": {
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
+    "@iconify-icons/mdi": "^1.2.48",
+    "@iconify/icons-carbon": "^1.2.20",
+    "@iconify/icons-mdi": "^1.2.48",
     "@iconify/react": "^5.0.2",
     "@mui/icons-material": "^5.16.7",
     "@mui/material": "^5.16.7",

@@ -13,7 +13,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
     const {
         clearAllStateAndLocalStorage,
         fetchUserDataWithToken,
-        fetchDogProfilesFromApi,
+        fetchCurrDogProfiles,
         setAuthed,
         setFireUser,
         setLocalCurrUser,
@@ -23,6 +23,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         dogProfiles,
         setLocalDogProfiles,
         setLocalCurrDog,
+        fetchAndSetLocalCurrDogs,
     } = useAuth();
 
     const [serverError, setServerError] = useState(null);
@@ -35,6 +36,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
 
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null);
+        setSubmitting(true);
         clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
 
         
@@ -59,23 +61,59 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
 
             setLocalToken(data.auth_token);
             const loginToken = data.auth_token;
+            console.log('Login token:', loginToken);
 
             const loggedInUser = await fetchUserDataWithToken(loginToken);
             setLocalCurrUser(loggedInUser);
+            console.log('Logged in user:', loggedInUser);
             setAuthed(true);
 
-            const fetchedDogs = await fetchDogProfilesFromApi(loginToken);
-            console.log('Fetched dogs:', fetchedDogs);
+            const fetchCurrDogProfiles = async (token) => {
+                try {
+                    const response = await axios.get(`${backEndUrl}/profile/profiles`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+                    if (response.data && response.data.length > 0) {
+                        console.log('Fetched dog profiles:', response.data);
+                        setLocalDogProfiles(response.data);
+                        setLocalCurrDog(response.data[0]);
+                        navigate('/dogs/view');
 
-            if (fetchedDogs && fetchedDogs.length > 0) {
-                setLocalDogProfiles(fetchedDogs);
-                setLocalCurrDog(fetchedDogs[0]);
-                navigate('/dogs/view');
-            } else {
-                navigate('/dogs/new');
-            } 
-            console.log('Current dog profiles:', dogProfiles);
-            console.log('Current dog:', currDog);
+                    };
+                } catch (error) {
+                    console.error('Error fetching dog profiles:', error);
+                    navigate('/dogs/new');
+                }
+            };
+            const repsonse = fetchCurrDogProfiles(loginToken);
+            console.log('fetchCurrDogProfiles response:', repsonse);
+            
+
+            const fetchCurrDogRecords = async (currDog) => {
+                try {
+                    const response = await axios.get(`${backEndUrl}/profile/${currDog.id}/records`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+                    if (response.data && response.data.length > 0) {
+                        console.log('Fetched dog profiles:', response.data);
+                        setLocalDogProfiles(response.data);
+                        setLocalCurrDog(response.data[0]);
+
+                    };
+                } catch (error) {
+                    console.error('Error fetching dog profiles:', error);
+                    return [];
+                }
+            };
+            const response = fetchCurrDogRecords(currDog);
+            console.log('fetchCurrDogRecords response:', response);
+
             setAuthed(true);
             setIsRailOpen(true);
 
@@ -84,18 +122,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         } finally {
             setSubmitting(false);
         }
-
-        // Fetch dog profiles
-        try {
-            
-            // Set user as authenticated and navigate to dashboard
-
-        } catch (err) {
-            setServerError(err.message || 'Login failed. Please try again.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    };  
             
 
     const handleGoogleLoginSuccess = async (credentialResponse) => {

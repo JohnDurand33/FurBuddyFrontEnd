@@ -11,6 +11,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { backEndUrl } from '../utils/config';
 import { Icon } from '@iconify/react';
 import editIcon from '@iconify-icons/mdi/pencil-outline'; // Iconify edit icon
+import pencilIcon from '@iconify-icons/mdi/pencil';
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,10 +25,16 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchDogProfilesFromApi } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchCurrDogProfiles, deleteDogProfile } = useAuth();
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
+    };
+
+    const handleLogData = () => {
+        console.log('Current User:', currUser);
+        console.log('Current Dog:', currDog);
+        console.log('Dog Profiles:', dogProfiles);
     };
 
     // Close the modal
@@ -61,17 +68,12 @@ const DogProfileView = ({ isMobile }) => {
     };
 
     // Handle deleting profile
-    const handleDeleteProfile = async () => {
+    const handleDeleteProfile = async (currDog) => {
         try {
             console.log('Deleting dog profile:', currDog);
-            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-            });
-            console.log('Delete response:', response.data);
-            const newBackendProfiles = await fetchDogProfilesFromApi(token);
+            const response = await deleteDogProfile(currDog);
+            console.log(response.data);
+            const newBackendProfiles = await fetchCurrDogProfiles(token);
             console.log('Deleted dog profile:', currDog);
             console.log('Updated dog profiles:', newBackendProfiles);
             setLocalDogProfiles(newBackendProfiles);
@@ -370,210 +372,159 @@ const DogProfileView = ({ isMobile }) => {
                         >
                             {({ values, errors, touched, setFieldValue, isSubmitting }) => (
                                     <Form style={{ margin: '0 auto', width: '80%' }}>
-                                        <div>
-                                        <Grid item xs={12} style={{ marginLeft: '-10%', width: '80%' }}>
-                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                                                Dog Information
-                                            </Typography>
-                                        </Grid>
-                                        
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
-                                            <div>
-                                                
-                                            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Pet Name</label>
-                                            <Field
-                                                type="text"
-                                                id="name"
-                                                name="name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.name && errors.name ? 'error' : ''}
-                                            />
-                                            {touched.name && errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="breed" style={{ display: 'block', marginBottom: '0.5rem' }}>Breed</label>
-                                            <Field
-                                                type="text"
-                                                id="breed"
-                                                name="breed"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.breed && errors.breed ? 'error' : ''}
-                                            />
-                                            {touched.breed && errors.breed && <div style={{ color: 'red' }}>{errors.breed}</div>}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="age" style={{ display: 'block', marginBottom: '0.5rem' }}>Age</label>
-                                            <Field
-                                                type="text"
-                                                id="age"
-                                                name="age"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                        className={touched.age && errors.age ? 'error' : ''}
-                                            />
-                                                    {touched.age && errors.age && <div style={{ color: 'red' }}>{errors.age}</div>}
-                                                </div>
-                                                
-                                                
-
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Gender</label>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Field
-                                                    type="radio"
-                                                    id="female"
-                                                    name="sex"
-                                                    value="Female"
-                                                    style={{ marginRight: '0.5rem' }}
-                                                />
-                                                <label htmlFor="female" style={{ marginRight: '1rem' }}>Female</label>
-                                                <Field
-                                                    type="radio"
-                                                    id="male"
-                                                    name="sex"
-                                                    value='Male'
-                                                    style={{ marginRight: '0.5rem' }}
-                                                />
-                                                <label htmlFor="male">Male</label>
-                                            </div>
-                                            {touched.sex && errors.sex && <div style={{ color: 'red' }}>{errors.sex}</div>}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="weight" style={{ display: 'block', marginBottom: '0.5rem' }}>Weight (lbs)</label>
-                                            <Field
-                                                type="text"
-                                                id="weight"
-                                                name="weight"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.weight && errors.weight ? 'error' : ''}
-                                            />
-                                            {touched.weight && errors.weight && <div style={{ color: 'red' }}>{errors.weight}</div>}
-                                        </div>
-
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>{fixedLabel(values)} Status</label>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <input
-                                                    type="radio"
-                                                    id="fixedYes"
-                                                    name="fixed"
-                                                    value="yes"
-                                                    checked={values.fixed === true}
-                                                    style={{ marginRight: '0.5rem' }}
-                                                    onChange={() => setFieldValue('fixed', true)}
-                                                />
-                                                <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>
-                                                <input
-                                                    type="radio"
-                                                    id="fixedNo"
-                                                    name="fixed"
-                                                    value="no"
-                                                    checked={values.fixed === false}
-                                                    style={{ marginRight: '0.5rem' }}
-                                                    onChange={() => setFieldValue('fixed', false)}
-                                                />
-                                                <label htmlFor="fixedNo">No</label>
-                                            </div>
-                                            {touched.fixed && errors.fixed && <div style={{ color: 'red' }}>{errors.fixed}</div>}
-                                        </div>
-
-                                        <div style={{ gridColumn: '1 / 3' }}>
-                                            <label htmlFor="chip_number" style={{ display: 'block', marginBottom: '0.5rem' }}>Microchip No.</label>
-                                            <Field
-                                                type="text"
-                                                id="chip_number"
-                                                name="chip_number"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.chip_number && errors.chip_number ? 'error' : ''}
-                                            />
-                                            {touched.chip_number && errors.chip_number && <div style={{ color: 'red' }}>{errors.chip_number}</div>}
-                                        </div>
-                                    </div>
-
-                                        <Grid item xs={12} style={{ marginLeft:'-10%', width: '80%' }}>
-                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                                                Vet Information
-                                            </Typography>
+                                        <Grid container spacing={3}> {/* Add container for grid layout */}
+                                            <Grid item xs={12}>
+                                                <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
+                                                    Dog Information
+                                                </Typography>
                                             </Grid>
-                                        </div>
-                                        <div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
-                                        <div>
-                                            <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Name</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_clinic_name"
-                                                name="vet_clinic_name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_name && errors.vet_clinic_name ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_name && errors.vet_clinic_name && <div style={{ color: 'red' }}>{errors.vet_clinic_name}</div>}
-                                        </div>
+                                            {/* Pet Name */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Pet Name</label>
+                                                <Field
+                                                    type="text"
+                                                    id="name"
+                                                    name="name"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.name && errors.name ? 'error' : ''}
+                                                />
+                                                {touched.name && errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
+                                            </Grid>
+                                            {/* Breed */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="breed" style={{ display: 'block', marginBottom: '0.5rem' }}>Breed</label>
+                                                <Field
+                                                    type="text"
+                                                    id="breed"
+                                                    name="breed"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.breed && errors.breed ? 'error' : ''}
+                                                />
+                                                {touched.breed && errors.breed && <div style={{ color: 'red' }}>{errors.breed}</div>}
+                                            </Grid>
+                                            {/* Age */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="age" style={{ display: 'block', marginBottom: '0.5rem' }}>Age</label>
+                                                <Field
+                                                    type="text"
+                                                    id="age"
+                                                    name="age"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.age && errors.age ? 'error' : ''}
+                                                />
+                                                {touched.age && errors.age && <div style={{ color: 'red' }}>{errors.age}</div>}
+                                            </Grid>
+                                            {/* Gender */}
+                                            <Grid item xs={12} md={6}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Gender</label>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <Field type="radio" id="female" name="sex" value="Female" style={{ marginRight: '0.5rem' }} />
+                                                    <label htmlFor="female" style={{ marginRight: '1rem' }}>Female</label>
+                                                    <Field type="radio" id="male" name="sex" value="Male" style={{ marginRight: '0.5rem' }} />
+                                                    <label htmlFor="male">Male</label>
+                                                </div>
+                                                {touched.sex && errors.sex && <div style={{ color: 'red' }}>{errors.sex}</div>}
+                                            </Grid>
+                                            {/* Weight */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="weight" style={{ display: 'block', marginBottom: '0.5rem' }}>Weight (lbs)</label>
+                                                <Field
+                                                    type="text"
+                                                    id="weight"
+                                                    name="weight"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.weight && errors.weight ? 'error' : ''}
+                                                />
+                                                {touched.weight && errors.weight && <div style={{ color: 'red' }}>{errors.weight}</div>}
+                                            </Grid>
+                                            {/* Fixed Status */}
+                                            <Grid item xs={12} md={6}>
+                                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>{fixedLabel(values)} Status</label>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <Field type="radio" id="fixedYes" name="fixed" value="yes" checked={values.fixed === true} style={{ marginRight: '0.5rem' }} />
+                                                    <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>
+                                                    <Field type="radio" id="fixedNo" name="fixed" value="no" checked={values.fixed === false} style={{ marginRight: '0.5rem' }} />
+                                                    <label htmlFor="fixedNo">No</label>
+                                                </div>
+                                                {touched.fixed && errors.fixed && <div style={{ color: 'red' }}>{errors.fixed}</div>}
+                                            </Grid>
+                                            {/* Microchip Number */}
+                                            <Grid item xs={12}>
+                                                <label htmlFor="chip_number" style={{ display: 'block', marginBottom: '0.5rem' }}>Microchip No.</label>
+                                                <Field
+                                                    type="text"
+                                                    id="chip_number"
+                                                    name="chip_number"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.chip_number && errors.chip_number ? 'error' : ''}
+                                                />
+                                                {touched.chip_number && errors.chip_number && <div style={{ color: 'red' }}>{errors.chip_number}</div>}
+                                            </Grid>
 
-                                        <div>
-                                            <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Doctor Name</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_doctor_name"
-                                                name="vet_doctor_name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_doctor_name && errors.vet_doctor_name ? 'error' : ''}
-                                            />
-                                            {touched.vet_doctor_name && errors.vet_doctor_name && <div style={{ color: 'red' }}>{errors.vet_doctor_name}</div>}
-                                        </div>
+                                            {/* Vet Information */}
+                                            <Grid item xs={12}>
+                                                <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Vet Information</Typography>
+                                            </Grid>
+                                            {/* Vet Clinic Name */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Name</label>
+                                                <Field
+                                                    type="text"
+                                                    id="vet_clinic_name"
+                                                    name="vet_clinic_name"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.vet_clinic_name && errors.vet_clinic_name ? 'error' : ''}
+                                                />
+                                                {touched.vet_clinic_name && errors.vet_clinic_name && <div style={{ color: 'red' }}>{errors.vet_clinic_name}</div>}
+                                            </Grid>
+                                            {/* Vet Doctor Name */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Doctor Name</label>
+                                                <Field
+                                                    type="text"
+                                                    id="vet_doctor_name"
+                                                    name="vet_doctor_name"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.vet_doctor_name && errors.vet_doctor_name ? 'error' : ''}
+                                                />
+                                                {touched.vet_doctor_name && errors.vet_doctor_name && <div style={{ color: 'red' }}>{errors.vet_doctor_name}</div>}
+                                            </Grid>
+                                            {/* Vet Clinic Phone */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Phone</label>
+                                                <Field
+                                                    type="text"
+                                                    id="vet_clinic_phone"
+                                                    name="vet_clinic_phone"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.vet_clinic_phone && errors.vet_clinic_phone ? 'error' : ''}
+                                                />
+                                                {touched.vet_clinic_phone && errors.vet_clinic_phone && <div style={{ color: 'red' }}>{errors.vet_clinic_phone}</div>}
+                                            </Grid>
+                                            {/* Vet Clinic Email */}
+                                            <Grid item xs={12} md={6}>
+                                                <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Email</label>
+                                                <Field
+                                                    type="email"
+                                                    id="vet_clinic_email"
+                                                    name="vet_clinic_email"
+                                                    style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                    className={touched.vet_clinic_email && errors.vet_clinic_email ? 'error' : ''}
+                                                />
+                                                {touched.vet_clinic_email && errors.vet_clinic_email && <div style={{ color: 'red' }}>{errors.vet_clinic_email}</div>}
+                                            </Grid>
 
-                                        <div>
-                                            <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Phone</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_clinic_phone"
-                                                name="vet_clinic_phone"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_phone && errors.vet_clinic_phone ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_phone && errors.vet_clinic_phone && <div style={{ color: 'red' }}>{errors.vet_clinic_phone}</div>}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Email</label>
-                                            <Field
-                                                type="email"
-                                                id="vet_clinic_email"
-                                                name="vet_clinic_email"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_email && errors.vet_clinic_email ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_email && errors.vet_clinic_email && <div style={{ color: 'red' }}>{errors.vet_clinic_email}</div>}
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', marginTop: '2rem' }}>
-                                        <Button
-                                            type="submit"
-                                            sx={{
-                                                variant: "contained",
-                                                backgroundColor: theme.palette.secondary.main,
-                                                color: "text.primary",
-                                                border: "1px solid grey",
-                                            }}>
-                                            {isSubmitting ? "Saving..." : "Save Changes"}
-                                        </Button>
-                                        <Button
-                                            sx={{
-                                                variant: "outlined",
-                                                        color: "black",
-                                                border: "1px solid grey",
-                                                ml: 2,
-                                            }}
-                                            onClick={handleEditToggle}
-                                        >
-                                            Cancel
-                                        </Button>
-                                            </div>
-                                        </div>
-                                </Form>
+                                            {/* Buttons */}
+                                            <Grid item xs={12} container justifyContent="center" style={{ marginTop: '2rem' }}>
+                                                <Button type="submit" sx={{ variant: "contained", backgroundColor: theme.palette.secondary.main, color: "text.primary", border: "1px solid grey" }}>
+                                                    {isSubmitting ? "Saving..." : "Save Changes"}
+                                                </Button>
+                                                <Button sx={{ variant: "outlined", color: "black", border: "1px solid grey", ml: 2 }} onClick={handleEditToggle}>
+                                                    Cancel
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+                                    </Form>
                             )}
                         </Formik>
                     </>

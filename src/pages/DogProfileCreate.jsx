@@ -6,7 +6,8 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../config/firebase';
 import { Avatar, Box, IconButton } from '@mui/material';
 import { Icon } from '@iconify/react';
-import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
+import cameraIcon from '@iconify/icons-mdi/camera';  // Import specific icons
+import editIcon from '@iconify/icons-mdi/pencil';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { backEndUrl } from '../utils/config';
@@ -14,7 +15,7 @@ import { useTheme } from '@mui/material/styles';
 
 const DogProfileCreate = ({ isMobile }) => {
     const theme = useTheme();
-    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles } = useAuth();
+    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles, deleteDogProfile, fetchCurrDogProfiles } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
@@ -155,7 +156,7 @@ const DogProfileCreate = ({ isMobile }) => {
                                         '&:hover': { backgroundColor: 'transparent' }
                                     }}
                                 >
-                                    <Icon icon={CameraOutlineIcon} width="24" height="24" />
+                                    <Icon icon={cameraIcon} width="24" height="24" />
                                 </IconButton>
                                 <label htmlFor="image_path" style={{ marginLeft: '10px' }}>Upload Image:</label>
                                 <input
