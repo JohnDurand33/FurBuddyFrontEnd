@@ -14,7 +14,7 @@ const RecordsPage = () => {
     const [showFilterModal, setShowFilterModal] = useState(false); 
     const [drawerMode, setDrawerMode] = useState('create');
     const [loading, setLoading] = useState(false); 
-    const { fetchAndSetLocalCurrDogRecords, handleDeleteCurrDogRec, currDogRecords, selectedRecord, setLocalSelectedRecord, fetchCurrDogRecords, } = useRecords();  
+    const { fetchAndSetLocalCurrDogRecords, currDogRecords, selectedRecord, setLocalSelectedRecord, fetchCurrDogRecords, refetchCurrDogRecords } = useRecords();  
     const { navigate } = useNavigate(); 
 
     // States for filtering and sorting
@@ -23,21 +23,22 @@ const RecordsPage = () => {
     const [isFilterActive, setIsFilterActive] = useState(false);  // Tracks if filters are applied
     const [sortConfig, setSortConfig] = useState({ key: 'serviceDate', direction: 'asc' });  // Sorting config
 
-    // Fetch and set records whenever the current dzog is updated
+    // Fetch and set records whenever the current dog is updated
     useEffect(() => {
         const fetchRecords = async () => {
-            setLoading(true)
             if (authed && token && currDog) {
-                await fetchAndSetLocalCurrDogRecords(currDog);  // Fetch records for the current dog
+                setLoading(true);
+                if (currDogRecords.length === 0) {
+                    await fetchAndSetLocalCurrDogRecords();  // Fetch records if none exist yet
+                }
+                setLoading(false);
             } else {
                 logout();
                 navigate('/login');
-                console.log('RecordsPage UseEffect Logout')
-            } 
-            setLoading(false);
+            }
         };
         fetchRecords();
-    }, [currDog]);
+    }, [currDog, authed, token]);
 
     // Initialize working and displayed records from currDogRecords
     useEffect(() => {
@@ -82,7 +83,7 @@ const RecordsPage = () => {
             });
             console.log('Deleted record:', response.data);      
             // Fetch updated records after deletion
-            const updatedRecords = await fetchCurrDogRecords(currDog);
+            const updatedRecords = await refetchCurrDogRecords();
 
             // Update filtered records and apply any active filters
             setActiveFilteredRecords(updatedRecords);

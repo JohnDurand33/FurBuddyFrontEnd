@@ -13,7 +13,7 @@ export const RecordsProvider = ({ children }) => {
     const [serviceTypes, setServiceTypes] = useState([]);
     const [currDogRec, setCurrDogRec] = useState({});
     const [currDogRecords, setCurrDogRecords] = useState([]);
-    const [selectedRecord, setSelectedRecord] = useState(null); 
+    const [selectedRecord, setSelectedRecord] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { authed, token, currDog } = useAuth();
@@ -26,7 +26,7 @@ export const RecordsProvider = ({ children }) => {
     const setLocalCurrDogRec = (record) => {
         localStorage.setItem('currDogRec', JSON.stringify(record));
         setCurrDogRec(record);
-    }
+    };
 
     const setLocalCategories = (categories) => {
         localStorage.setItem('categories', JSON.stringify(categories));
@@ -58,7 +58,7 @@ export const RecordsProvider = ({ children }) => {
     const fetchServiceTypes = async () => {
         try {
             const response = await axios.get(`${backEndUrl}/medical_record/service_types`);
-            console.log('Service types response:', response);   
+            console.log('Service types response:', response);
             const { data } = response;
             setLocalServiceTypes(data);
         } catch (error) {
@@ -66,65 +66,65 @@ export const RecordsProvider = ({ children }) => {
             setError('Error fetching service types');
         }
     };
-        
-    const fetchCurrDogRecords = async (currDog) => {
-            try {
-                setLoading(true);
-                setError(null);
 
-                const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                });
-                console.log('updated currDogProfiles fetched',response.data);
-                const updatedRecords = !Array.isArray(response.data) ? [response.data] : response.data;
-                return updatedRecords;
-            } catch (error) {
-                console.error('Error fetching records:', error);
-                setError('Error fetching records');
-            } finally {
-                setLoading(false);
-            };
+    const fetchCurrDogRecords = async (currDog) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                }
+            });
+            console.log('updated currDogProfiles fetched', response.data);
+            const updatedRecords = !Array.isArray(response.data) ? [response.data] : response.data;
+            return updatedRecords;
+        } catch (error) {
+            console.error('Error fetching records:', error);
+            setError('Error fetching records');
+        } finally {
+            setLoading(false);
+        }
     };
-    
+
     const fetchAndSetLocalCurrDogRecords = async () => {
         if (authed && token && currDog) {
-        const response = await fetchCurrDogRecords(currDog);
-            console.log('updatedCurrDogRecords:', response.data);
-            if (response.data && response.data.length > 0) {
-                const formattedRecords = Array.isArray(response.data) ? response.data : [response.data];
-            setLocalCurrDogRecords(formattedRecords);
-            setLocalCurrDogRec(formattedRecords[0]);
-            console.log('currDogRecords:', formattedRecords);
-            return true
-        } else {
-            console.log('no records found');
-            setLocalCurrDogRecords([]);
-            setLocalCurrDogRec({});
-            return false
+            const response = await fetchCurrDogRecords(currDog);
+            console.log('updatedCurrDogRecords:', response);
+            if (response && response.length > 0) {
+                const formattedRecords = Array.isArray(response) ? response : [response];
+                setLocalCurrDogRecords(formattedRecords);
+                setLocalCurrDogRec(formattedRecords[0]);
+                console.log('currDogRecords:', formattedRecords);
+                return true;
+            } else {
+                console.log('no records found');
+                setLocalCurrDogRecords([]);
+                setLocalCurrDogRec({});
+                return false;
             }
         }
     };
 
+    // Manual refetching method after adding/deleting a record
+    const refetchCurrDogRecords = async () => {
+        const updatedRecords = await fetchCurrDogRecords(currDog);
+        setLocalCurrDogRecords(updatedRecords);
+        if (updatedRecords.length > 0) {
+            setLocalCurrDogRec(updatedRecords[0]);
+        }
+        return updatedRecords;
+    };
+
     useEffect(() => {
         const initialRecords = async () => {
-            if (authed && token && currDog) {
+            if (authed && token && currDog && currDogRecords.length === 0) {
                 setLoading(true);
-                fetchCategories();
-                fetchServiceTypes();
-                const newCurrDogRecords = await fetchCurrDogRecords(currDog);
-                console.log('updatedCurrDogRecords:', newCurrDogRecords);
-                if (newCurrDogRecords) {
-                    const formattedRecords = Array.isArray(newCurrDogRecords) ? newCurrDogRecords : [newCurrDogRecords];
-                    setLocalCurrDogRecords(formattedRecords);
-                    setLocalCurrDogRec(formattedRecords[0]);
-                    console.log('currDogRecords:', formattedRecords);
-                } else {
-                    setLocalCurrDogRecords([]);
-                    setLocalCurrDogRec({});
-                }
+                await fetchCategories();
+                await fetchServiceTypes();
+                await fetchAndSetLocalCurrDogRecords();
                 setLoading(false);
             }
         };
@@ -132,8 +132,24 @@ export const RecordsProvider = ({ children }) => {
     }, [currDog]);
 
     return (
-            <RecordsContext.Provider value={{
-            categories, setLocalCategories, serviceTypes, setLocalServiceTypes, currDogRecords, setLocalCurrDogRecords, currDogRec, setLocalCurrDogRec, selectedRecord, setLocalSelectedRecord, fetchCategories, fetchServiceTypes, fetchCurrDogRecords, fetchAndSetLocalCurrDogRecords, loading, error
+        <RecordsContext.Provider value={{
+            categories,
+            setLocalCategories,
+            serviceTypes,
+            setLocalServiceTypes,
+            currDogRecords,
+            setLocalCurrDogRecords,
+            currDogRec,
+            setLocalCurrDogRec,
+            selectedRecord,
+            setLocalSelectedRecord,
+            fetchCategories,
+            fetchServiceTypes,
+            fetchCurrDogRecords,
+            fetchAndSetLocalCurrDogRecords,
+            refetchCurrDogRecords,  // Added refetch function
+            loading,
+            error
         }}>
             {children}
         </RecordsContext.Provider>

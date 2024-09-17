@@ -25,7 +25,7 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, fetchAndSetLocalCurrDogProfiles, deleteDogProfile } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, setLocalCurrDogProfiles, dogProfiles, refetchCurrDogProfiles, deleteDogProfile } = useAuth();
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -67,25 +67,17 @@ const DogProfileView = ({ isMobile }) => {
             setLoading(true);
             console.log('Deleting dog profile:', currDog);
 
-            await deleteDogProfile(currDog.id);  // Use deleteDogProfile from AuthContext
-
-            // Fetch updated dog profiles after deletion
-            const updatedProfiles = await fetchCurrDogProfiles();
-            console.log('Updated profiles:', updatedProfiles);
+            
+            const updatedProfiles = await refetchCurrDogProfiles();
 
             if (updatedProfiles.length > 0) {
-                // If there are still profiles left, set the first dog as the current one
-                setLocalCurrDog(updatedProfiles[0]);
-                setLocalCurrDogProfiles(updatedProfiles);
                 navigate('/dogs/view');
             } else {
-                // If no profiles are left, navigate to the new dog creation page
                 navigate('/dogs/new');
             }
         } catch (error) {
             if (error.response) {
-                console.error('Error response:', error.response.data);
-                alert('Failed to delete profile: ' + error.response.data.message);
+                console.error('Error response:', error);
             }
         } finally {
             setLoading(false);
