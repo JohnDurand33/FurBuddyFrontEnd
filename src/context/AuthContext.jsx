@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
+import data from '@iconify/icons-mdi/chevron-down';
 
 const AuthContext = createContext();
 
@@ -178,19 +179,29 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     };
 
-    const deleteDogProfile = async (dog) => {
+    const deleteDogProfile = async () => {
         try {
-            const response = await axios.delete(`${backEndUrl}/profile/profiles/${dog.id}`, {
+            console.log('currDog:', currDog);   
+            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
             });
-            console.log('Deleted dog profile:', response.data);
+            console.log('Delete Dog Response:', response.data);
+            data = response.data;
+            console.log('Deleted dog data:', data);
         } catch (error) {
             console.error('Error deleting dog profile:', error);
         }
     };
+
+    // Load user and dog profile from localStorage on component mount
+    useEffect(() => {
+        setLoading(true);
+        loadUserandDogfromLocalOrApi();
+        setLoading(false);
+    }, []);
 
     
 

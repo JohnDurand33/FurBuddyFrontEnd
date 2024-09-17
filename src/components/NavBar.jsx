@@ -7,12 +7,13 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@emotion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile, isCollapsed }) => {
     const { logout, authed, setAuthed, clearAllStateAndLocalStorage } = useAuth();
     const theme = useTheme();
     const navigate = useNavigate();
+    const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
 
@@ -56,16 +57,18 @@ const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile, isCollapsed }) => {
                 <Grid container alignItems="center">
                     {/* Left Section */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
-                            <MenuIcon />
-                        </IconButton>}
+                        {!authed ?
+                            (isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
+                                <MenuIcon />
+                            </IconButton>) : location.pathname === ('dogs/new' || 'dogs/create') ? 'My Dogs' : location.pathname === '/records' ? 'My Records' : location.pathname === '/Map' ? 'Map' : null}
                     </Grid>
+
 
                     {/* Center Section */}
                     <Grid item xs={4} container justifyContent="center">
                         <Box sx={{ transform: '' }}>
-                            {!authed ? (<img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="Logo" />
-                            ) : ("")}
+                            {!authed ? <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="Logo" />
+                                : ''}
                         </Box>
                     </Grid>
 

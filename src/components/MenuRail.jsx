@@ -65,12 +65,11 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         fetchData();
     }, [authed, token, currUser]);
 
-    const handledogProfileLog = () => {
-        console.log('dogProfiles:', dogProfiles);
-    };
-
-    const handleCurrDogChange = (dog) => {
+    const handleCurrDogChange = (dog, path = null) => {
         setLocalCurrDog(dog);
+        if (path) {
+            navigate(path);
+        };
     };
 
     const handleAddDog = () => {
@@ -145,8 +144,8 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     <Divider sx={{ marginBottom: '16px' }} />
 
                     {/* Navigation Links */}
-                    <ListItemButton sx={{ marginBottom: '12px', ml:.5 }}>
-                        <ListItemIcon><Icon icon={defaultashboardIcon} onClick={handledogProfileLog}/></ListItemIcon>
+                <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/dogs/view')}>
+                    <ListItemIcon><Icon icon={defaultashboardIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
                     </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px', ml: .5 }}>

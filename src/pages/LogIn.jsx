@@ -92,7 +92,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             console.log('fetchCurrDogProfiles response:', repsonse);
             
 
-            const fetchCurrDogRecords = async (currDog) => {
+            const fetchCurrDogRecords = async () => {
                 try {
                     const response = await axios.get(`${backEndUrl}/profile/${currDog.id}/records`, {
                         headers: {

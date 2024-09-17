@@ -25,7 +25,7 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchCurrDogProfiles, deleteDogProfile } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchCurrDogRecords , fetchCurrDogProfiles, deleteDogProfile, fetchAndSetLocalCurrDogRecords } = useAuth();
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -68,27 +68,52 @@ const DogProfileView = ({ isMobile }) => {
     };
 
     // Handle deleting profile
-    const handleDeleteProfile = async (currDog) => {
+    const handleDeleteProfile = async () => {
         try {
+            setLoading(true);
             console.log('Deleting dog profile:', currDog);
-            const response = await deleteDogProfile(currDog);
-            console.log(response.data);
-            const newBackendProfiles = await fetchCurrDogProfiles(token);
-            console.log('Deleted dog profile:', currDog);
-            console.log('Updated dog profiles:', newBackendProfiles);
-            setLocalDogProfiles(newBackendProfiles);
-            if (newBackendProfiles.length == []) {
-                navigate('/dogs/new');
-            } else if (newBackendProfiles.length > 0) {
-                setLocalCurrDog(newBackendProfiles[0]);
-                navigate('/dogs/view');
+
+            // Send delete request to backend
+            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            console.log('Deleted dog profile response :', response);
+
+            // Fetch updated dog profiles
+            const res = await fetchCurrDogProfiles();
+            const { data } = res;
+
+            if (data && Array.isArray(data) && data.length > 0) {
+                // If there are dog profiles left, update local state
+                setLocalDogProfiles(data);
+                setLocalCurrDog(data[0]);
+                console.log('Updated dog records:', data);
             } else {
-                console.log('No dog profiles found for user:', currUser);
+                // If no dog profiles are left, navigate to create a new profile
+                console.log('No profiles left');
+                setLocalDogProfiles([]);
+                setLocalCurrDog(null);
+                navigate('/dogs/new');
             }
         } catch (error) {
-            console.error('Error deleting dog profile:', error);
+            // Handle errors
+            if (error.response) {
+                console.error('Error response:', error.response.data); // Backend error response
+                console.error('Status:', error.response.status);
+                console.error('Headers:', error.response.headers);
+                // Show an error message to the user (optional)
+                alert('Failed to delete profile: ' + error.response.data.message);
+            } else if (error.request) {
+                console.error('No response received:', error.request);
+            } else {
+                console.error('Error setting up request:', error.message);
+            }
         } finally {
-            
+            setLoading(false);
         }
     };
 
@@ -104,7 +129,6 @@ const DogProfileView = ({ isMobile }) => {
         console.log("Saving form data:", values);
         const imgUrl = await handleImageUpload();
         const updatedData = { ...values, image_path: imgUrl };
-        console.log('Updated form data?:', updatedData);
 
         try {
             const response = await axios.put(
@@ -113,10 +137,11 @@ const DogProfileView = ({ isMobile }) => {
                 {
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
+                        "Authorization": `Bearer ${token}`,
                     },
                 }
             );
+
             if (response.status === 200) {
                 console.log('Updated dog profile successfully:', response.data);
                 setLocalCurrDog(response.data);
@@ -124,6 +149,7 @@ const DogProfileView = ({ isMobile }) => {
 
                 const dogs = await fetchDogProfilesFromApi(token);
                 setLocalDogProfiles(dogs);
+
                 if (dogs && dogs.length > 0) {
                     navigate('/dogs/view');
                 } else {
@@ -133,8 +159,6 @@ const DogProfileView = ({ isMobile }) => {
         } catch (error) {
             console.error('Error updating dog profile:', error);
         } finally {
-            console.log('Updated dog profile:', currDog);
-            console.log('Updated dog profiles:', dogProfiles);
             setIsEditing(false);
             setSubmitting(false);
             resetForm();
@@ -198,25 +222,25 @@ const DogProfileView = ({ isMobile }) => {
                                 }}>
                                     <Grid container spacing={3}> {/* Increase spacing */}
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog.name}</Typography> {/* Add margin-bottom */}
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog.name || null}</Typography> {/* Add margin-bottom */}
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog.breed}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog.breed || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog.age}</Typography> {/* Add margin-bottom */}
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog.age || null}</Typography> {/* Add margin-bottom */}
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog.weight}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog.weight || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog.sex}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog.sex || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog.fixed ? 'Yes' : 'No'}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog ? (currDog.fixed ? 'Yes' : 'No'): null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog.chip_number}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog.chip_number || null}</Typography>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -236,16 +260,16 @@ const DogProfileView = ({ isMobile }) => {
                                 }}>
                                     <Grid container spacing={3}> {/* Increase spacing */}
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog.vet_clinic_name}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog.vet_clinic_name || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog.vet_doctor_name}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog.vet_doctor_name || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog.vet_clinic_phone}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog.vet_clinic_phone || null}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog.vet_clinic_email}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog.vet_clinic_email || null}</Typography>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -253,7 +277,7 @@ const DogProfileView = ({ isMobile }) => {
                         </Grid>
                         <Grid container justifyContent="center" sx={{ mt: 4 }}>
                             <Button
-                                onClick={handleDeleteProfile}
+                                onClick={handleOpenModal}
                                 sx={{
                                     variant: "outlined",
                                     color: "text.primary",
@@ -355,7 +379,8 @@ const DogProfileView = ({ isMobile }) => {
 
                         {/* Edit Mode */}
                         <Formik
-                            initialValues={{
+                                initialValues={{
+                                id: currDog?.id || '',
                                 name: currDog?.name || '',  
                                 breed: currDog?.breed || '',
                                 age: currDog?.age || '',  
@@ -368,7 +393,7 @@ const DogProfileView = ({ isMobile }) => {
                             }}
                             validationSchema={validationSchema}
                             enableReinitialize={true}
-                            onSubmit={handleSave}
+                                onSubmit={handleSave}
                         >
                             {({ values, errors, touched, setFieldValue, isSubmitting }) => (
                                     <Form style={{ margin: '0 auto', width: '80%' }}>
