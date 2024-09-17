@@ -6,13 +6,16 @@ import { useAuth } from '../context/AuthContext';
 import { useRecords } from '../context/RecordsContext';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
+import { useNavigate } from 'react-router-dom';
 
 const RecordsPage = () => {
-    const { currDog, authed, token } = useAuth();  // Get current dog and user token
-    const [showDrawer, setShowDrawer] = useState(false);  // Drawer state for adding/editing services
-    const [showFilterModal, setShowFilterModal] = useState(false);  // Modal state for filtering
-    const [drawerMode, setDrawerMode] = useState('create');  // Mode for the drawer: 'create' or 'edit'
-    const { fetchAndSetLocalCurrDogRecords, handleDeleteCurrDogRec, currDogRecords, selectedRecord, setLocalSelectedRecord, fetchCurrDogRecords,  } = useRecords();  // Records context
+    const { currDog, authed, token, logout } = useAuth(); 
+    const [showDrawer, setShowDrawer] = useState(false);
+    const [showFilterModal, setShowFilterModal] = useState(false); 
+    const [drawerMode, setDrawerMode] = useState('create');
+    const [loading, setLoading] = useState(false); 
+    const { fetchAndSetLocalCurrDogRecords, handleDeleteCurrDogRec, currDogRecords, selectedRecord, setLocalSelectedRecord, fetchCurrDogRecords, } = useRecords();  
+    const { navigate } = useNavigate(); 
 
     // States for filtering and sorting
     const [activeFilteredRecords, setActiveFilteredRecords] = useState([]);  // Holds the filtered records
@@ -20,11 +23,20 @@ const RecordsPage = () => {
     const [isFilterActive, setIsFilterActive] = useState(false);  // Tracks if filters are applied
     const [sortConfig, setSortConfig] = useState({ key: 'serviceDate', direction: 'asc' });  // Sorting config
 
-    // Fetch and set records whenever the current dog is updated
+    // Fetch and set records whenever the current dzog is updated
     useEffect(() => {
-        if (currDog) {
-            fetchAndSetLocalCurrDogRecords(currDog);  // Fetch records for the current dog
-        }
+        const fetchRecords = async () => {
+            setLoading(true)
+            if (authed && token && currDog) {
+                await fetchAndSetLocalCurrDogRecords(currDog);  // Fetch records for the current dog
+            } else {
+                logout();
+                navigate('/login');
+                console.log('RecordsPage UseEffect Logout')
+            } 
+            setLoading(false);
+        };
+        fetchRecords();
     }, [currDog]);
 
     // Initialize working and displayed records from currDogRecords
@@ -36,6 +48,12 @@ const RecordsPage = () => {
             }
         }
     }, [currDogRecords]);
+
+    const formatDisplayDate = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
 
     // Function to handle opening the ServiceDrawer (either to create or edit a record)
     const handleOpenDrawer = (mode, record = null) => {
@@ -143,10 +161,10 @@ const RecordsPage = () => {
                     <TableBody>
                         {finalDisplayedRecords.map((record) => (
                             <TableRow key={record.id}>
-                                <TableCell>{record.service_date}</TableCell>
+                                <TableCell>{formatDisplayDate(record.service_date)}</TableCell>
                                 <TableCell>{record.category_name}</TableCell>
                                 <TableCell>{record.service_type_name}</TableCell>
-                                <TableCell>{record.follow_up_date}</TableCell>
+                                <TableCell>{formatDisplayDate(record.follow_up_date)}</TableCell>
                                 <TableCell>{record.fee}</TableCell>
                                 <TableCell
                                     onClick={() => handleOpenDrawer('edit', record)}

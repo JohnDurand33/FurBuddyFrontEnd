@@ -25,16 +25,10 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, setLocalDogProfiles, fetchCurrDogRecords , fetchCurrDogProfiles, deleteDogProfile, fetchAndSetLocalCurrDogRecords } = useAuth();
+    const { currUser, token, currDog, setLocalCurrDog, dogProfiles, fetchAndSetLocalCurrDogProfiles, deleteDogProfile } = useAuth();
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
-    };
-
-    const handleLogData = () => {
-        console.log('Current User:', currUser);
-        console.log('Current Dog:', currDog);
-        console.log('Dog Profiles:', dogProfiles);
     };
 
     // Close the modal
@@ -73,50 +67,31 @@ const DogProfileView = ({ isMobile }) => {
             setLoading(true);
             console.log('Deleting dog profile:', currDog);
 
-            // Send delete request to backend
-            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            await deleteDogProfile(currDog.id);  // Use deleteDogProfile from AuthContext
 
-            console.log('Deleted dog profile response :', response);
+            // Fetch updated dog profiles after deletion
+            const updatedProfiles = await fetchCurrDogProfiles();
+            console.log('Updated profiles:', updatedProfiles);
 
-            // Fetch updated dog profiles
-            const res = await fetchCurrDogProfiles();
-            const { data } = res;
-
-            if (data && Array.isArray(data) && data.length > 0) {
-                // If there are dog profiles left, update local state
-                setLocalDogProfiles(data);
-                setLocalCurrDog(data[0]);
-                console.log('Updated dog records:', data);
+            if (updatedProfiles.length > 0) {
+                // If there are still profiles left, set the first dog as the current one
+                setLocalCurrDog(updatedProfiles[0]);
+                setLocalCurrDogProfiles(updatedProfiles);
+                navigate('/dogs/view');
             } else {
-                // If no dog profiles are left, navigate to create a new profile
-                console.log('No profiles left');
-                setLocalDogProfiles([]);
-                setLocalCurrDog(null);
+                // If no profiles are left, navigate to the new dog creation page
                 navigate('/dogs/new');
             }
         } catch (error) {
-            // Handle errors
             if (error.response) {
-                console.error('Error response:', error.response.data); // Backend error response
-                console.error('Status:', error.response.status);
-                console.error('Headers:', error.response.headers);
-                // Show an error message to the user (optional)
+                console.error('Error response:', error.response.data);
                 alert('Failed to delete profile: ' + error.response.data.message);
-            } else if (error.request) {
-                console.error('No response received:', error.request);
-            } else {
-                console.error('Error setting up request:', error.message);
             }
         } finally {
             setLoading(false);
+            handleCloseModal();
         }
     };
-
     const fixedLabel = (values) => {
         if (values.sex === 'Male') return 'Neutered';
         if (values.sex === 'Female') return 'Spayed';
@@ -127,7 +102,7 @@ const DogProfileView = ({ isMobile }) => {
     const handleSave = async (values, { setSubmitting, resetForm }) => {
         setSubmitting(true);
         console.log("Saving form data:", values);
-        const imgUrl = await handleImageUpload();
+        const imgUrl = await handleImageUpload();  // Handle image upload
         const updatedData = { ...values, image_path: imgUrl };
 
         try {
@@ -144,34 +119,28 @@ const DogProfileView = ({ isMobile }) => {
 
             if (response.status === 200) {
                 console.log('Updated dog profile successfully:', response.data);
-                setLocalCurrDog(response.data);
-                setImageUrl(response.data.image_path);
+                setLocalCurrDog(response.data); // Explicitly update the current dog with the updated data
 
-                const dogs = await fetchDogProfilesFromApi(token);
-                setLocalDogProfiles(dogs);
-
-                if (dogs && dogs.length > 0) {
-                    navigate('/dogs/view');
-                } else {
-                    navigate('/dogs/new');
-                }
+                // No need to fetch all profiles, just update the current dog
+                setIsEditing(false);
+                resetForm();
+                navigate('/dogs/view');
             }
         } catch (error) {
             console.error('Error updating dog profile:', error);
         } finally {
-            setIsEditing(false);
             setSubmitting(false);
-            resetForm();
         }
     };
+
 
     // Yup validation schema for form
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Pet Name is required'),
         breed: Yup.string(),
-        age: Yup.number().required('Age is required'),
-        weight: Yup.number().required('Weight is required'),
-        chip_number: Yup.string(),
+        age: Yup.number('Age must be a number'),
+        weight: Yup.number('Weight must be a number'),
+        chip_number: Yup.number('Microchip Entry must be a number'),
         vet_clinic_name: Yup.string(),
         vet_doctor_name: Yup.string(),
         vet_clinic_phone: Yup.string(),

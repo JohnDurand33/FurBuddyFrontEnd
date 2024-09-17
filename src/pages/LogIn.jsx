@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -13,21 +13,46 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
     const {
         clearAllStateAndLocalStorage,
         fetchUserDataWithToken,
-        fetchCurrDogProfiles,
         setAuthed,
         setFireUser,
         setLocalCurrUser,
         setLocalToken,
+        authed,
+        currUser,
         currDog,
         token,
         dogProfiles,
-        setLocalDogProfiles,
+        fetchCurrDogProfiles,
+        fetchAndSetLocalCurrDogProfiles,
         setLocalCurrDog,
-        fetchAndSetLocalCurrDogs,
+        setLocalCurrDogProfiles,
     } = useAuth();
 
     const [serverError, setServerError] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (authed && token && currUser) {
+                try {
+                    const profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
+                    if (profiles && profiles.length > 0) {
+                        setLocalCurrDog(profiles[0]);
+                        setLocalCurrDogProfiles(profiles);
+                        navigate('/dogs/view');
+                        setIsRailOpen(true)
+                    } else {
+                        console.log('didn\'t have any dogs -> response from fetchDogProfilesFromApi:', profiles);
+                        setIsRailOpen(true)
+                        navigate('/dogs/create');
+                    }
+                } catch (error) {
+                    console.error('Error fetching profiles:', error);
+                }
+            }
+        };
+        fetchData();
+    }, [authed, token, currUser]);
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -39,118 +64,61 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setSubmitting(true);
         clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
 
-        
-        // Authenticate with Firebase
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-        const fireBaseUser = userCredential.user;
-        setFireUser(fireBaseUser);
-
-        // Backend login
-        const payload = {
-            owner_email: values.email,
-            password: values.password,
-        };
-
-        //Authenticate with backend
         try {
+            // Firebase Authentication
+            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+            const fireBaseUser = userCredential.user;
+            setFireUser(fireBaseUser);
+
+            // Backend Authentication
+            const payload = {
+                owner_email: values.email,
+                password: values.password,
+            };
+
             const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
-            const { data } = res;
-            console.log('Login response:', data);
+            const { auth_token: loginToken } = res.data;
 
-            setLocalToken(data.auth_token);
-            const loginToken = data.auth_token;
-            console.log('Login token:', loginToken);
+            setLocalToken(loginToken);
 
+            // Fetch user data using token
             const loggedInUser = await fetchUserDataWithToken(loginToken);
             setLocalCurrUser(loggedInUser);
-            console.log('Logged in user:', loggedInUser);
             setAuthed(true);
-
-            const fetchCurrDogProfiles = async (token) => {
-                try {
-                    const response = await axios.get(`${backEndUrl}/profile/profiles`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                    });
-                    if (response.data && response.data.length > 0) {
-                        console.log('Fetched dog profiles:', response.data);
-                        setLocalDogProfiles(response.data);
-                        setLocalCurrDog(response.data[0]);
-                        navigate('/dogs/view');
-
-                    };
-                } catch (error) {
-                    console.error('Error fetching dog profiles:', error);
-                    navigate('/dogs/new');
-                }
-            };
-            const repsonse = fetchCurrDogProfiles(loginToken);
-            console.log('fetchCurrDogProfiles response:', repsonse);
-            
-
-            const fetchCurrDogRecords = async () => {
-                try {
-                    const response = await axios.get(`${backEndUrl}/profile/${currDog.id}/records`, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                    });
-                    if (response.data && response.data.length > 0) {
-                        console.log('Fetched dog profiles:', response.data);
-                        setLocalDogProfiles(response.data);
-                        setLocalCurrDog(response.data[0]);
-
-                    };
-                } catch (error) {
-                    console.error('Error fetching dog profiles:', error);
-                    return [];
-                }
-            };
-            const response = fetchCurrDogRecords(currDog);
-            console.log('fetchCurrDogRecords response:', response);
-
-            setAuthed(true);
-            setIsRailOpen(true);
 
         } catch (err) {
-            setServerError(err.message || 'Login failed. Please try again.');
+            setServerError('Invalid email or password. Please try again.');
         } finally {
             setSubmitting(false);
         }
-    };  
-            
+    };
 
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null);
         clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
 
         try {
+            // Firebase Google Authentication
             const { credential } = credentialResponse;
             const googleCredential = GoogleAuthProvider.credential(credential);
             const userCredential = await signInWithCredential(auth, googleCredential);
             const fireUser = userCredential.user;
             setFireUser(fireUser);
 
-            // Backend login for Google user
+            // Backend Google Authentication
             const res = await axios.post(`${backEndUrl}/owner/google-login`, {
                 token: credential,
                 provider: 'google',
             });
 
-            // Update context state and sync to localStorage
+            // Update context state with user data and token
             setLocalCurrUser(res.data.owner);
-            updateToken(res.data.auth_token);
+            setLocalToken(res.data.auth_token);
             setAuthed(true);
-            setIsRailOpen(true);
-
-            navigate('/dogs/new'); // Redirect to the "new dog" profile page
         } catch (err) {
-            setServerError('Google login failed. Please try again.');
+            setServerError('Google Login Failed. Please try again.');
         }
     };
 

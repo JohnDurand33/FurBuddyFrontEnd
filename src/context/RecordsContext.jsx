@@ -79,7 +79,8 @@ export const RecordsProvider = ({ children }) => {
                     }
                 });
                 console.log('updated currDogProfiles fetched',response.data);
-                return response.data;
+                const updatedRecords = !Array.isArray(response.data) ? [response.data] : response.data;
+                return updatedRecords;
             } catch (error) {
                 console.error('Error fetching records:', error);
                 setError('Error fetching records');
@@ -88,19 +89,21 @@ export const RecordsProvider = ({ children }) => {
             };
     };
     
-    const fetchAndSetLocalCurrDogRecords = async (currDog) => {
+    const fetchAndSetLocalCurrDogRecords = async () => {
         if (authed && token && currDog) {
-        const newCurrDogRecords = await fetchCurrDogRecords(currDog);
-        console.log('updatedCurrDogRecords:', newCurrDogRecords);
-        if (newCurrDogRecords) {
-            const formattedRecords = Array.isArray(newCurrDogRecords) ? newCurrDogRecords : [newCurrDogRecords];
+        const response = await fetchCurrDogRecords(currDog);
+            console.log('updatedCurrDogRecords:', response.data);
+            if (response.data && response.data.length > 0) {
+                const formattedRecords = Array.isArray(response.data) ? response.data : [response.data];
             setLocalCurrDogRecords(formattedRecords);
             setLocalCurrDogRec(formattedRecords[0]);
             console.log('currDogRecords:', formattedRecords);
+            return true
         } else {
-            consol.log('no records found');
+            console.log('no records found');
             setLocalCurrDogRecords([]);
             setLocalCurrDogRec({});
+            return false
             }
         }
     };

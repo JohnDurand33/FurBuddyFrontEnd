@@ -21,7 +21,7 @@ import { ImGift } from 'react-icons/im';
 
 const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
     const navigate = useNavigate();
-    const { authed, token, currUser, currDog, handleLogout, dogProfiles, fetchCurrDogProfiles, setLocalCurrDog, setLocalDogProfiles } = useAuth();  // Get auth and state functions
+    const { authed, token, currUser, currDog, handleLogout, dogProfiles, fetchCurrDogProfiles, fetchAndSetLocalCurrDogProfiles, setLocalCurrDog, setLocalCurrDogProfiles } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(true);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -43,17 +43,10 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         const fetchData = async () => {
             if (authed && token && currUser) {
                 try {
-                    let profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
+                    const profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
                     if (profiles && profiles.length > 0) {
-                        if (!Array.isArray(profiles)) {
-                            setLocalCurrDog(profiles);  
-                            profiles = [profiles];
-                            setLocalDogProfiles(profiles); 
-                        } else {
-                            setLocalCurrDog(profiles[0]); 
-                            setLocalDogProfiles(profiles); 
-                        }
-                        
+                            setLocalCurrDog(profiles[0]);  
+                            setLocalCurrDogProfiles(profiles); 
                     } else {
                         console.log('didn\'t have any dogs -> response from fetchDogProfilesFromApi:', profiles);
                     }
@@ -63,7 +56,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
             }
         };
         fetchData();
-    }, [authed, token, currUser]);
+    }, [authed, token, currDog]);
 
     const handleCurrDogChange = (dog, path = null) => {
         setLocalCurrDog(dog);
