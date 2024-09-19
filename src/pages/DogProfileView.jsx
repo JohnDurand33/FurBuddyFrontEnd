@@ -25,7 +25,18 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setLocalCurrDog, setLocalCurrDogProfiles, dogProfiles, refetchCurrDogProfiles, deleteDogProfile } = useAuth();
+    const { currUser, token, currDog, setCurrDog, setLocalCurrDog, setLocalCurrDogProfiles, dogProfiles, refetchCurrDogProfiles, deleteDogProfile } = useAuth();
+
+    useEffect(() => {
+        if (!currDog) {
+            setLoading(true);
+            const storedDog = JSON.parse(localStorage.getItem('currDog'));
+            if (storedDog) {
+                setCurrDog(storedDog);
+            }
+            setLoading(false);
+        }
+    }, [currDog]);
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -67,7 +78,14 @@ const DogProfileView = ({ isMobile }) => {
             setLoading(true);
             console.log('Deleting dog profile:', currDog);
 
-            
+            const response = await axios.delete(`${backEndUrl}/profile/profiles/${currDog.id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            console.log('Delete Dog Response:', response);
+
             const updatedProfiles = await refetchCurrDogProfiles();
 
             if (updatedProfiles.length > 0) {
@@ -140,68 +158,74 @@ const DogProfileView = ({ isMobile }) => {
     });
 
     return (
-        <Box sx={{ padding: 3, color: 'text.primary', ml: isMobile ? '60px' : 0 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", padding: 3, ml: isMobile ? '60px' : 0 }}>
             <Grid container alignItems="center" justifyContent="center" spacing={4} sx={{ pt: 5 }}>
 
                 {/* Profile image and Edit Button in top-right corner */}
                 {!isEditing ? (
                     <>
                     <Grid item xs={12} container justifyContent="center">
-                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', position: 'relative', paddingRight: '30px' }}>
-                        {/* Dog Image */}
+                    <Box sx={{ display: 'flex', justifyContent: 'start', width: '100%', position: 'relative', paddingRight: '30px', marginLeft:'5%' }}>
+                                {/* Dog Image */}
+                                <div style={{ position: 'relative', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px' }}>
                         <Avatar
                             alt="Dog's Image"
                                     src={currDog ? currDog.image_path : "/static/images/avatar/1.jpg" }
-                            sx={{ width: 150, height: 150, color: 'text.primary' }}
-                        />
-
+                                    sx={{
+                                        width: '100%', height: "100%", borderRadius: '50%',
+                                        objectFit: 'cover', aspectRatio: '1', }}
+                                    />
+                                </div>
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="h5" sx={{ mt: 6, ml: 2, fontWeight:600 }}>{currDog ? currDog.name : ''}</Typography> 
+                                <Typography variant="h5" sx={{ mt: 4, ml: 2 }}>Chip No. {currDog ? currDog.chip_number : ''}</Typography>
+                                </Box>
+                                
                         {/* Show Edit Button only when not editing */}
                             <IconButton
-                                sx={{ position: 'absolute', top: 0, right: 0, borderColor:'grey' }}
+                                sx={{ position: 'absolute', top: 0, right: 0, borderColor:'grey', mr:'8%' }}
                                 onClick={handleEditToggle}
                             >
-                                    <Icon icon={editIcon} width="24" height="24" />
+                                    <Icon icon={editIcon} width="24" height="24"/>
                                     <Typography>Edit</Typography>
-                                </IconButton>
-                                <Button component={NavLink} to='/records' sx={{ color: theme.palette.text.primary }}>
-                                    Home
-                                </Button>
+                                    </IconButton>
                     </Box>
                 </Grid>
 
-                        <Grid container spacing={4} justifyContent="center" style={{ marginTop: '1rem', width: '80%' }}>
+                        <Grid container spacing={4} justifyContent="start" style={{ marginTop: '1rem', width: '90%' }}>
                             <Grid item xs={12} md={6}>
                                 <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
                                     Dog Information
                                 </Typography>
                                 <Box sx={{
-                                    backgroundColor: '#FFF5CD',
+                                    backgroundColor: 'primary.main',
                                     borderRadius: '10px',
                                     border: '1px solid #ccc',
                                     padding: '2rem', // Add padding
-                                    minHeight: '180px'
+                                    minHeight: '180px',
+                                    mr:2
                                 }}>
                                     <Grid container spacing={3}> {/* Increase spacing */}
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog.name || null}</Typography> {/* Add margin-bottom */}
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog ? currDog.name : ''}</Typography> {/* Add margin-bottom */}
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog.breed || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog ? currDog.breed : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog.age || null}</Typography> {/* Add margin-bottom */}
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog ? currDog.age : ''}</Typography> {/* Add margin-bottom */}
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog.weight || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog ? currDog.weight : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog.sex || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog ? currDog.sex : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog ? (currDog.fixed ? 'Yes' : 'No'): null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog ? (currDog.fixed ? 'Yes' : 'No'): ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog.chip_number || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog ? currDog.chip_number : ''}</Typography>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -213,24 +237,30 @@ const DogProfileView = ({ isMobile }) => {
                                     Vet Information
                                 </Typography>
                                 <Box sx={{
-                                    backgroundColor: '#FFF5CD',
+                                    backgroundColor: 'primary.main',
                                     borderRadius: '10px',
                                     border: '1px solid #ccc',
                                     padding: '2rem', // Add padding
-                                    minHeight: '180px'
+                                    minHeight: '350px',
+                                    ml: 2,
+                                    display: 'flex',
+                                    flexDirection: {
+                                        xs: 'column',
+                                        md: 'row',
+                                    },
                                 }}>
                                     <Grid container spacing={3}> {/* Increase spacing */}
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog.vet_clinic_name || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog ? currDog.vet_clinic_name : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog.vet_doctor_name || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog ? currDog.vet_doctor_name : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog.vet_clinic_phone || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog ? currDog.vet_clinic_phone : ''}</Typography>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog.vet_clinic_email || null}</Typography>
+                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog ? currDog.vet_clinic_email : ''}</Typography>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -298,7 +328,7 @@ const DogProfileView = ({ isMobile }) => {
                         <>
                             {/* Avatar and Edit Button Positioned at the Top */}
                             <Grid item xs={12}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '2rem', marginLeft:'6%' }}>
                                     <div style={{ position: 'relative', width:  isMobile ? '150px' : '200px' , height: isMobile ? '150px' : '200px' }}>
                                         <Avatar
                                             alt="Dog's Image"
@@ -308,36 +338,56 @@ const DogProfileView = ({ isMobile }) => {
                                                 height: '100%',
                                                 borderRadius: '50%',
                                                 objectFit: 'cover',
+                                                aspectRatio: '1',
                                             }}
                                         />
                                     </div>
 
-                                    {/* File Input Hidden */}
-                                    <input
-                                        accept="image/*"
-                                        id="file-upload"
-                                        type="file"
-                                        style={{ display: 'none' }}
-                                        onChange={handleImageChange}
-                                    />
-                                    <label htmlFor="file-upload">
-                                        <IconButton
-                                            component="span"
-                                            style={{
-                                                marginLeft: '1rem',
-                                                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                                                borderRadius: '50%',
-                                                color: 'white',
-                                                padding: '5px',
-                                            }}
-                                        >
-                                            <Icon icon={CameraOutlineIcon} width="24" height="24" />
-                                        </IconButton><Typography sx={{fontSize:'1rem', textAlign:"center"}}>Image</Typography>
-                                    </label>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                        <Typography variant="h5" sx={{ mt: 3, ml: 2, fontWeight: 600 }}>{currDog ? currDog.name : ''}</Typography>
+                                        <Typography variant="h5" sx={{ mt: 1, ml: 2 }}>Chip No. {currDog ? currDog.chip_number : ''}</Typography>
+
+                                        {/* File Input Hidden */}
+                                        <div>
+                                            <input
+                                                accept="image/*"
+                                                id="file-upload"
+                                                type="file"
+                                                style={{ display: 'none' }}
+                                                onChange={handleImageChange}
+                                            />
+                                            <label htmlFor="file-upload">
+                                                <Button
+                                                    disableRipple={true}
+                                                    component="span"
+                                                    variant="contained"
+                                                    sx={{
+                                                        backgroundColor: 'secondary.main',  // Remove !important for correct MUI styling
+                                                        color: '#000',
+                                                        border: '1px solid black',
+                                                        minWidth: '140px',
+                                                        margin: '20px 20px',
+                                                        ml:2,
+                                                        borderRadius: '2px',
+                                                        fontSize: '1rem',
+                                                        width: 'fit-content',
+                                                        boxShadow: 'none',  // Ensures no box-shadow is applied
+                                                        '&:hover': {
+                                                            backgroundColor: 'secondary.main',  // Ensure hover keeps same background color
+                                                            color: 'text.primary',              // No color change on hover
+                                                            boxShadow: 'none',                  // No shadow on hover
+                                                        }
+                                                    }}
+                                                >
+                                                    Upload
+                                                </Button>
+                                            </label>
+                                        </div>
+                                    </Box>
                                 </div>
                             </Grid>
 
-
+                        
                         {/* Edit Mode */}
                         <Formik
                                 initialValues={{
@@ -358,7 +408,11 @@ const DogProfileView = ({ isMobile }) => {
                         >
                             {({ values, errors, touched, setFieldValue, isSubmitting }) => (
                                     <Form style={{ margin: '0 auto', width: '80%' }}>
-                                        <Grid container spacing={3}> {/* Add container for grid layout */}
+                                        <Grid container sx={{
+                                                xs: { display: 'flex', flexDirection: 'column' },
+                                                md: { display: 'flex', flexDirection: 'row' },
+                                                }}
+                                                spacing={3}> {/* Add container for grid layout */}
                                             <Grid item xs={12}>
                                                 <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
                                                     Dog Information
@@ -501,18 +555,19 @@ const DogProfileView = ({ isMobile }) => {
                                             </Grid>
 
                                             {/* Buttons */}
-                                            <Grid item xs={12} container justifyContent="center" style={{ marginTop: '2rem' }}>
-                                                <Button type="submit" sx={{ variant: "contained", backgroundColor: theme.palette.secondary.main, color: "text.primary", border: "1px solid grey" }}>
+                                            <Grid item xs={12} container justifyContent="center" style={{ marginTop: '2rem', gap:'10px' }}>
+                                                <Button type="submit" sx={{ variant: "contained", backgroundColor: "secondary.main", color: "text.primary", border: "1px solid grey", minWidth: '140px' }}>
                                                     {isSubmitting ? "Saving..." : "Save Changes"}
                                                 </Button>
-                                                <Button sx={{ variant: "outlined", color: "black", border: "1px solid grey", ml: 2 }} onClick={handleEditToggle}>
+                                                <Button sx={{ variant: "outlined", color: "black", border: "1px solid grey", ml: 2, minWidth: '140px' }} onClick={handleEditToggle}>
                                                     Cancel
                                                 </Button>
                                             </Grid>
                                         </Grid>
                                     </Form>
+                                    
                             )}
-                        </Formik>
+                                </Formik>
                     </>
                 )}
             </Grid>

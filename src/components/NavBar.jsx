@@ -1,161 +1,185 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AppBar, Toolbar, Box, Grid, IconButton, Menu, MenuItem, Button } from '@mui/material';
+import { AppBar, Toolbar, Box, Grid, IconButton, Menu, MenuItem, Button, Typography, Divider } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@emotion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Icon } from '@iconify/react'; // For Iconify icons
 
-const Navbar = ({ toggleRail, toggleTheme, isDark, isMobile, isCollapsed }) => {
-    const { logout, authed, setAuthed, clearAllStateAndLocalStorage } = useAuth();
+const Navbar = ({ toggleRail, isMobile }) => {
+    const { logout, authed, setAuthed, clearAllStateAndLocalStorage, currDog } = useAuth();
     const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
-    const [anchorEl, setAnchorEl] = useState(null);  // For the account menu
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);  // For the hamburger menu
+    const [anchorEl, setAnchorEl] = useState(null);  // For the combined Home/Account dropdown menu
 
-    // Handle account menu open/close
-    const handleAccountMenuOpen = (event) => {
+    // Handle opening/closing of the combined dropdown
+    const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleAccountMenuClose = () => {
+    const handleMenuClose = () => {
         setAnchorEl(null);
     };
 
-    const handleLogout = (e) => {
+    const handleLogout = () => {
         clearAllStateAndLocalStorage();
         setAuthed(false);
         logout();
         navigate('/login');
     };
 
-    // Handle hamburger menu open/close
-    const handleServiceMenuOpen = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    };
+    const getDisplayText = (currDog, path) => {
+        if (!currDog && path !== '/dogs/new' && path !== '/calendar' && path !== '/Map') return null;
 
-    const handleServiceMenuClose = () => {
-        setMenuAnchorEl(null);
+        switch (path) {
+            case '/dogs/view':
+                return currDog ? currDog.name : 'My Dog';
+            case '/records':
+                return 'Medical Records';
+            case '/dogs/new':
+                return 'My Dog';
+            case '/calendar':
+                return 'My Event Calendar';
+            case '/Map':
+                return 'Map';
+            default:
+                return null;
+        }
     };
 
     return (
         <AppBar
             position="static"
             sx={{
-                mt: 2,
                 backgroundColor: 'background.default',
                 maxHeight: '8vh',
                 width: '100%',
                 boxShadow: 'none',
-                borderBottom: isMobile ? null : '1px solid grey',
-            }}>
-            <Toolbar >
-                <Grid container alignItems="center">
-                    {/* Left Section */}
+                borderBottom: authed ? '1px solid grey' : null,
+            }}
+        >
+            <Toolbar>
+                <Grid container alignItems="center" justifyContent="space-between">
+                    {/* Left Section: Logo or Dog Name */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {!authed ?
-                            (isMobile && <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleRail}>
-                                <MenuIcon />
-                            </IconButton>) : location.pathname === ('dogs/new' || 'dogs/create') ? 'My Dogs' : location.pathname === '/records' ? 'My Records' : location.pathname === '/Map' ? 'Map' : null}
-                    </Grid>
-
-
-                    {/* Center Section */}
-                    <Grid item xs={4} container justifyContent="center">
-                        <Box sx={{ transform: '' }}>
-                            {!authed ? <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="Logo" />
-                                : ''}
-                        </Box>
+                        {authed ? (
+                            <Typography variant="h5" color="grey" sx={{ ml: 2 }}>
+                                {getDisplayText(currDog, location.pathname)}
+                            </Typography>
+                        ) : (
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <img
+                                    src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png"
+                                    alt="Logo"
+                                    style={{ maxHeight: '5vh', marginLeft: isMobile ? '0' : '10px' }}
+                                />
+                            </Box>
+                        )}
                     </Grid>
 
                     {/* Right Section */}
                     <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        <IconButton sx={{ ml: 1, color: "secondary" }} onClick={toggleTheme}>
-                            {isDark ? <Brightness7Icon sx={{ color: "secondary" }} /> : <Brightness4Icon sx={{ ml: 1, color: "grey" }} />}
-                        </IconButton>
-
-                        {/* Conditionally Render Log In/Sign Up or Account based on `authed` and screen size */}
                         {isMobile ? (
-                            <IconButton
-                                edge="end"
-                                color="primary"
-                                aria-label="account"
-                                onClick={handleAccountMenuOpen}
-                            >
-                                <AccountCircle sx={{ color: "grey" }} />
-                            </IconButton>
+                            <>
+                                <IconButton edge="end" color="inherit" aria-label="menu" onClick={handleMenuOpen}>
+                                    <MenuIcon />
+                                </IconButton>
+                            </>
+                        ) : authed ? (
+                            <>
+                                <IconButton>
+                                    <Icon icon="mdi:magnify" width="24" height="24" />
+                                </IconButton>
+                                <IconButton>
+                                    <Icon icon="mdi:bell-outline" width="24" height="24" />
+                                </IconButton>
+                            </>
                         ) : (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', }}>
-                                {/* Render Log In / Sign Up or Account Settings / Logout */}
-                                {authed ? (
-                                    <>
-                                        <Button component={NavLink} to="/account" sx={{ ml: 1, color: theme.palette.text.primary }}>
-                                            Account Settings
-                                        </Button>
-                                        <Button onClick={handleLogout} sx={{ ml: 1, color: theme.palette.text.primary }}>
-                                            Logout
-                                        </Button>
-                                    </>
-                                ) : (
-                                            <>
-                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
-                                            Home
-                                        </Button>
-                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
-                                            About
-                                        </Button>
-                                        <Button component={NavLink} style={{ color: theme.palette.text.primary, textWrap:false }}>
-                                            How It Works
-                                        </Button>
-                                        <Button component={NavLink} style={{ color: theme.palette.text.primary }}>
-                                            Blog
-                                        </Button>
-                                        <Button component={NavLink} to="/login" sx={{ ml: 1, color: theme.palette.text.primary }}>
-                                            Log In
-                                        </Button>
-                                        <Button component={NavLink} to="/signup" sx={{ ml: 1, color: theme.palette.secondary.main, backgroundColor: theme.palette.primary.main }}>
-                                            Sign Up
-                                        </Button>
-                                    </>
-                                )}
-                                </div>
+                            <>
+                                <Button
+                                    component={NavLink}
+                                    to="/login"
+                                    sx={{ ml: 1, color: theme.palette.text.primary }}
+                                >
+                                    Log In
+                                </Button>
+                                <Button
+                                    component={NavLink}
+                                    to="/signup"
+                                    sx={{
+                                        ml: 1,
+                                        color: theme.palette.secondary.main,
+                                        backgroundColor: theme.palette.primary.main,
+                                    }}
+                                >
+                                    Sign Up
+                                </Button>
+                            </>
                         )}
-
-                        {/* Account Menu for Mobile */}
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleAccountMenuClose}
-                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                        >
-                            {authed ? (
-                                <div>
-                                    <MenuItem component={NavLink} to="/account" style={{ color: 'text.primary' }}>
-                                        Account Settings
-                                    </MenuItem>
-                                    <MenuItem onClick={handleLogout} style={{ color: 'text.primary' }}>
-                                        Logout
-                                    </MenuItem>
-                                </div>
-                            ) : (
-                                <div>
-                                    <MenuItem component={NavLink} to="/login" style={{ backgroundColor:'primary.main', textDecoration: 'none', color: 'text.primary',  }}>
-                                        Log In
-                                    </MenuItem>
-                                        <MenuItem component={NavLink} to="/signup" style={{ backgroundColor: 'primary.main', textDecoration: 'none', color: 'text.primary' }}>
-                                        Sign Up
-                                    </MenuItem>
-                                </div>
-                            )}
-                        </Menu>
                     </Grid>
                 </Grid>
             </Toolbar>
+
+            {/* Combined Home and Account Menu for Mobile */}
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+            >
+                {/* Home Items */}
+                <MenuItem onClick={handleMenuClose}>
+                    <NavLink to="/" style={{ color: theme.palette.text.primary }}>
+                        Home
+                    </NavLink>
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose}>
+                    <NavLink to="/about" style={{ color: theme.palette.text.primary }}>
+                        About
+                    </NavLink>
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose}>
+                    <NavLink to="/how-it-works" style={{ color: theme.palette.text.primary }}>
+                        How It Works
+                    </NavLink>
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose}>
+                    <NavLink to="/blog" style={{ color: theme.palette.text.primary }}>
+                        Blog
+                    </NavLink>
+                </MenuItem>
+
+                {/* Divider between Home and Account sections */}
+                <Divider />
+
+                {/* Conditionally render Account items based on authed status */}
+                {authed ? (
+                    [
+                        <MenuItem key="account-settings" onClick={handleMenuClose}>
+                            <NavLink to="/account" style={{ color: theme.palette.text.primary }}>
+                                Account Settings
+                            </NavLink>
+                        </MenuItem>,
+                        <MenuItem key="logout" onClick={handleLogout}>
+                            Logout
+                        </MenuItem>
+                    ]
+                ) : (
+                    [
+                        <MenuItem key="login" onClick={handleMenuClose}>
+                            <NavLink to="/login" style={{ color: theme.palette.text.primary }}>
+                                Log In
+                            </NavLink>
+                        </MenuItem>,
+                        <MenuItem key="signup" onClick={handleMenuClose}>
+                            <NavLink to="/signup" style={{ color: theme.palette.secondary.main }}>
+                                Sign Up
+                            </NavLink>
+                        </MenuItem>
+                    ]
+                )}
+            </Menu>
         </AppBar>
     );
 };

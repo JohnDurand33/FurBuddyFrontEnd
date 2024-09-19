@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { storage } from '../config/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import dayjs from 'dayjs';
 import '../drawerStyles.css';
 import { backEndUrl } from '../utils/config';
 import { useRecords } from '../context/RecordsContext';
@@ -20,13 +21,25 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
     const [isEditMode, setIsEditMode] = useState(mode === 'edit');
 
     useEffect(() => {
+        if (isEditMode && serviceData?.image_path) {
+            setImageUrl(serviceData.image_path);
+        } else {
+            setImageUrl('');
+        }
+    }, [serviceData, isEditMode]);
+
+    useEffect(() => {
+        if (serviceData?.category_id) {
+            setSelectedCategory(serviceData.category_id);
+        }
+
         if (selectedCategory) {
             const filtered = serviceTypes.filter(st => st.category_id === selectedCategory);
             setFilteredServiceTypes(filtered);
         } else {
             setFilteredServiceTypes([]); 
         }
-    }, [selectedCategory, serviceTypes]);
+    }, [selectedCategory, serviceTypes, serviceData]);
 
     useEffect(() => {
         setIsEditMode(mode === 'edit');
@@ -52,7 +65,7 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
             const reader = new FileReader();
             reader.onload = () => {
                 setImage(file);
-                setImageUrl(reader.result);
+                setImageUrl(reader.result); // Base64 string for preview
             };
             reader.readAsDataURL(file);
         }
@@ -60,16 +73,24 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
 
     // Handle image upload to Firebase Storage
     const handleImageUpload = async () => {
-        if (!image) return serviceData?.image_path || '';
-        const storageRef = ref(storage, `service_images/${Date.now()}_${image.name}`);
-        const snapshot = await uploadBytes(storageRef, image);
-        return await getDownloadURL(snapshot.ref);
+        if (image) {
+            const storageRef = ref(storage, `service_images/${Date.now()}_${image.name}`);
+            const snapshot = await uploadBytes(storageRef, image);
+            return await getDownloadURL(snapshot.ref); // Return the uploaded image's URL
+        }
+
+        // Check if serviceData exists before trying to access image_path
+        return serviceData?.image_path || ''; // If no new image is selected, use the existing one or empty string
     };
 
     const formatDate = (date) => {
         if (!date) return '';
-        const d = new Date(date);
-        return d.toISOString().split('T')[0];
+        return dayjs(date).format('YYYY-MM-DD'); 
+    };
+
+    const formatUpdatedDate = (date) => {
+        if (!date) return '';
+        return dayjs(date).format('YYYY-MM-DD');  // Ensure the format is YYYY-MM-DD
     };
 
     // Handle form submission
@@ -79,7 +100,9 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
         setSubmitting(true);
         try {
             const imgUrl = await handleImageUpload();
-            const updatedData = { ...values, image_path: imgUrl || serviceData?.image_path || '', profile_id: currDog.id, };
+            const updatedData = {
+                ...values, image_path: imgUrl || serviceData?.image_path || '', profile_id: currDog.id, service_date: formatUpdatedDate(values.service_date), follow_up_date: formatUpdatedDate(values.follow_up_date),
+};
 
             if (isEditMode) {
                 // Editing an existing service
@@ -91,7 +114,7 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
                         'Content-Type': 'application/json',
                     },
                 });
-                console.log('Edit record backend response:', response);
+                console.log('Edit record backend response:', response.data);
             } else {
                 // Adding a new service
                 console.log('added data:', updatedData);
@@ -157,8 +180,9 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
                                     className={`form-input-1 ${touched.category_id && errors.category_id ? 'error' : ''}`}
                                     onChange={(e) => {
                                         setFieldValue('category_id', e.target.value);  // Set category_id in Formik
-                                        handleChangeCategory(e);  // Trigger category change logic
+                                        handleChangeCategory(e);  
                                     }}
+                                    value={values.category_id}  
                                 >
                                     <option value="">Select Category</option>
                                     {categories.map((category) => (
@@ -221,7 +245,7 @@ const ServiceDrawer = ({ isOpen, onClose, serviceData = null, mode = 'create' })
                                         id="service-image-upload"
                                         type="file"
                                         onChange={handleImageChange} />
-                                    {imageUrl ? <img src={imageUrl} alt="Preview" width="100" /> : values.image_path ? <img src={values.image_path} alt="Preview" width="100" /> : null}
+                                    {imageUrl ? <img src={imageUrl} alt="Preview" width="100" /> : serviceData?.image_path ? <img src={serviceData.image_path} alt="Preview" width="100" /> : null}
                                 </div>
                             </div>
 

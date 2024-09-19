@@ -1,136 +1,135 @@
 /* Global Styles */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  background-color: #f7f7f7;
-  color: #333;
+    font-family: Arial;
+    background-color: #f7f7f7;
+    color: #333;
 }
 
 .container {
-  width: 90%;
-  margin: 0 auto;
-  padding: 20px;
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 /* Heading */
 h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  font-weight: bold;
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
 }
 
 /* Table Controls */
 .table-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
 .table-controls label {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 .table-controls select {
-  padding: 5px;
-  margin-left: 5px;
+    padding: 5px;
+    margin-left: 5px;
 }
 
 .btn {
-  padding: 10px 15px;
-  background-color: #f5a623;
-  border: none;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
+    padding: 10px 15px;
+    background-color: #f5a623;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .btn.add-btn {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .btn:hover {
-  background-color: #e59d22;
+    background-color: #e59d22;
 }
 
 .filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Table Styles */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 thead th {
-  text-align: left;
-  background-color: #f1f1f1;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: bold;
+    text-align: left;
+    background-color: #f1f1f1;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 tbody tr {
-  border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 tbody tr td {
-  padding: 12px;
+    padding: 12px;
 }
 
 tbody tr td a {
-  color: #007bff;
-  text-decoration: none;
+    color: #007bff;
+    text-decoration: none;
 }
 
 tbody tr:hover {
-  background-color: #f9f9f9;
+    background-color: #f9f9f9;
 }
 
 .delete-btn {
-  color: red;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
+    color: red;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
 }
 
 /* Removed drawer styles from here */
 
 /* Pagination */
 .pagination {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
 }
 
 .pagination button {
-  padding: 5px 10px;
-  background-color: #f5a623;
-  border: none;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
+    padding: 5px 10px;
+    background-color: #f5a623;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
 .pagination button:disabled {
-  background-color: #e5e5e5;
-  color: #999;
+    background-color: #e5e5e5;
+    color: #999;
 }
 
 .pagination span {
-  padding: 5px;
+    padding: 5px;
 }

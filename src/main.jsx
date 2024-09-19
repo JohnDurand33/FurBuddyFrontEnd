@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './global.css';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 function Root() {
     return (

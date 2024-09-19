@@ -3,47 +3,48 @@ import { createTheme } from "@mui/material/styles";
 // Define common typography settings if needed
 const typography = {
     fontFamily: "Helvetica Neue, Arial, sans-serif",
-    // Optional: Customize the typography
+    
 };
 
 const lightTheme = createTheme({
     palette: {
-        mode: "light", // This is the default for MUI, but it's good to be explicit
+        mode: "light",
         primary: {
-            main: "#FFFAE7", // Yellow-gold color
+            main: "#FFFAE7", 
         },
         secondary: {
-            main: "#F7CA57", // Lighter orange from the Rail
+            main: "#F7CA57", 
         },
         background: {
-            default: "#FFFFFF", // Light paper-like color
+            default: "#FFFFFF", 
         },
         text: {
-            primary: "#000000", // Black text
+            primary: "#000000",
         },
     },
     typography,
     components: {
-        MuiPaper: {
-            styleOverrides: {
-                root: {
-                    backgroundColor: "#F8FFF3",
-                },
-            },
-        },
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: "8px",
+                    backgroundColor: "secondary.main",
+                    borderRadius: "3px",
                     textTransform: "none",
-                    borderColor: "#000000", // Black border for buttons
+                    borderColor: "#000000", 
+                    boxShadow: "none", 
+                    cursor: "default",
+                    "&:hover": {
+                        backgroundColor: "secondary.main", 
+                        boxShadow: "none !important",
+                        cursor: "default", 
+                    },
                 },
             },
         },
         MuiOutlinedInput: {
             styleOverrides: {
                 root: {
-                    borderColor: "#000000", // Black outlines for inputs
+                    borderColor: "#000000",
                 },
             },
         },
@@ -52,18 +53,18 @@ const lightTheme = createTheme({
 
 const darkTheme = createTheme({
     palette: {
-        mode: "dark", // Switch to dark mode
+        mode: "dark",
         primary: {
-            main: "#FFFAE7", // Lighter orange from the Rail (Swapped)
+            main: "#ffa500",
         },
         secondary: {
-            main: "#F7CA57", // Yellow-gold color (Swapped)
+            main: "#F7CA57",
         },
         background: {
-            default: "#333333", // Charcoal-like color for dark mode
+            default: "#333333",
         },
         text: {
-            primary: "#FFFFFF", // White text
+            primary: "#FFFFFF",
         },
     },
     typography,
@@ -71,16 +72,24 @@ const darkTheme = createTheme({
         MuiPaper: {
             styleOverrides: {
                 root: {
-                    backgroundColor: "#333333", // Charcoal-like background for papers
+                    backgroundColor: "#333333",
                 },
             },
         },
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: "8px",
+                    backgroundColor: "secondary.main",
+                    borderRadius: "3px",
                     textTransform: "none",
-                    borderColor: "#FFFFFF", // White border for buttons
+                    borderColor: "#FFFFFF",
+                    boxShadow: "none",
+                    cursor: "default",
+                    "&:hover": {
+                        backgroundColor: "secondary.main",
+                        boxShadow: "none",
+                        cursor: "default",
+                    },
                 },
             },
         },

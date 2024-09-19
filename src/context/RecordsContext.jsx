@@ -111,16 +111,20 @@ export const RecordsProvider = ({ children }) => {
     // Manual refetching method after adding/deleting a record
     const refetchCurrDogRecords = async () => {
         const updatedRecords = await fetchCurrDogRecords(currDog);
-        setLocalCurrDogRecords(updatedRecords);
         if (updatedRecords.length > 0) {
+            const fromattedNewRecords = Array.isArray(updatedRecords) ? updatedRecords : [updatedRecords];
+            setLocalCurrDogRecords(updatedRecords);
             setLocalCurrDogRec(updatedRecords[0]);
+        } else {
+            setLocalCurrDogRecords([]);
+            setLocalCurrDogRec({});
         }
-        return updatedRecords;
     };
-
+        
+    
     useEffect(() => {
         const initialRecords = async () => {
-            if (authed && token && currDog && currDogRecords.length === 0) {
+            if (authed && token && currDog) {
                 setLoading(true);
                 await fetchCategories();
                 await fetchServiceTypes();

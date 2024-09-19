@@ -1,76 +1,131 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import ServiceDrawer from '../components/ServiceDrawer';  // Drawer for Add/Edit services
-import FilterModal from '../components/FilterModal';      // Modal for Filtering
+import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Grid, Select, MenuItem, CircularProgress } from '@mui/material';
+import ServiceDrawer from '../components/ServiceDrawer';
+import FilterModal from '../components/FilterModal';
 import { useAuth } from '../context/AuthContext';
 import { useRecords } from '../context/RecordsContext';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 const RecordsPage = () => {
-    const { currDog, authed, token, logout } = useAuth(); 
+    const { currDog, authed, token, logout } = useAuth();
+    const { currDogRecords, setLocalCurrDogRecords, refetchCurrDogRecords } = useRecords();
     const [showDrawer, setShowDrawer] = useState(false);
-    const [showFilterModal, setShowFilterModal] = useState(false); 
+    const [showFilterModal, setShowFilterModal] = useState(false);
     const [drawerMode, setDrawerMode] = useState('create');
-    const [loading, setLoading] = useState(false); 
-    const { fetchAndSetLocalCurrDogRecords, currDogRecords, selectedRecord, setLocalSelectedRecord, fetchCurrDogRecords, refetchCurrDogRecords } = useRecords();  
-    const { navigate } = useNavigate(); 
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [loading, setLoading] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
 
-    // States for filtering and sorting
-    const [activeFilteredRecords, setActiveFilteredRecords] = useState([]);  // Holds the filtered records
-    const [finalDisplayedRecords, setFinalDisplayedRecords] = useState([]);  // Holds the final, sorted records to display
-    const [isFilterActive, setIsFilterActive] = useState(false);  // Tracks if filters are applied
-    const [sortConfig, setSortConfig] = useState({ key: 'serviceDate', direction: 'asc' });  // Sorting config
+    // Sorting configuration
+    const [sortConfig, setSortConfig] = useState({ key: 'service_date', direction: 'asc' });
 
-    // Fetch and set records whenever the current dog is updated
+    // Intermediary and Final State for displayed records
+    const [intermediaryRecords, setIntermediaryRecords] = useState([]);
+    const [finalDisplayedRecords, setFinalDisplayedRecords] = useState([]);
+
+    const navigate = useNavigate();
+
     useEffect(() => {
-        const fetchRecords = async () => {
-            if (authed && token && currDog) {
-                setLoading(true);
-                if (currDogRecords.length === 0) {
-                    await fetchAndSetLocalCurrDogRecords();  // Fetch records if none exist yet
+        if (!authed) {
+            logout();
+            navigate('/login');
+        }
+    }, [authed]);
+
+    // 1. Fetch records from the backend
+    useEffect(() => {
+        fetchRecords(); // Fetch records from the backend
+    }, [currDog, authed, token, page, limit]);  // Fetch only when these dependencies change
+
+    // 2. Apply sorting and pagination when `currDogRecords` changes
+    useEffect(() => {
+        if (currDogRecords && currDogRecords.length > 0) {
+            const sortedRecords = applySorting(currDogRecords);  // Sort the raw records
+            setIntermediaryRecords(sortedRecords);  // Update intermediary state
+            applyPagination(sortedRecords);  // Paginate the sorted records
+            setTotalRecords(currDogRecords.length);
+        }
+    }, [currDogRecords, sortConfig]);  // Trigger when `currDogRecords` or `sortConfig` changes
+
+    // Fetch records from the backend
+    const fetchRecords = async () => {
+        if (authed && token && currDog) {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: {
+                        page,
+                        limit,
+                        offset: (page - 1) * limit,
+                    },
+                });
+
+                const fetchedRecords = response.data || [];
+
+                // Only update `currDogRecords` if fetched records are different
+                if (JSON.stringify(fetchedRecords) !== JSON.stringify(currDogRecords)) {
+                    setLocalCurrDogRecords(fetchedRecords);  // Update global state
                 }
-                setLoading(false);
-            } else {
-                logout();
-                navigate('/login');
-            }
-        };
-        fetchRecords();
-    }, [currDog, authed, token]);
 
-    // Initialize working and displayed records from currDogRecords
-    useEffect(() => {
-        if (currDogRecords) {
-            if (!isFilterActive) {
-                setActiveFilteredRecords(currDogRecords);  // Initialize filtered records to full dataset
-                setFinalDisplayedRecords(currDogRecords);  // Initialize displayed records to full dataset
+                setTotalRecords(fetchedRecords.length || 0);  // Update total records count
+            } catch (error) {
+                console.error('Error fetching records:', error);
+            } finally {
+                setLoading(false);
             }
         }
-    }, [currDogRecords]);
+    };
 
-    const formatDisplayDate = (date) => {
+    // Sorting logic
+    const applySorting = (records) => {
+        return [...records].sort((a, b) => {
+            if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+            return 0;
+        });
+    };
+
+    
+    // Pagination logic
+    const applyPagination = (records) => {
+        const paginatedRecords = records.slice((page - 1) * limit, page * limit);
+        setFinalDisplayedRecords(paginatedRecords);  // Update state for display
+    };
+
+    // Sort request handler
+    const handleSortRequest = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';  // Toggle sorting direction
+        }
+        setSortConfig({ key, direction });  // Update sorting configuration
+    };
+
+    // Page change handler
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        applyPagination(intermediaryRecords);  // Apply pagination based on sorted records
+    };
+
+    // Limit change handler
+    const handleLimitChange = (event) => {
+        setLimit(event.target.value);
+        setPage(1);  // Reset page when changing limit
+        applyPagination(intermediaryRecords);  // Apply pagination based on sorted records
+    };
+
+    const formatDisplay = (date) => {
         if (!date) return '';
-        const d = new Date(date);
-        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        return dayjs(date).format('YYYY-MM-DD');
     };
 
-    // Function to handle opening the ServiceDrawer (either to create or edit a record)
-    const handleOpenDrawer = (mode, record = null) => {
-        setDrawerMode(mode);
-        setLocalSelectedRecord(record);
-        setShowDrawer(true);  // Open the drawer
-    };
-
-    // Function to handle closing the ServiceDrawer
-    const handleCloseDrawer = () => {
-        setShowDrawer(false);  // Close the drawer
-    };
-
-    // Function to handle record deletion
     const handleDeleteRecord = async (record) => {
-        setLocalSelectedRecord(record);
         console.log('Deleting record:', record);
 
         try {
@@ -81,54 +136,26 @@ const RecordsPage = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            console.log('Deleted record:', response.data);      
+            console.log('Deleted record:', response.data);
             // Fetch updated records after deletion
             const updatedRecords = await refetchCurrDogRecords();
-
-            // Update filtered records and apply any active filters
-            setActiveFilteredRecords(updatedRecords);
-
-            if (isFilterActive) {
-                // Reapply the filters to the updated records
-                const filteredData = updatedRecords.filter(record =>
-                    activeFilteredRecords.some(filteredRecord => filteredRecord.id === record.id)
-                );
-                applyFilterAndSort(filteredData);  // Apply filters and sort
-            } else {
-                // No filters applied, so display the updated records
-                setFinalDisplayedRecords(updatedRecords);
-            }
+            
 
         } catch (error) {
             console.error('Error deleting record or fetching updated records:', error);
         }
     };
 
-    // Apply filters and sort the records, then update the displayed records
-    const applyFilterAndSort = (filteredData) => {
-        setIsFilterActive(true);  // Set flag to indicate that filters are applied
-        const sortedData = sortRecords(filteredData, sortConfig.key, sortConfig.direction);
-        setFinalDisplayedRecords(sortedData);  // Update the final displayed records
+    // Drawer handling for updating a record
+    const handleUpdateRecord = (record) => {
+        setDrawerMode('edit');
+        setSelectedRecord(record);
+        setShowDrawer(true);
     };
 
-    // Handle sorting request from the user
-    const handleSortRequest = (key) => {
-        let direction = 'asc';
-        if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        const sortedRecords = sortRecords(activeFilteredRecords, key, direction);  // Sort the filtered records
-        setSortConfig({ key, direction });
-        setFinalDisplayedRecords(sortedRecords);  // Update the displayed records with sorted results
-    };
-
-    // Sort records function
-    const sortRecords = (records, key, direction) => {
-        return [...records].sort((a, b) => {
-            if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
-            if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
-            return 0;
-        });
+    const handleCloseDrawer = () => {
+        setShowDrawer(false);
+        setSelectedRecord(null);  // Clear the selected record after closing
     };
 
     return (
@@ -138,72 +165,104 @@ const RecordsPage = () => {
             </Typography>
 
             {/* Add and Filter Buttons */}
-            <Button variant="contained" onClick={() => handleOpenDrawer('create')} sx={{ mr: 2 }}>
-                + Add Service
-            </Button>
-            <Button variant="outlined" onClick={() => setShowFilterModal(true)}>
-                Filter
-            </Button>
+            <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
+                    <Select value={limit} onChange={handleLimitChange}>
+                        <MenuItem value={10}>10</MenuItem>
+                        <MenuItem value={25}>25</MenuItem>
+                        <MenuItem value={50}>50</MenuItem>
+                        <MenuItem value={100}>100</MenuItem>
+                    </Select>
+                </Grid>
+                <Grid item>
+                    <Button variant="contained" onClick={() => setDrawerMode('create') & setShowDrawer(true)} sx={{ mr: 2 }}>
+                        + Add
+                    </Button>
+                    <Button variant="outlined" onClick={() => setShowFilterModal(true)}>
+                        Filter
+                    </Button>
+                </Grid>
+            </Grid>
+
+            {/* Loading spinner */}
+            {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                    <CircularProgress />
+                </Box>
+            )}
 
             {/* Display filtered and sorted records */}
-            <TableContainer component={Paper} sx={{ mt: 3 }}>
+            <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell onClick={() => handleSortRequest('service_date')} sx={{ cursor: 'pointer' }}>Service Date</TableCell>
-                            <TableCell onClick={() => handleSortRequest('category_name')} sx={{ cursor: 'pointer' }}>Category</TableCell>
-                            <TableCell onClick={() => handleSortRequest('service_type_name')} sx={{ cursor: 'pointer' }}>Service Type</TableCell>
-                            <TableCell onClick={() => handleSortRequest('follow_up_date')} sx={{ cursor: 'pointer' }}>Follow-Up</TableCell>
-                            <TableCell onClick={() => handleSortRequest('fee')} sx={{ cursor: 'pointer' }}>Fee</TableCell>
-                            <TableCell sx={{ textAlign: 'center' }}>Update Record</TableCell>
-                            <TableCell sx={{ textAlign: 'center' }}>Delete Record</TableCell>
+                            <TableCell onClick={() => handleSortRequest('service_date')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
+                                Service Date
+                            </TableCell>
+                            <TableCell onClick={() => handleSortRequest('category_name')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
+                                Category
+                            </TableCell>
+                            <TableCell onClick={() => handleSortRequest('service_type_name')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
+                                Service Type
+                            </TableCell>
+                            <TableCell onClick={() => handleSortRequest('follow_up_date')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
+                                Follow-Up
+                            </TableCell>
+                            <TableCell onClick={() => handleSortRequest('fee')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
+                                Fee
+                            </TableCell>
+                            <TableCell sx={{ textAlign: 'center', fontWeight: 600 }}>Update</TableCell>
+                            <TableCell sx={{ textAlign: 'center', fontWeight: 600 }}>Delete</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {finalDisplayedRecords.map((record) => (
-                            <TableRow key={record.id}>
-                                <TableCell>{formatDisplayDate(record.service_date)}</TableCell>
-                                <TableCell>{record.category_name}</TableCell>
-                                <TableCell>{record.service_type_name}</TableCell>
-                                <TableCell>{formatDisplayDate(record.follow_up_date)}</TableCell>
-                                <TableCell>{record.fee}</TableCell>
-                                <TableCell
-                                    onClick={() => handleOpenDrawer('edit', record)}
-                                    sx={{
-                                        textAlign: 'center', borderLeft: '1px solid lightgrey',
-                                        borderRight: '1px solid lightgrey', cursor: 'pointer',
-                                        '&:hover': { backgroundColor: '#f5f5f5' }
-                                    }}>
-                                    Update
-                                </TableCell>
-                                <TableCell
-                                    onClick={() => handleDeleteRecord(record)}
-                                    sx={{
-                                        textAlign: 'center', borderRight: '1px solid lightgrey',
-                                        cursor: 'pointer',
-                                        '&:hover': { backgroundColor: '#f5f5f5' }
-                                    }}>
-                                    Delete
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {finalDisplayedRecords && finalDisplayedRecords.length > 0 ? (
+                            finalDisplayedRecords.map((record, index) => (
+                                <TableRow key={record.id} sx={{ backgroundColor: index % 2 === 0 ? 'white' : '#f5f5f5' }}>
+                                    <TableCell>{formatDisplay(record.service_date)}</TableCell>
+                                    <TableCell>{record.category_name}</TableCell>
+                                    <TableCell>{record.service_type_name}</TableCell>
+                                    <TableCell>{formatDisplay(record.follow_up_date)}</TableCell>
+                                    <TableCell>{record.fee}</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => handleUpdateRecord(record)}>
+                                        Update
+                                    </TableCell>
+                                    <TableCell sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => handleDeleteRecord(record)}>Delete</TableCell>
+                                </TableRow>
+                            ))
+                        ) : null}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* Pagination */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+                <Typography>
+                    Showing {finalDisplayedRecords.length} of {totalRecords} records
+                </Typography>
+                <Box>
+                    <Button disabled={page === 1} onClick={() => handlePageChange(page - 1)} sx={{ mr: 2 }}>
+                        Previous
+                    </Button>
+                    <Button disabled={page * limit >= totalRecords} onClick={() => handlePageChange(page + 1)}>
+                        Next
+                    </Button>
+                </Box>
+            </Box>
 
             {/* Add/Edit Service Drawer */}
             <ServiceDrawer
                 isOpen={showDrawer}
                 onClose={handleCloseDrawer}
                 mode={drawerMode}
-                serviceData={selectedRecord}
+                serviceData={selectedRecord}  // Pass the selected record for editing
             />
 
             {/* Filter Modal */}
             {showFilterModal && (
                 <FilterModal
                     onClose={() => setShowFilterModal(false)}
-                    setFilteredRecords={applyFilterAndSort}  // Pass filtered records to update finalDisplayedRecords
+                    setFilteredRecords={applyFiltering} // Set filtered records using the filtering logic
                 />
             )}
         </Box>

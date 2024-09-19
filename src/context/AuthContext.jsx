@@ -64,8 +64,9 @@ export const AuthProvider = ({ children }) => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            setLocalCurrUser(response.data); // Store user
-            return response.data;
+            const profiles = Array.isArray(response.data) ? response.data : [response.data];
+            setLocalCurrUser(profiles); // Store user
+            return profiles
         } catch (err) {
             console.error('Error fetching user data:', err);
             clearAllStateAndLocalStorage();
@@ -100,6 +101,7 @@ export const AuthProvider = ({ children }) => {
                 setLocalCurrDogProfiles(newCurrDogProfiles);
                 setLocalCurrDog(newCurrDogProfiles[0]);
                 console.log('formatted updated CurrDogProfiles:', newCurrDogProfiles);
+                console.log('currDog:', newCurrDogProfiles[0]);
             } else {
                 console.log('No dog profiles found');
                 setLocalCurrDogProfiles([]);
@@ -131,10 +133,12 @@ export const AuthProvider = ({ children }) => {
         if (updatedProfiles.length === 0) {
             setLocalCurrDog({});
             setLocalCurrDogProfiles([]);
+            console.log('No dog profiles found');   
         } else {
-            const formattedNewProfiles = Array.isArraysetLocalCurrDog(formattedNewProfiles);
+            const formattedNewProfiles = Array.isArray(updatedProfiles) ? updatedProfiles : [updatedProfiles];
             setLocalCurrDogProfiles(formattedNewProfiles);
             setLocalCurrDog(formattedNewProfiles[0]);
+            console.log('successfully updated dog profiles:', formattedNewProfiles);
         }
         return updatedProfiles;
     };
@@ -160,6 +164,7 @@ export const AuthProvider = ({ children }) => {
                 fireUser,
                 setFireUser,
                 currDog,
+                setCurrDog,
                 setLocalCurrDog,
                 dogProfiles,
                 setLocalCurrDogProfiles,

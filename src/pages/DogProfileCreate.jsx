@@ -15,7 +15,7 @@ import { useTheme } from '@mui/material/styles';
 
 const DogProfileCreate = ({ isMobile }) => {
     const theme = useTheme();
-    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles, deleteDogProfile, fetchCurrDogProfiles } = useAuth();
+    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles, deleteDogProfile, fetchCurrDogProfiles, refetchCurrDogProfiles } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
@@ -92,16 +92,11 @@ const DogProfileCreate = ({ isMobile }) => {
                 }
             );
             console.log("creat dog response data", response.data);
-            setLocalCurrDog(response.data);
 
-            const res = await axios.get(`${backEndUrl}/profile/profiles`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${token}`
-                },
-            });
-            console.log("fetch dogProfiles response data after create", res.data);
-            setLocalDogProfiles(res.data);
+            const updatedProfiles = await refetchCurrDogProfiles();
+            console.log("fetch dogProfiles response data after refetch", updatedProfiles);
+            setLocalDogProfiles(updatedProfiles);
+            setLocalCurrDog(updatedProfiles[0]);
             navigate(`/dogs/view`);
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');

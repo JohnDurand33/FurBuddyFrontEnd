@@ -38,7 +38,9 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
                     const profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
                     if (profiles && profiles.length > 0) {
                         setLocalCurrDog(profiles[0]);
+                        console.log('currDog:', profiles[0]);
                         setLocalCurrDogProfiles(profiles);
+                        console.log('currDogProfiles:', profiles);
                         navigate('/dogs/view');
                         setIsRailOpen(true)
                     } else {

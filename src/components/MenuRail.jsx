@@ -15,13 +15,15 @@ import chevronsLeftIcon from '@iconify-icons/mdi/chevron-double-left';
 import chevronUpIcon from '@iconify-icons/mdi/chevron-up';
 import chevronDownIcon from '@iconify-icons/mdi/chevron-down';
 import pawIcon from '@iconify-icons/mdi/paw';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ImGift } from 'react-icons/im';
 
-const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse }) => {
+const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark }) => {
     const navigate = useNavigate();
-    const { authed, token, currUser, handleLogout, dogProfiles, refetchCurrDogProfiles, setLocalCurrDog } = useAuth();  // Get auth and state functions
+    const { authed, token, currUser, currDog, handleLogout, dogProfiles, refetchCurrDogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(true);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -85,6 +87,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                 disableBackdropClick: false,  // Ensure tapping outside will close the Drawer
             }}
             sx={{
+                
                 width: getDrawerWidth(),
                 transition: 'width 0.3s ease-in-out',
                 color: theme.palette.text.primary,
@@ -100,10 +103,10 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         >
                 <List>
                     {/* Logo and Toggle Button */}
-                <ListItemButton sx={{ marginBottom: '16px' }}>
+                <ListItemButton >
                     
                     {/* Conditionally Render Based on isMobile and isCollapsed */}
-                    <ListItemIcon sx={{ minWidth: 'auto', mr: -.5, mb: -2 }}>
+                    <ListItemIcon sx={{ minWidth: 'auto', mr: -.5, mt: -1 }}>
                         {!isMobile && !isCollapsed ? (
                             <img src="https://res.cloudinary.com/dkeozpkpv/image/upload/v1725361244/PawHub_fvafym.png" alt="Logo" />
                         ) : isMobile ? (
@@ -113,7 +116,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
 
                     {/* Chevron Icons only show when not mobile */}
                     {!isMobile && (
-                        <IconButton onClick={toggleCollapse} sx={{ marginLeft: isCollapsed ? -1 : .5, mb: -2 }}>
+                        <IconButton onClick={toggleCollapse} sx={{ marginLeft: isCollapsed ? -1 : .5, mt: -2 }}>
                             <Paper
                                 elevation={3} // Give it a slight shadow for a paper-like feel
                                 sx={{
@@ -142,7 +145,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     <ListItemIcon><Icon icon={defaultashboardIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
                     </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '12px', ml: .5 }}>
+                <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/calendar')}>
                     <ListItemIcon><Icon icon={calendarIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Calendar" />}
                     </ListItemButton>
@@ -200,7 +203,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                         <ListItemIcon><Icon icon={settingsIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Settings" />}
                     </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '16px', ml: .5 }} onClick={handleLogout}>
+                <ListItemButton sx={{ marginBottom: '16px', ml: .5 }} onClick={logout}>
                         <ListItemIcon><Icon icon={logoutIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Logout" />}
                     </ListItemButton>
@@ -212,10 +215,17 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     <ListItemIcon >
                         <Avatar sx={{ ml: -.5 }} src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"}  />
                         </ListItemIcon>
-                        {!isMobile && currUser && currUser.owner_email && (
-                            <ListItemText primary={currUser.owner_email} />
-                        )}
-                    </ListItemButton>
+                    <ListItemText primary={currUser?.owner_email || 'No email available'} />
+                </ListItemButton>
+                
+                <Divider sx={{ mt: 2, mb: 2 }} />
+
+                <ListItemButton onClick={toggleTheme}>
+                    <ListItemIcon>
+                        {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+                    </ListItemIcon>
+                    {!isCollapsed && <ListItemText primary="Toggle Theme" />}
+                </ListItemButton>
                 </List>
         </Drawer>
     );
