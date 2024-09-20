@@ -1,0 +1,51 @@
+.day-view {
+    height: 100vh; 
+    overflow-y: auto;
+    border-top: 1px solid #ddd;
+    padding-right: 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Hide the scrollbar */
+.day-view::-webkit-scrollbar {
+    display: none;
+}
+
+.day-view {
+    -ms-overflow-style: none; 
+}
+
+.day-time-slot {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    height: 90px;
+    position: relative;
+}
+
+/* Make the time labels sticky on the left */
+.time-label {
+    width: 100px;
+    text-align: right;
+    padding-right: 10px;
+    font-size: 14px;
+    background-color: white;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    border-right: 1px solid #ddd;
+}
+
+.time-content {
+    flex-grow: 1;
+    border-left: 1px solid #ddd;
+    position: relative;
+    border-top: 1px solid #ddd;
+}
+
+.event {
+    background-color: #ffeb3b;
+    padding: 5px;
+    border-radius: 3px;
+    position: absolute;
+}

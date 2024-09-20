@@ -94,9 +94,7 @@ const DogProfileCreate = ({ isMobile }) => {
             console.log("creat dog response data", response.data);
 
             const updatedProfiles = await refetchCurrDogProfiles();
-            console.log("fetch dogProfiles response data after refetch", updatedProfiles);
-            setLocalDogProfiles(updatedProfiles);
-            setLocalCurrDog(updatedProfiles[0]);
+            console.log("fetch dogProfiles response after create", updatedProfiles);
             navigate(`/dogs/view`);
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');

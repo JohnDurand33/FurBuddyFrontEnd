@@ -23,7 +23,7 @@ function App() {
         <Router>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <AuthProvider>
+                <AuthProvider >
                     <RecordsProvider>
                             <MainView toggleTheme={toggleTheme} isDark={isDark} />
                     </RecordsProvider>

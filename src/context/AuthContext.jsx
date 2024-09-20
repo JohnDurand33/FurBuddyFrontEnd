@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 
@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
     const [dogProfiles, setDogProfiles] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const location = useLocation();
     const navigate = useNavigate();
 
     // Helper functions to update state and save to localStorage
@@ -42,15 +43,13 @@ export const AuthProvider = ({ children }) => {
 
     const clearAllStateAndLocalStorage = () => {
         setAuthed(false);
+        localStorage.clear();
         setToken(null);
-        setLocalToken(null);
         setCurrUser(null);
-        setLocalCurrUser(null);
         setFireUser(null);
         setCurrDog(null);
-        setLocalCurrDog(null);
-        setLocalCurrDogProfiles([]);
-        localStorage.clear(); // Clears all stored items
+        setDogProfiles([]);
+         // Clears all stored items
     };
 
     const logout = () => {
@@ -64,9 +63,10 @@ export const AuthProvider = ({ children }) => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            const profiles = Array.isArray(response.data) ? response.data : [response.data];
-            setLocalCurrUser(profiles); // Store user
-            return profiles
+            const profile = response.data
+            console.log('Fetched user data:', profile);
+            setLocalCurrUser(profile); // Store user
+            return profile
         } catch (err) {
             console.error('Error fetching user data:', err);
             clearAllStateAndLocalStorage();
@@ -77,6 +77,9 @@ export const AuthProvider = ({ children }) => {
     const fetchCurrDogProfiles = async () => {
         try {
             if (authed && token) {
+                setLoading(true);
+                setError(null);
+
                 const response = await axios.get(`${backEndUrl}/profile/profiles`, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -84,29 +87,20 @@ export const AuthProvider = ({ children }) => {
                     },
                 });
                 console.log('Fetched dog profiles:', response.data);
-                response.data = Array.isArray(response.data) ? response.data : [response.data];
-                return response.data;
+                if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
+                    return [];
+                } else {
+                    const updatedDogProifles = Array.isArray(response.data) ? response.data : [response.data];
+                    setLocalCurrDogProfiles(updatedDogProifles);
+                    setLocalCurrDog(updatedDogProifles[0]);
+                    return updatedDogProifles;
+                }
             }
         } catch (error) {
             console.error('Error fetching dog profiles:', error);
             return [];
-        }
-    };
-
-    const fetchAndSetLocalCurrDogProfiles = async () => {
-        if (authed && token && dogProfiles.length === 0) {
-            const newCurrDogProfiles = await fetchCurrDogProfiles();
-            console.log('updatedCurrDogRecords:', newCurrDogProfiles);
-            if (newCurrDogProfiles && newCurrDogProfiles.length > 0) {
-                setLocalCurrDogProfiles(newCurrDogProfiles);
-                setLocalCurrDog(newCurrDogProfiles[0]);
-                console.log('formatted updated CurrDogProfiles:', newCurrDogProfiles);
-                console.log('currDog:', newCurrDogProfiles[0]);
-            } else {
-                console.log('No dog profiles found');
-                setLocalCurrDogProfiles([]);
-                setLocalCurrDog({});
-            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -120,7 +114,7 @@ export const AuthProvider = ({ children }) => {
                 },
             });
             console.log('Delete Dog Response:', response.data);
-            data = response.data;
+            const {data} = response;
             console.log('Deleted dog data:', data);
         } catch (error) {
             console.error('Error deleting dog profile:', error);
@@ -130,25 +124,40 @@ export const AuthProvider = ({ children }) => {
     // Manual refetching method after adding/deleting a dog profile
     const refetchCurrDogProfiles = async () => {
         const updatedProfiles = await fetchCurrDogProfiles();
-        if (updatedProfiles.length === 0) {
-            setLocalCurrDog({});
-            setLocalCurrDogProfiles([]);
-            console.log('No dog profiles found');   
-        } else {
+        if (updatedProfiles.length > 0) {
             const formattedNewProfiles = Array.isArray(updatedProfiles) ? updatedProfiles : [updatedProfiles];
-            setLocalCurrDogProfiles(formattedNewProfiles);
-            setLocalCurrDog(formattedNewProfiles[0]);
-            console.log('successfully updated dog profiles:', formattedNewProfiles);
-        }
-        return updatedProfiles;
+            if (formattedNewProfiles.length === 0) {
+                console.log('No dog profiles found');
+                setLocalCurrDogProfiles([]);
+                setLocalCurrDog({});
+                return []
+            } else {
+                setLocalCurrDogProfiles(formattedNewProfiles);
+                setLocalCurrDog(formattedNewProfiles[0]);
+                return formattedNewProfiles
+            }
+        };
     };
+
+    // protection against unauthenticated users
+    useEffect(() => {
+        if (!authed && !['/login', '/signup'].includes(location.pathname)) {
+            logout();
+        }
+    })
 
     // Load user and dog profile from localStorage on component mount
     useEffect(() => {
-        setLoading(true);
-        fetchAndSetLocalCurrDogProfiles();
-        setLoading(false);
+        if (authed && token) {
+            setLoading(true);
+            fetchCurrDogProfiles();
+            setLoading(false);
+        };
     }, [token, authed]);
+
+    useEffect(() => {
+        console.log('Authed:', authed, 'Current User:', currUser);
+    }, [authed, currUser]);
 
     
 
@@ -171,7 +180,6 @@ export const AuthProvider = ({ children }) => {
                 clearAllStateAndLocalStorage,
                 fetchUserDataWithToken,
                 fetchCurrDogProfiles,
-                fetchAndSetLocalCurrDogProfiles,
                 deleteDogProfile,
                 refetchCurrDogProfiles, 
                 logout

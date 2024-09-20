@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
-import { Routes, Route, useLocation } from 'react-router-dom'; // Import useLocation
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'; // Import useLocation
 import Navbar from '../components/NavBar';
 import MenuRail from '../components/MenuRail';
 import HeroPage from './HeroPage';
@@ -9,11 +9,11 @@ import LogIn from './LogIn';
 import DogProfileCreate from './DogProfileCreate';
 import DogProfileViewPage from './DogProfileView';
 import RecordsPage from './RecordsPage';
-import CalendarPage from './CalendarPage';
+import MyCalendar from './MyCalendar';
 import { useAuth } from '../context/AuthContext';
 
 function MainView({ toggleTheme, isDark }) {
-    const { authed } = useAuth();
+    const { authed, currUser } = useAuth();
     const [isRailOpen, setIsRailOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false); 
     const isMobile = useMediaQuery('(max-width:600px)');
@@ -27,18 +27,18 @@ function MainView({ toggleTheme, isDark }) {
         setIsRailOpen((prev) => !prev);
     };
 
-    // Conditionally apply margin and padding based on the current path
-    const isCalendarPage = location.pathname === '/calendar'; // Check if on the calendar page
+    
+    const isCalendarPage = location.pathname === '/calendar'; 
 
     // Function to calculate margin-left based on authed, isMobile, and isRailOpen states
     const getMarginLeft = () => {
-        if (!authed || !isRailOpen) {
+        if (!authed ) {
             return '0px';
-        } else if (isMobile) {
+        } if (isMobile) {
             return '64px';
-        } else {
-            return isCollapsed ? '64px' : '240px';
         }
+        return isCollapsed ? '44px' : '220px';
+        
     };
 
     
@@ -47,15 +47,17 @@ function MainView({ toggleTheme, isDark }) {
         <Box sx={{
             display: 'flex',
             flexDirection: 'column',
-            ml: !isMobile ? getMarginLeft() : 0,
-            pr: isCalendarPage ? '20px' : '16px', // Adjust margin based on calendar page
+            ml: getMarginLeft(),
+            pr: '-2%',
+            pr: 0, 
+            pb:'2%',
             mb: isCalendarPage ? '0px' : '16px', // No bottom margin for calendar
             height: '100vh',
             transition: 'margin-left 0.3s ease-in-out',
+
         }}>
-            {!isCalendarPage && ( // Hide Navbar on calendar page if desired
                 <Navbar toggleTheme={toggleTheme} isMobile={isMobile} />
-            )}
+        
             <MenuRail
                 isMobile={isMobile}
                 isRailOpen={isRailOpen}
@@ -80,7 +82,9 @@ function MainView({ toggleTheme, isDark }) {
                     <Route path="/dogs/new" element={<DogProfileCreate isMobile={isMobile} />} />
                     <Route path="/dogs/view" element={<DogProfileViewPage isMobile={isMobile} getMarginLeft={getMarginLeft} isRailOpen={isRailOpen} />} />
                     <Route path="/records" element={<RecordsPage />} />
-                    <Route path="/calendar" element={<CalendarPage />} />
+
+                    <Route path="/calendar" element={<Navigate to="/calendar/week" />} /> {/* Redirect to /calendar/week */}
+                    <Route path="/calendar/:view" element={<MyCalendar />} /> {/* Add :view parameter */}
                     {/* <Route path="/map" element={<Map />} /> */}
                 </Routes>
             </Box>

@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useAuth } from './AuthContext';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
+import { se } from 'date-fns/locale';
 
 // Create the RecordsContext
 const RecordsContext = createContext();
@@ -67,68 +68,65 @@ export const RecordsProvider = ({ children }) => {
         }
     };
 
-    const fetchCurrDogRecords = async (currDog) => {
+    const fetchCurrDogRecords = async () => {
         try {
-            setLoading(true);
-            setError(null);
+            if (authed && token) {
+                setLoading(true);
+                setError(null);
 
-            const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
+                const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                console.log('updated currDogProfiles fetched', response.data);
+                if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
+                    return [];
+                } else {
+                    const updatedRecords = Array.isArray(response.data) ? response.data : [response.data];
+                    setLocalCurrDogRecords(updatedRecords);
+                    setLocalCurrDogRec(updatedRecords[0]);
+                    return updatedRecords;
                 }
-            });
-            console.log('updated currDogProfiles fetched', response.data);
-            const updatedRecords = !Array.isArray(response.data) ? [response.data] : response.data;
-            return updatedRecords;
+            }
         } catch (error) {
-            console.error('Error fetching records:', error);
-            setError('Error fetching records');
+                console.error('Error fetching records:', error);
+                setError('Error fetching records');
+                return [];
         } finally {
             setLoading(false);
-        }
+        };
     };
 
-    const fetchAndSetLocalCurrDogRecords = async () => {
-        if (authed && token && currDog) {
-            const response = await fetchCurrDogRecords(currDog);
-            console.log('updatedCurrDogRecords:', response);
-            if (response && response.length > 0) {
-                const formattedRecords = Array.isArray(response) ? response : [response];
-                setLocalCurrDogRecords(formattedRecords);
-                setLocalCurrDogRec(formattedRecords[0]);
-                console.log('currDogRecords:', formattedRecords);
-                return true;
-            } else {
-                console.log('no records found');
-                setLocalCurrDogRecords([]);
-                setLocalCurrDogRec({});
-                return false;
-            }
-        }
-    };
-
-    // Manual refetching method after adding/deleting a record
+    // Manual refetching method 
     const refetchCurrDogRecords = async () => {
-        const updatedRecords = await fetchCurrDogRecords(currDog);
+        const updatedRecords = await fetchCurrDogRecords();
         if (updatedRecords.length > 0) {
-            const fromattedNewRecords = Array.isArray(updatedRecords) ? updatedRecords : [updatedRecords];
-            setLocalCurrDogRecords(updatedRecords);
-            setLocalCurrDogRec(updatedRecords[0]);
+            const formattedNewRecords = Array.isArray(updatedRecords) ? updatedRecords : [updatedRecords];
+            console.log('refetch currDogRecords:', formattedNewRecords);
+            setLocalCurrDogRecords(formattedNewRecords);
+            setLocalCurrDogRec(formattedNewRecords[0]);
+            return formattedNewRecords;
         } else {
             setLocalCurrDogRecords([]);
             setLocalCurrDogRec({});
+            return [];
         }
     };
         
-    
+    useEffect(() => {
+        if (authed && token) {
+            fetchCategories();
+            fetchServiceTypes();
+        }
+    }, [authed, token]);
+
     useEffect(() => {
         const initialRecords = async () => {
             if (authed && token && currDog) {
                 setLoading(true);
-                await fetchCategories();
-                await fetchServiceTypes();
-                await fetchAndSetLocalCurrDogRecords();
+                await refetchCurrDogRecords();
                 setLoading(false);
             }
         };
@@ -149,9 +147,8 @@ export const RecordsProvider = ({ children }) => {
             setLocalSelectedRecord,
             fetchCategories,
             fetchServiceTypes,
-            fetchCurrDogRecords,
-            fetchAndSetLocalCurrDogRecords,
-            refetchCurrDogRecords,  // Added refetch function
+            fetchCurrDogRecords, //fetches and returns records whether or not they are empty
+            refetchCurrDogRecords, //sets and returns records
             loading,
             error
         }}>

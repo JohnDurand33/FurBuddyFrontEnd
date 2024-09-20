@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, ListItemButton, Paper } from '@mui/material';
+import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, ListItemButton, Paper, Typography, Box } from '@mui/material';
 import { useAuth } from '../context/AuthContext';  // Import Auth context
 import { Icon } from '@iconify/react';
 import defaultashboardIcon from '@iconify/icons-mdi/view-dashboard-outline';
@@ -21,9 +21,9 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ImGift } from 'react-icons/im';
 
-const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark }) => {
+const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark, currUser }) => {
     const navigate = useNavigate();
-    const { authed, token, currUser, currDog, handleLogout, dogProfiles, refetchCurrDogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
+    const { authed, token, currDog, handleLogout, dogProfiles, refetchCurrDogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(true);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -36,11 +36,10 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         } else if (isMobile) {
             return '64px';
         } else {
-            return isCollapsed ? '64px' : '240px';
+            return isCollapsed ? '64px' : '235px';
         }
     };
 
-    // Fetch dog profiles after login
     // Fetch dog profiles after login
     useEffect(() => {
         const fetchData = async () => {
@@ -61,11 +60,8 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         fetchData();
     }, [authed, token, currUser]);
 
-    const handleCurrDogChange = (dog, path = null) => {
+    const handleCurrDogChange = (dog) => {
         setLocalCurrDog(dog);
-        if (path) {
-            navigate(path);
-        };
     };
 
     const handleAddDog = () => {
@@ -75,7 +71,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     const handleNavigateTo = (path) => () => {
         navigate(path);
     }
-
+    
     return (
         <Drawer
             variant='permanent'  // Use 'temporary' for mobile, 'permanent' otherwise
@@ -120,7 +116,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                             <Paper
                                 elevation={3} // Give it a slight shadow for a paper-like feel
                                 sx={{
-                                    width: '40px', height: '40px',
+                                    width: '35px', height: '35px',
                                     display: 'flex', justifyContent: 'center', alignItems: 'center',
                                     backgroundColor: '#f5f5f5', // Paper-like color
                                     borderRadius: '8px',
@@ -211,11 +207,20 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     <Divider sx={{ marginBottom: '16px' }} />
 
                     {/* User Account */}
-                <ListItemButton >
-                    <ListItemIcon >
-                        <Avatar sx={{ ml: -.5 }} src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"}  />
-                        </ListItemIcon>
-                    <ListItemText primary={currUser?.owner_email || 'No email available'} />
+                <ListItemButton sx={{ marginBottom: '16px', ml: .5 }} >
+                    <ListItemIcon>
+                        {/* Display Avatar based on currUser */}
+                        <Avatar src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"} />
+                    </ListItemIcon>
+
+                    {/* Conditionally render user email */}
+                    <ListItemText
+                        primary={
+                            <Typography variant="body1" sx={{ ml: 1, color: 'inherit' }}>
+                                {currUser ? currUser.owner_email : 'No email available'}
+                            </Typography>
+                        }
+                    />
                 </ListItemButton>
                 
                 <Divider sx={{ mt: 2, mb: 2 }} />

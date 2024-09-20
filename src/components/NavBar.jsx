@@ -29,23 +29,31 @@ const Navbar = ({ toggleRail, isMobile }) => {
         logout();
         navigate('/login');
     };
-
+    const currentPath = window.location.pathname.split('/')[1];
     const getDisplayText = (currDog, path) => {
-        if (!currDog && path !== '/dogs/new' && path !== '/calendar' && path !== '/Map') return null;
+        let currentPath = path.split('/')[1];
+        console.log(currentPath);
 
-        switch (path) {
-            case '/dogs/view':
-                return currDog ? currDog.name : 'My Dog';
-            case '/records':
-                return 'Medical Records';
-            case '/dogs/new':
-                return 'My Dog';
-            case '/calendar':
-                return 'My Event Calendar';
-            case '/Map':
-                return 'Map';
+        
+
+        switch (true) {
+            case currentPath === 'dogs' :
+                return { text: isMobile ? 'Dogs' : 'My Dogs', ml: isMobile ? 2 : 7 };
+            case currentPath === 'records':
+                return {
+                    text: isMobile ? 'Recs' : 'Medical Records', ml: 2
+                };
+            case currentPath === 'calendar':
+                return {
+                    text: isMobile ? 'Cal' : 'Calendar', ml: 2
+                };
+            case currentPath === 'map':
+                return { text: 'Map', ml: 2
+                };
+            case currentPath === ('' || 'login' || 'signup'):
+                return {text: '', ml: 0 };
             default:
-                return null;
+                return { text: '', ml: 0 };
         }
     };
 
@@ -65,8 +73,8 @@ const Navbar = ({ toggleRail, isMobile }) => {
                     {/* Left Section: Logo or Dog Name */}
                     <Grid item xs={4} sx={{ display: 'flex', alignItems: 'center' }}>
                         {authed ? (
-                            <Typography variant="h5" color="grey" sx={{ ml: 2 }}>
-                                {getDisplayText(currDog, location.pathname)}
+                            <Typography fontSize='2rem' color="grey" sx={{ ml: getDisplayText(currDog, window.location.pathname)['ml'] }}>
+                                {getDisplayText(currDog, window.location.pathname)['text']}
                             </Typography>
                         ) : (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>

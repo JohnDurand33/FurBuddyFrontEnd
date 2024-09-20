@@ -1,0 +1,77 @@
+.calendar-container {
+    max-width: 100%; 
+    margin-right: 50px;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.calendar-content {
+    padding-right: 0;
+    overflow-y: auto; 
+}
+
+/* Create Button Styling */
+.create-btn {
+    width: 130px;
+    height: 45px;
+    background-color: #ffb300;
+    color: black; 
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 4px;
+    margin-right: 20px; 
+    display: flex;
+    align-items: center; 
+}
+
+/* View Switch Buttons (Day/Week/Month) */
+.view-buttons {
+    display: flex;
+    align-items: center;
+    height: 45px;
+}
+.view-buttons button {
+    width: 126.6px;
+    height: 45px;
+    margin: 0;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.view-buttons button.active {
+    background-color: #fff1d0;
+}
+
+/* Today and Navigation Buttons */
+.nav-button {
+    width: 45px;
+    height: 45px;
+    background-color: #f0f0f0; 
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+/* Today button */
+.today-button {
+    height: 45px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 0 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

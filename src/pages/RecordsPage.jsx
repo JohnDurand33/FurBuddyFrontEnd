@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Grid, Select, MenuItem, CircularProgress } from '@mui/material';
-import ServiceDrawer from '../components/ServiceDrawer';
-import FilterModal from '../components/FilterModal';
 import { useAuth } from '../context/AuthContext';
 import { useRecords } from '../context/RecordsContext';
+import ServiceDrawer from '../components/ServiceDrawer';
+import FilterModal from '../components/FilterModal';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
+import { format, parseISO } from 'date-fns';
 
 const RecordsPage = () => {
     const { currDog, authed, token, logout } = useAuth();
@@ -31,28 +31,56 @@ const RecordsPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!authed) {
-            logout();
-            navigate('/login');
-        }
-    }, [authed]);
+        refetchCurrDogRecords();
+    }, [currDog, authed, token]);
 
-    // 1. Fetch records from the backend
-    useEffect(() => {
-        fetchRecords(); // Fetch records from the backend
-    }, [currDog, authed, token, page, limit]);  // Fetch only when these dependencies change
-
-    // 2. Apply sorting and pagination when `currDogRecords` changes
     useEffect(() => {
         if (currDogRecords && currDogRecords.length > 0) {
-            const sortedRecords = applySorting(currDogRecords);  // Sort the raw records
-            setIntermediaryRecords(sortedRecords);  // Update intermediary state
-            applyPagination(sortedRecords);  // Paginate the sorted records
-            setTotalRecords(currDogRecords.length);
-        }
-    }, [currDogRecords, sortConfig]);  // Trigger when `currDogRecords` or `sortConfig` changes
 
-    // Fetch records from the backend
+            const filteredRecords = applyFilter(currDogRecords); // Apply any active filters
+            console.log('filteredRecords:', filteredRecords);
+            const sortedRecords = applySorting(filteredRecords); // Sort the filtered records
+            console.log('sortedRecords:', sortedRecords);
+            setIntermediaryRecords(sortedRecords);
+            console.log('sortedRecords:', sortedRecords);
+            applyPagination(sortedRecords); // Paginate the sorted and filtered records
+            setTotalRecords(filteredRecords.length); // Set the total after filtering
+        } else {
+            setFinalDisplayedRecords([]);
+
+        }
+    }, [currDogRecords, sortConfig]);
+
+    useEffect(() => {
+        // Apply pagination whenever `page`, `limit`, or `intermediaryRecords` change
+        applyPagination(intermediaryRecords);
+    }, [page, limit, intermediaryRecords]);
+
+    const applyPagination = (records) => {
+        const start = (page - 1) * limit;
+        const paginatedRecords = records.slice(start, start + limit);
+        setFinalDisplayedRecords(paginatedRecords);
+    };
+
+
+    const handleAddRecord = () => {
+        setSelectedRecord(null); 
+        setDrawerMode('create');
+        setShowDrawer(true); 
+    };
+
+    const handleUpdateRecord = (record) => {
+        setSelectedRecord(record); 
+        setDrawerMode('edit');
+        setShowDrawer(true); 
+    };
+
+    const formatDateToUTC = (dateString) => {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return format(new Date(date.getTime() + date.getTimezoneOffset() * 60000), 'yyyy-MM-dd');
+    };
+
     const fetchRecords = async () => {
         if (authed && token && currDog) {
             setLoading(true);
@@ -68,12 +96,11 @@ const RecordsPage = () => {
 
                 const fetchedRecords = response.data || [];
 
-                // Only update `currDogRecords` if fetched records are different
                 if (JSON.stringify(fetchedRecords) !== JSON.stringify(currDogRecords)) {
-                    setLocalCurrDogRecords(fetchedRecords);  // Update global state
+                    setLocalCurrDogRecords(fetchedRecords);
                 }
 
-                setTotalRecords(fetchedRecords.length || 0);  // Update total records count
+                setTotalRecords(fetchedRecords.length || 0);
             } catch (error) {
                 console.error('Error fetching records:', error);
             } finally {
@@ -82,89 +109,69 @@ const RecordsPage = () => {
         }
     };
 
-    // Sorting logic
     const applySorting = (records) => {
         return [...records].sort((a, b) => {
-            if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-            if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-            return 0;
+            if (sortConfig.key === 'service_date') {
+                const dateA = new Date(a.service_date);
+                const dateB = new Date(b.service_date);
+                return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+            } else if (sortConfig.key === 'fee') {
+                const feeA = parseFloat(a.fee || 0);
+                const feeB = parseFloat(b.fee || 0);
+                return sortConfig.direction === 'asc' ? feeA - feeB : feeB - feeA;
+            } else {
+                if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            }
         });
     };
 
-    
-    // Pagination logic
-    const applyPagination = (records) => {
-        const paginatedRecords = records.slice((page - 1) * limit, page * limit);
-        setFinalDisplayedRecords(paginatedRecords);  // Update state for display
+    const applyFilter = (records) => {
+        // Implement filtering logic here if necessary, for now, it's a pass-through
+        return records;
     };
 
-    // Sort request handler
     const handleSortRequest = (key) => {
+        
         let direction = 'asc';
         if (sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';  // Toggle sorting direction
+            direction = 'desc';
         }
-        setSortConfig({ key, direction });  // Update sorting configuration
+        setSortConfig({ key, direction });
     };
 
-    // Page change handler
     const handlePageChange = (newPage) => {
         setPage(newPage);
-        applyPagination(intermediaryRecords);  // Apply pagination based on sorted records
+        applyPagination(intermediaryRecords);
     };
 
-    // Limit change handler
     const handleLimitChange = (event) => {
         setLimit(event.target.value);
-        setPage(1);  // Reset page when changing limit
-        applyPagination(intermediaryRecords);  // Apply pagination based on sorted records
-    };
-
-    const formatDisplay = (date) => {
-        if (!date) return '';
-        return dayjs(date).format('YYYY-MM-DD');
+        setPage(1);
+        applyPagination(intermediaryRecords);
     };
 
     const handleDeleteRecord = async (record) => {
-        console.log('Deleting record:', record);
-
         try {
-            // Perform the delete request
-            const response = await axios.delete(`${backEndUrl}/medical_record/profile/${currDog.id}/records/${record.id}`, {
+            await axios.delete(`${backEndUrl}/medical_record/profile/${currDog.id}/records/${record.id}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
             });
-            console.log('Deleted record:', response.data);
-            // Fetch updated records after deletion
-            const updatedRecords = await refetchCurrDogRecords();
-            
-
+            await refetchCurrDogRecords();
         } catch (error) {
             console.error('Error deleting record or fetching updated records:', error);
         }
     };
 
-    // Drawer handling for updating a record
-    const handleUpdateRecord = (record) => {
-        setDrawerMode('edit');
-        setSelectedRecord(record);
-        setShowDrawer(true);
-    };
-
-    const handleCloseDrawer = () => {
-        setShowDrawer(false);
-        setSelectedRecord(null);  // Clear the selected record after closing
-    };
-
     return (
         <Box sx={{ padding: 3 }}>
             <Typography variant="h5" sx={{ mb: 3 }}>
-                {`${currDog ? currDog.name + "'s" : ''} Records`}
+                {currDog ? currDog.name + ' Records' : 'No Dog Selected'}
             </Typography>
 
-            {/* Add and Filter Buttons */}
             <Grid container justifyContent="space-between" alignItems="center">
                 <Grid item>
                     <Select value={limit} onChange={handleLimitChange}>
@@ -175,7 +182,7 @@ const RecordsPage = () => {
                     </Select>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" onClick={() => setDrawerMode('create') & setShowDrawer(true)} sx={{ mr: 2 }}>
+                    <Button variant="contained" onClick={handleAddRecord} sx={{ mr: 2 }}>
                         + Add
                     </Button>
                     <Button variant="outlined" onClick={() => setShowFilterModal(true)}>
@@ -184,14 +191,12 @@ const RecordsPage = () => {
                 </Grid>
             </Grid>
 
-            {/* Loading spinner */}
             {loading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
                     <CircularProgress />
                 </Box>
             )}
 
-            {/* Display filtered and sorted records */}
             <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey' }}>
                 <Table>
                     <TableHead>
@@ -219,15 +224,17 @@ const RecordsPage = () => {
                         {finalDisplayedRecords && finalDisplayedRecords.length > 0 ? (
                             finalDisplayedRecords.map((record, index) => (
                                 <TableRow key={record.id} sx={{ backgroundColor: index % 2 === 0 ? 'white' : '#f5f5f5' }}>
-                                    <TableCell>{formatDisplay(record.service_date)}</TableCell>
-                                    <TableCell>{record.category_name}</TableCell>
-                                    <TableCell>{record.service_type_name}</TableCell>
-                                    <TableCell>{formatDisplay(record.follow_up_date)}</TableCell>
-                                    <TableCell>{record.fee}</TableCell>
+                                    <TableCell>{formatDateToUTC(record.service_date)}</TableCell>
+                                    <TableCell>{record.category_name ? record.category_name : 'N/A'}</TableCell>
+                                    <TableCell>{record.service_type_name ? record.service_type_name : 'N/A'}</TableCell>
+                                    <TableCell>{record.follow_up_date ? formatDateToUTC(record.follow_up_date) : 'N/A'}</TableCell>
+                                    <TableCell>{parseFloat(record.fee).toFixed(2)}</TableCell>
                                     <TableCell sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => handleUpdateRecord(record)}>
                                         Update
                                     </TableCell>
-                                    <TableCell sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => handleDeleteRecord(record)}>Delete</TableCell>
+                                    <TableCell sx={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => handleDeleteRecord(record)}>
+                                        Delete
+                                    </TableCell>
                                 </TableRow>
                             ))
                         ) : null}
@@ -235,11 +242,8 @@ const RecordsPage = () => {
                 </Table>
             </TableContainer>
 
-            {/* Pagination */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-                <Typography>
-                    Showing {finalDisplayedRecords.length} of {totalRecords} records
-                </Typography>
+                <Typography>Showing {finalDisplayedRecords.length} of {totalRecords} records</Typography>
                 <Box>
                     <Button disabled={page === 1} onClick={() => handlePageChange(page - 1)} sx={{ mr: 2 }}>
                         Previous
@@ -250,20 +254,10 @@ const RecordsPage = () => {
                 </Box>
             </Box>
 
-            {/* Add/Edit Service Drawer */}
-            <ServiceDrawer
-                isOpen={showDrawer}
-                onClose={handleCloseDrawer}
-                mode={drawerMode}
-                serviceData={selectedRecord}  // Pass the selected record for editing
-            />
+            <ServiceDrawer isOpen={showDrawer} mode={drawerMode} serviceData={selectedRecord} setShowDrawer={setShowDrawer} />
 
-            {/* Filter Modal */}
             {showFilterModal && (
-                <FilterModal
-                    onClose={() => setShowFilterModal(false)}
-                    setFilteredRecords={applyFiltering} // Set filtered records using the filtering logic
-                />
+                <FilterModal onClose={() => setShowFilterModal(false)} setFilteredRecords={applyFilter} />
             )}
         </Box>
     );

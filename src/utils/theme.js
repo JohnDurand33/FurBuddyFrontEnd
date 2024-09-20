@@ -2,7 +2,7 @@ import { createTheme } from "@mui/material/styles";
 
 // Define common typography settings if needed
 const typography = {
-    fontFamily: "Helvetica Neue, Arial, sans-serif",
+    fontFamily: "Arial, Roboto, sans-serif",
     
 };
 
@@ -22,7 +22,6 @@ const lightTheme = createTheme({
             primary: "#000000",
         },
     },
-    typography,
     components: {
         MuiButton: {
             styleOverrides: {
@@ -67,7 +66,6 @@ const darkTheme = createTheme({
             primary: "#FFFFFF",
         },
     },
-    typography,
     components: {
         MuiPaper: {
             styleOverrides: {
