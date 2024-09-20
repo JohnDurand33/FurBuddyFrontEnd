@@ -36,7 +36,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
         } else if (isMobile) {
             return '64px';
         } else {
-            return isCollapsed ? '64px' : '235px';
+            return isCollapsed ? '64px' : '260px';
         }
     };
 

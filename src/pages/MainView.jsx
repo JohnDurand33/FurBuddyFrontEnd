@@ -37,7 +37,7 @@ function MainView({ toggleTheme, isDark }) {
         } if (isMobile) {
             return '64px';
         }
-        return isCollapsed ? '44px' : '220px';
+        return isCollapsed ? '44px' : '240px';
         
     };
 
