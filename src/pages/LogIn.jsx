@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { Formik, Form, Field } from 'formik';
+import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
+import { Field, Form, Formik } from 'formik';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
-import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
+import { useAuth } from '../context/AuthContext';
+import { useEvents } from '../context/EventsContext'; // Import the EventsContext
 import { backEndUrl, GC_ID } from '../utils/config';
 
 const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
@@ -28,6 +29,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setLocalCurrDogProfiles,
     } = useAuth();
 
+    const { fetchEventsFromAPI } = useEvents(); // Import fetchEvents to use after login
     const [serverError, setServerError] = useState(null);
     const navigate = useNavigate();
 
@@ -38,29 +40,33 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
                     const profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
                     if (profiles && profiles.length > 0) {
                         setLocalCurrDog(profiles[0]);
-                        console.log('currDog:', profiles[0]);
                         setLocalCurrDogProfiles(profiles);
+                        console.log('currDog:', profiles[0]);
                         console.log('currDogProfiles:', profiles);
                         navigate('/dogs/view');
-                        setIsRailOpen(true)
+                        setIsRailOpen(true);
                     } else {
-                        console.log('didn\'t have any dogs -> response from fetchDogProfilesFromApi:', profiles);
-                        setIsRailOpen(true)
-                        navigate('/dogs/create');
+                        console.log('No dogs found, redirecting to create a dog profile');
+                        navigate('/dogs/new');
                     }
+                    // Fetch events for the authenticated user
+                    await fetchEventsFromAPI(); // Fetch events once the user is logged in
+                    setIsRailOpen(true)
                 } catch (error) {
-                    console.error('Error fetching profiles:', error);
+                    console.error('Error fetching profiles or events:', error);
                 }
             }
         };
         fetchData();
-    }, [authed, token, currUser]);
+    }, [authed, token, currUser, fetchEventsFromAPI]);
 
+    // Validation schema for login form
     const validationSchema = Yup.object().shape({
         email: Yup.string().email('Invalid email format').required('Email is required'),
         password: Yup.string().required('Password is required'),
     });
 
+    // Email and password login
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null);
         setSubmitting(true);
@@ -81,6 +87,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
+            
             const { auth_token: loginToken } = res.data;
 
             setLocalToken(loginToken);
@@ -90,6 +97,11 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             setLocalCurrUser(loggedInUser);
             setAuthed(true);
 
+            // Fetch events after successful login
+            await fetchEventsFromAPI();
+
+            setIsRailOpen(true); // Open the navigation rail after login
+            navigate('/dogs/view'); // Redirect to the dog profile page
         } catch (err) {
             setServerError('Invalid email or password. Please try again.');
         } finally {
@@ -97,6 +109,7 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         }
     };
 
+    // Google OAuth login
     const handleGoogleLoginSuccess = async (credentialResponse) => {
         setServerError(null);
         clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
@@ -119,6 +132,12 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             setLocalCurrUser(res.data.owner);
             setLocalToken(res.data.auth_token);
             setAuthed(true);
+
+            // Fetch events after successful Google login
+            await fetchEventsFromAPI();
+
+            setIsRailOpen(true); // Open the navigation rail after login
+            navigate('/dogs/view'); // Redirect to the dog profile page
         } catch (err) {
             setServerError('Google Login Failed. Please try again.');
         }

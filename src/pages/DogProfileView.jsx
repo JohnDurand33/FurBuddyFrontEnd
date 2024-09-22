@@ -1,19 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Grid, Box, Avatar, Typography, IconButton, Button, Modal } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { Formik, Form, Field } from 'formik'; 
-import * as Yup from 'yup'; 
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-import { storage } from '../config/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { backEndUrl } from '../utils/config';
-import { Icon } from '@iconify/react';
 import editIcon from '@iconify-icons/mdi/pencil-outline'; // Iconify edit icon
-import pencilIcon from '@iconify-icons/mdi/pencil';
-import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
+import { Icon } from '@iconify/react';
+import { Avatar, Box, Button, Grid, IconButton, Modal, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import axios from 'axios';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { Field, Form, Formik } from 'formik';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
+import { storage } from '../config/firebase';
+import { useAuth } from '../context/AuthContext';
+import { backEndUrl } from '../utils/config';
 
 const DogProfileView = ({ isMobile }) => {
     const navigate = useNavigate();

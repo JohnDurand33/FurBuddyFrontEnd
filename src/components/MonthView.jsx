@@ -1,5 +1,5 @@
 import React from 'react';
-import '../MonthView.css';
+import '../styles/MonthView.css';
 
 const getMonthDays = (year, month) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -9,7 +9,7 @@ const getMonthDays = (year, month) => {
     return { daysInMonth, daysBeforeStart, totalDays };
 };
 
-const MonthView = ({ currentDate, events }) => {
+const MonthView = ({ currentDate, currEvents }) => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
@@ -20,7 +20,7 @@ const MonthView = ({ currentDate, events }) => {
         const dayNumber = index - daysBeforeStart + 1;
         const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth;
 
-        const dayEvents = events.filter(event => event.day === dayNumber && isCurrentMonth);
+        const dayEvents = currEvents.filter(event => event.day === dayNumber && isCurrentMonth);
         return {
             dayNumber: isCurrentMonth ? dayNumber : '',
             events: dayEvents,
@@ -38,6 +38,9 @@ const MonthView = ({ currentDate, events }) => {
                     </div>
                 ))}
             </div>
+            <button>
+                
+            </button>
 
             {/* Day Boxes */}
             <div className="month-view">

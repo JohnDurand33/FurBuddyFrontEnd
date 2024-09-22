@@ -1,8 +1,9 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { useAuth } from './AuthContext';
 import axios from 'axios';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { backEndUrl } from '../utils/config';
-import { se } from 'date-fns/locale';
+import { ensureArray } from '../utils/helpers';
+import { useAuth } from './AuthContext';
+
 
 // Create the RecordsContext
 const RecordsContext = createContext();
@@ -81,19 +82,11 @@ export const RecordsProvider = ({ children }) => {
                     }
                 });
                 console.log('updated currDogProfiles fetched', response.data);
-                if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
-                    return [];
-                } else {
-                    const updatedRecords = Array.isArray(response.data) ? response.data : [response.data];
-                    setLocalCurrDogRecords(updatedRecords);
-                    setLocalCurrDogRec(updatedRecords[0]);
-                    return updatedRecords;
-                }
+                ensureArray(response.data);
             }
         } catch (error) {
                 console.error('Error fetching records:', error);
                 setError('Error fetching records');
-                return [];
         } finally {
             setLoading(false);
         };
@@ -102,17 +95,7 @@ export const RecordsProvider = ({ children }) => {
     // Manual refetching method 
     const refetchCurrDogRecords = async () => {
         const updatedRecords = await fetchCurrDogRecords();
-        if (updatedRecords.length > 0) {
-            const formattedNewRecords = Array.isArray(updatedRecords) ? updatedRecords : [updatedRecords];
-            console.log('refetch currDogRecords:', formattedNewRecords);
-            setLocalCurrDogRecords(formattedNewRecords);
-            setLocalCurrDogRec(formattedNewRecords[0]);
-            return formattedNewRecords;
-        } else {
-            setLocalCurrDogRecords([]);
-            setLocalCurrDogRec({});
-            return [];
-        }
+        ensureArray(updatedRecords);    
     };
         
     useEffect(() => {
@@ -147,8 +130,9 @@ export const RecordsProvider = ({ children }) => {
             setLocalSelectedRecord,
             fetchCategories,
             fetchServiceTypes,
-            fetchCurrDogRecords, //fetches and returns records whether or not they are empty
-            refetchCurrDogRecords, //sets and returns records
+            fetchCurrDogRecords, 
+            refetchCurrDogRecords, 
+            ensureArray,
             loading,
             error
         }}>

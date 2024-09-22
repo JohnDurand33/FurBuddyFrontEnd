@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import '../WeekView.css';
+import '../styles/WeekView.css';
 
-const WeekView = ({ currentDate, events }) => {
+const WeekView = ({ currentDate, currEvents }) => {
     const [currentWeekDates, setCurrentWeekDates] = useState([]);
 
     // Function to get the dates for the current week

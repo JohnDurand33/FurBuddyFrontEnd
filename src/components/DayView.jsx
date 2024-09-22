@@ -1,7 +1,7 @@
 import React from 'react';
-import '../DayView.css';
+import '../styles/DayView.css';
 
-const DayView = ({ events }) => {
+const DayView = ({ events, currEvents }) => {
 
     return (
         <div className="day-view">
@@ -14,7 +14,7 @@ const DayView = ({ events }) => {
                             {`${hour}:00 ${period}`}
                         </div>
                         <div className="time-content">
-                            {events
+                            {currEvents
                                 .filter(event => event.startTime === index)
                                 .map(event => (
                                     <div className="event" key={event.title}>

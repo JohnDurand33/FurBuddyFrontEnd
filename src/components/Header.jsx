@@ -1,7 +1,7 @@
 import React from 'react';
-import '../Header.css';
+import '../styles/Header.css';
 
-const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange }) => {
+const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange, setIsDrawerOpen }) => {
     return (
         <div className="calendar-header">
             {/* Left group: Date + Navigation buttons */}
@@ -18,7 +18,7 @@ const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChang
 
             {/* Right group: Create + View buttons */}
             <div className="right-header-group">
-                <button type="button" className="create-btn">+ Create</button>
+                <button type="button" className="create-btn" onClick={() => setIsDrawerOpen(true)}>+ Create</button>
                 <div className="view-buttons">
                     <button
                         type="button"

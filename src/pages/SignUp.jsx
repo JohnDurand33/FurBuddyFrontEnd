@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
-import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
+import { useAuth } from '../context/AuthContext';
 import { backEndUrl } from '../utils/config';
 
 const SignUpForm = () => {

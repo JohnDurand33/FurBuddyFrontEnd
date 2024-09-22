@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from '../config/firebase';
-import { Avatar, Box, IconButton } from '@mui/material';
+import cameraIcon from '@iconify/icons-mdi/camera'; // Import specific icons
 import { Icon } from '@iconify/react';
-import cameraIcon from '@iconify/icons-mdi/camera';  // Import specific icons
-import editIcon from '@iconify/icons-mdi/pencil';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { backEndUrl } from '../utils/config';
+import { Avatar, Box, FormControlLabel, FormLabel, IconButton, Radio, RadioGroup } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import axios from 'axios';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { Field, Form, Formik } from 'formik';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import * as Yup from 'yup';
+import { storage } from '../config/firebase';
+import { useAuth } from '../context/AuthContext';
+import { backEndUrl } from '../utils/config';
 
 const DogProfileCreate = ({ isMobile }) => {
     const theme = useTheme();
@@ -203,28 +202,26 @@ const DogProfileCreate = ({ isMobile }) => {
                                 />
                                 {touched.date_of_birth && errors.date_of_birth && <div style={{ color: 'red' }}>{errors.date_of_birth}</div>}
                             </div>
-
-                            {/* Gender */}
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Gender</label>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Field
-                                        type="radio"
-                                        id="female"
-                                        name="sex"
-                                        value="Female"
-                                        style={{ marginRight: '0.5rem' }}
-                                    />
-                                    <label htmlFor="female" style={{ marginRight: '1rem' }}>Female</label>
-                                    <Field
-                                        type="radio"
-                                        id="male"
-                                        name="sex"
-                                        value='Male'
-                                        style={{ marginRight: '0.5rem' }}
-                                    />
-                                    <label htmlFor="male">Male</label>
-                                </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+                            <FormLabel component="legend">Gender</FormLabel>
+                            <RadioGroup
+                                row
+                                name="sex"
+                                value={values.sex} // Bind the current value
+                                onChange={(e) => setFieldValue('sex', e.target.value)} // Formik's value setter
+                            >
+                                <FormControlLabel
+                                    value="Female"
+                                    control={<Radio sx={{ '&.Mui-checked': { color: 'blue' } }} />}
+                                    label="Female"
+                                />
+                                <FormControlLabel
+                                    value="Male"
+                                    control={<Radio sx={{ '&.Mui-checked': { color: 'blue' } }} />}
+                                    label="Male"
+                                />
+                            </RadioGroup>
                                 {touched.sex && errors.sex && <div style={{ color: 'red' }}>{errors.sex}</div>}
                             </div>
 
@@ -242,31 +239,26 @@ const DogProfileCreate = ({ isMobile }) => {
                             </div>
 
                             {/* Fixed Status */}
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>{fixedLabel(values)} Status</label>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <input
-                                        type="radio"
-                                        id="fixedYes"
-                                        name="fixed"
-                                        value="yes"
-                                        checked={isFixed === true}
-                                        style={{ marginRight: '0.5rem' }}
-                                        onChange={handleFixedChange}
-                                    />
-                                    <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>
-                                    <input
-                                        type="radio"
-                                        id="fixedNo"
-                                        name="fixed"
-                                        value="no"
-                                        checked={isFixed === false}
-                                        style={{ marginRight: '0.5rem' }}
-                                        onChange={handleFixedChange}
-                                    />
-                                    <label htmlFor="fixedNo">No</label>
-                                </div>
-                                {touched.fixed && errors.fixed && <div style={{ color: 'red' }}>{errors.fixed}</div>}
+                            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+                            <FormLabel component="legend">{fixedLabel(values)} Status</FormLabel>
+                            <RadioGroup
+                                row
+                                name="fixed"
+                                value={isFixed ? 'yes' : 'no'}
+                                onChange={handleFixedChange}
+                            >
+                                <FormControlLabel
+                                    value="yes"
+                                    control={<Radio sx={{ '&.Mui-checked': { color: 'blue' } }} />}
+                                    label="Yes"
+                                />
+                                <FormControlLabel
+                                    value="no"
+                                    control={<Radio sx={{ '&.Mui-checked': { color: 'blue' } }} />}
+                                    label="No"
+                                />
+                            </RadioGroup>
+                            {touched.fixed && errors.fixed && <div style={{ color: 'red' }}>{errors.fixed}</div>}
                             </div>
 
                             {/* Microchip Number */}

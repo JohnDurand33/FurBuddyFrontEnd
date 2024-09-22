@@ -11,6 +11,7 @@
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 1000;
 }
 
 .drawer-overlay.open {
@@ -19,7 +20,7 @@
 }
 
 /* Custom drawer */
-.custom-drawer {
+.custom-service-drawer {
     position: relative;
     background-color: white;
     width: 625px;
@@ -32,29 +33,26 @@
     flex-direction: column;
 }
 
-.custom-drawer.open {
+.custom-service-drawer.open {
     transform: translateX(0);
 }
 
 /* Form styling */
-.form-field {
-    margin-bottom: 10px;
+.form-field-service {
     padding: 0 30px 0 30px;
 }
 
-.form-field label {
+.form-field-service label {
     width: 100%;
     border-radius: 4px;
-    font-family: Arial, 'Roboto', sans-serif;  
     font-size: 20px;  
     font-weight: 600; 
-    margin-bottom: 10px; 
     letter-spacing: 0; 
     line-height: normal; 
     color: #333;
 }
 
-.form-input-1, .form-input-2 {
+.form-input-service-1, .form-input-service-2 {
     width: 100%;
     padding: 8px; 
     height: 45px;
@@ -64,33 +62,32 @@
     margin-top: 10px;
 }
 
-/* Removed from global.css and added here */
-.custom-drawer label {
+.custom-service-drawer label {
   font-size: 14px;
   font-weight: bold;
 }
 
-.custom-drawer input,
-.custom-drawer select {
+.custom-service-drawer input,
+.custom-service-drawer select {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
+  padding-left: 8px;
+  padding-right: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
 }
 
 /* Fee and Follow-Up Date styling */
-.fee-followup-wrapper {
+.fee-followup-wrapper-service {
     display: flex;
     justify-content: space-between;
 }
 
-.form-input-2 {
+.form-input-service-2 {
     width: 100%; 
 }
 
-.form-input.error {
+.form-input-service.error {
     border-color: red;
 }
 
@@ -101,7 +98,7 @@
 }
 
 /* Buttons container */
-.form-buttons {
+.form-buttons-service {
     position: absolute;
     bottom: 30px; 
     left: 0;
@@ -112,7 +109,7 @@
 }
 
 /* Specific button styling */
-.save-btn {
+.save-btn-service {
     background-color: #F4A261;
     color: black;
     border: none;
@@ -121,11 +118,11 @@
     width: 45%; 
 }
 
-.save-btn:hover {
+.save-btn-service:hover {
     background-color: #e59d22;
 }
 
-.cancel-btn {
+.cancel-btn-service {
     background-color: #ccc;
     color: black;
     border: none;
@@ -134,25 +131,25 @@
     width: 45%; 
 }
 
-.cancel-btn:hover {
+.cancel-btn-service:hover {
     background-color: #bbb;
 }
 
 /* Upload section */
-.upload-receipt {
+.upload-receipt-service {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
 }
 
-.upload-receipt label {
+.upload-receipt-service label {
     font-size: 14px;
     color: #333;
     font-weight: bold;
 }
 
-.file-upload input {
+.file-upload-service input {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
@@ -160,13 +157,13 @@
     background-color: #f9f9f9;
 }
 
-.upload-buttons {
+.upload-buttons-service {
     display: flex;
     gap: 10px;
     justify-content: space-around;
 }
 
-.upload-button {
+.upload-button-service {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -174,6 +171,6 @@
     color: #007bff;
 }
 
-.upload-button:hover {
+.upload-button-service:hover {
     text-decoration: underline;
 }

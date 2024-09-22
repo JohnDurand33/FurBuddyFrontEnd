@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Grid, Select, MenuItem, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, Grid, MenuItem, Paper, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import axios from 'axios';
+import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import FilterModal from '../components/FilterModal';
+import ServiceDrawer from '../components/ServiceDrawer';
 import { useAuth } from '../context/AuthContext';
 import { useRecords } from '../context/RecordsContext';
-import ServiceDrawer from '../components/ServiceDrawer';
-import FilterModal from '../components/FilterModal';
-import axios from 'axios';
 import { backEndUrl } from '../utils/config';
-import { useNavigate } from 'react-router-dom';
-import { format, parseISO } from 'date-fns';
 
 const RecordsPage = () => {
     const { currDog, authed, token, logout } = useAuth();

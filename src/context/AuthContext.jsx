@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { backEndUrl } from '../utils/config';
 
 const AuthContext = createContext();
@@ -90,10 +90,10 @@ export const AuthProvider = ({ children }) => {
                 if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
                     return [];
                 } else {
-                    const updatedDogProifles = Array.isArray(response.data) ? response.data : [response.data];
-                    setLocalCurrDogProfiles(updatedDogProifles);
-                    setLocalCurrDog(updatedDogProifles[0]);
-                    return updatedDogProifles;
+                    const updatedDogProfiles = Array.isArray(response.data) ? response.data : [response.data];
+                    setLocalCurrDogProfiles(updatedDogProfiles);
+                    setLocalCurrDog(updatedDogProfiles[0]);
+                    return updatedDogProfiles;
                 }
             }
         } catch (error) {

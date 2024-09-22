@@ -35,7 +35,7 @@ function MainView({ toggleTheme, isDark }) {
         if (!authed ) {
             return '0px';
         } if (isMobile) {
-            return '64px';
+            return '44px';
         }
         return isCollapsed ? '44px' : '240px';
         

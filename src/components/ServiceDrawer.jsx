@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { useAuth } from '../context/AuthContext';
+import { Button, Typography } from '@mui/material';
 import axios from 'axios';
+import { format } from 'date-fns';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { Field, Form, Formik } from 'formik';
+import { useEffect, useRef, useState } from 'react';
+import * as Yup from 'yup';
 import { storage } from '../config/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { format, parseISO } from 'date-fns';
-import '../drawerStyles.css';
-import { backEndUrl } from '../utils/config';
+import { useAuth } from '../context/AuthContext';
 import { useRecords } from '../context/RecordsContext';
+import '../styles/ServiceDrawer.css';  // Note change to specific CSS file
+import { backEndUrl } from '../utils/config';
+
 
 const ServiceDrawer = ({ isOpen, setShowDrawer, serviceData = null, mode = 'create' }) => {
     const formikRef = useRef(null);
@@ -64,7 +65,6 @@ const ServiceDrawer = ({ isOpen, setShowDrawer, serviceData = null, mode = 'crea
         const date = new Date(dateString);
         return format(new Date(date.getTime() + date.getTimezoneOffset() * 60000), 'yyyy-MM-dd');
     };
-
 
     const validationSchema = Yup.object().shape({
         service_date: Yup.date().required('Service Date is required'),
@@ -130,138 +130,138 @@ const ServiceDrawer = ({ isOpen, setShowDrawer, serviceData = null, mode = 'crea
             resetForm();
         } catch (error) {
             console.error('Error saving new record:', error);
-            setErrorMessage('An error occurred while saving the record. Please try again.'); 
+            setErrorMessage('An error occurred while saving the record. Please try again.');
         } finally {
             setSubmitting(false);
-        }  
+        }
     };
 
     return (
         <>
             <div className={`drawer-overlay ${isOpen ? 'open' : ''}`} onClick={handleCloseDrawer}>
-            <div className={`custom-drawer ${isOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
-                <Typography variant="h5" sx={{ mb: 2, textAlign: 'center' }}>
-                    {isEditMode ? `Update ${currDog?.name || 'Dog'}'s Record` : `Add ${currDog?.name || 'Dog'}'s Record`}
-                </Typography>
+                <div className={`custom-service-drawer ${isOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
+                    <Typography variant="h5" sx={{ mb: 2, textAlign: 'center' }}>
+                        {isEditMode ? `Update ${currDog?.name || 'Dog'}'s Record` : `Add ${currDog?.name || 'Dog'}'s Record`}
+                    </Typography>
 
                     <Formik
-                    innerRef={formikRef}
-                    initialValues={{
-                        service_date: serviceData?.service_date ? formatDateToUTC(serviceData.service_date) : '',
-                        service_type_id: serviceData?.service_type_id || '',
-                        category_id: serviceData?.category_id || '',
-                        fee: serviceData?.fee || '',
-                        follow_up_date: serviceData?.follow_up_date ? formatDateToUTC(serviceData.follow_up_date): '',
-                        image_path: serviceData?.image_path || '',
-                    }}
-                    validationSchema={validationSchema}
-                    enableReinitialize={true}
-                    onSubmit={handleSave}
-                >
-                    {({ values, errors, touched, isSubmitting, setFieldValue }) => (
-                        <Form>
-                            <div className="form-field">
-                                <label>Service Date</label>
-                                <Field
-                                    name="service_date"
-                                    type="date"
-                                    className={`form-input-1 ${touched.service_date && errors.service_date ? 'error' : ''}`}
-                                />
-                                {touched.service_date && errors.service_date && <div className="error-message">{errors.service_date}</div>}
-                            </div>
-
-                            <div className="form-field">
-                                <label>Category</label>
-                                <Field
-                                    as="select"
-                                    name="category_id"
-                                    className={`form-input-1 ${touched.category_id && errors.category_id ? 'error' : ''}`}
-                                    onChange={(e) => {
-                                        setFieldValue('category_id', e.target.value);
-                                        handleChangeCategory(e);
-                                    }}
-                                    value={values.category_id}
-                                >
-                                    <option value="">Select Category</option>
-                                    {categories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                            {category.category_name}
-                                        </option>
-                                    ))}
-                                </Field>
-                                {touched.category_id && errors.category_id && <div className="error-message">{errors.category_id}</div>}
-                            </div>
-
-                            <div className="form-field">
-                                <label>Service Type</label>
-                                <Field
-                                    as="select"
-                                    name="service_type_id"
-                                    className={`form-input-1 ${touched.service_type_id && errors.service_type_id ? 'error' : ''}`}
-                                    value={values.service_type_id}
-                                >
-                                    <option value="">Select Service Type</option>
-                                    {filteredServiceTypes.map((serviceType) => (
-                                        <option key={serviceType.id} value={serviceType.id}>
-                                            {serviceType.name}
-                                        </option>
-                                    ))}
-                                </Field>
-                                {touched.service_type_id && errors.service_type_id && <div className="error-message">{errors.service_type_id}</div>}
-                            </div>
-
-                            <div className="fee-followup-wrapper">
-                                <div className="form-field">
-                                    <label>Follow-Up Date</label>
+                        innerRef={formikRef}
+                        initialValues={{
+                            service_date: serviceData?.service_date ? formatDateToUTC(serviceData.service_date) : '',
+                            service_type_id: serviceData?.service_type_id || '',
+                            category_id: serviceData?.category_id || '',
+                            fee: serviceData?.fee || '',
+                            follow_up_date: serviceData?.follow_up_date ? formatDateToUTC(serviceData.follow_up_date) : '',
+                            image_path: serviceData?.image_path || '',
+                        }}
+                        validationSchema={validationSchema}
+                        enableReinitialize={true}
+                        onSubmit={handleSave}
+                    >
+                        {({ values, errors, touched, isSubmitting, setFieldValue, resetForm }) => (
+                            <Form>
+                                <div className="form-field-service">
+                                    <label>Service Date</label>
                                     <Field
-                                        name="follow_up_date"
+                                        name="service_date"
                                         type="date"
-                                        className={`form-input-2 ${touched.follow_up_date && errors.follow_up_date ? 'error' : ''}`}
+                                        className={`form-input-service-1 ${touched.service_date && errors.service_date ? 'error' : ''}`}
                                     />
-                                    {touched.follow_up_date && errors.follow_up_date && <div className="error-message">{errors.follow_up_date}</div>}
+                                    {touched.service_date && errors.service_date && <div className="error-message">{errors.service_date}</div>}
                                 </div>
 
-                                <div className="form-field">
-                                    <label>Fee</label>
+                                <div className="form-field-service">
+                                    <label>Category</label>
                                     <Field
-                                        name="fee"
-                                        type="number"
-                                        className={`form-input-2 ${touched.fee && errors.fee ? 'error' : ''}`}
-                                    />
-                                    {touched.fee && errors.fee && <div className="error-message">{errors.fee}</div>}
+                                        as="select"
+                                        name="category_id"
+                                        className={`form-input-service-1 ${touched.category_id && errors.category_id ? 'error' : ''}`}
+                                        onChange={(e) => {
+                                            setFieldValue('category_id', e.target.value);
+                                            handleChangeCategory(e);
+                                        }}
+                                        value={values.category_id}
+                                    >
+                                        <option value="">Select Category</option>
+                                        {categories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.category_name}
+                                            </option>
+                                        ))}
+                                    </Field>
+                                    {touched.category_id && errors.category_id && <div className="error-message">{errors.category_id}</div>}
                                 </div>
-                            </div>
 
-                            <div className="form-field upload-receipt">
-                                <label>Upload Receipt</label>
-                                <div className="file-upload">
-                                    <input
-                                        accept="image/*"
-                                        id="service-image-upload"
-                                        type="file"
-                                        onChange={handleImageChange} />
-                                    {imageUrl ? <img src={imageUrl} alt="Preview" width="100" /> : serviceData?.image_path ? <img src={serviceData.image_path} alt="Preview" width="100" /> : null}
+                                <div className="form-field-service">
+                                    <label>Service Type</label>
+                                    <Field
+                                        as="select"
+                                        name="service_type_id"
+                                        className={`form-input-service-1 ${touched.service_type_id && errors.service_type_id ? 'error' : ''}`}
+                                        value={values.service_type_id}
+                                    >
+                                        <option value="">Select Service Type</option>
+                                        {filteredServiceTypes.map((serviceType) => (
+                                            <option key={serviceType.id} value={serviceType.id}>
+                                                {serviceType.name}
+                                            </option>
+                                        ))}
+                                    </Field>
+                                    {touched.service_type_id && errors.service_type_id && <div className="error-message">{errors.service_type_id}</div>}
                                 </div>
-                            </div>
 
-                            <div className="form-buttons">
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={isSubmitting}
-                                    className="save-btn"
-                                >
-                                    {isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : isEditMode ? 'Update Service' : 'Add Service'}
-                                </Button>
-                                    <Button variant="outlined" onClick={() => handleCloseDrawer()} className="cancel-btn">
-                                    Cancel
-                                </Button>
-                            </div>
-                        </Form>
-                    )}
-                </Formik>
-            </div>
+                                <div className="fee-followup-wrapper-service">
+                                    <div className="form-field-service">
+                                        <label>Follow-Up Date</label>
+                                        <Field
+                                            name="follow_up_date"
+                                            type="date"
+                                            className={`form-input-service-2 ${touched.follow_up_date && errors.follow_up_date ? 'error' : ''}`}
+                                        />
+                                        {touched.follow_up_date && errors.follow_up_date && <div className="error-message">{errors.follow_up_date}</div>}
+                                    </div>
+
+                                    <div className="form-field-service">
+                                        <label>Fee</label>
+                                        <Field
+                                            name="fee"
+                                            type="number"
+                                            className={`form-input-service-2 ${touched.fee && errors.fee ? 'error' : ''}`}
+                                        />
+                                        {touched.fee && errors.fee && <div className="error-message">{errors.fee}</div>}
+                                    </div>
+                                </div>
+
+                                <div className="form-field-service upload-receipt-service">
+                                    <label>Upload Receipt</label>
+                                    <div className="file-upload-service">
+                                        <input
+                                            accept="image/*"
+                                            id="service-image-upload"
+                                            type="file"
+                                            onChange={handleImageChange} />
+                                        {imageUrl ? <img src={imageUrl} alt="Preview" width="100" /> : serviceData?.image_path ? <img src={serviceData.image_path} alt="Preview" width="100" /> : null}
+                                    </div>
+                                </div>
+
+                                <div className="form-buttons-service">
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={isSubmitting}
+                                        className="save-btn-service"
+                                    >
+                                        {isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : isEditMode ? 'Update Service' : 'Add Service'}
+                                    </Button>
+                                    <Button variant="outlined" onClick={() => handleCloseDrawer()} className="cancel-btn-service">
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </Form>
+                        )}
+                    </Formik>
+                </div>
             </div>
         </>
     );

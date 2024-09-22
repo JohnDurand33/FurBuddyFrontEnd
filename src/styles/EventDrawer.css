@@ -1,0 +1,309 @@
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+.drawer-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    /* Prevent scrolling on the main content when the drawer is open */
+    overflow: hidden;
+}
+
+.custom-event-drawer {
+    background-color: white;
+    width: 40%;
+    height: 100%;
+    padding-top: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 10000;
+    overflow-y: auto; 
+}
+
+.custom-event-drawer.open {
+    transform: translateX(0);
+}
+
+/* Improve scrollbar appearance (optional) */
+.custom-event-drawer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-event-drawer::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.drawer-header-event {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-icon-event {
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.event-form-event label {
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 14px; /* Match label font size to design */
+    display: block;
+}
+
+.form-inpt-simple-event {
+    width: 100%;
+    padding: 10px 0; /* Add a bit more padding for a cleaner look */
+    font-size: 16px;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.form-field-event {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.form-input-event {
+    width: 100%;
+    height: 30px;
+    font-size: 16px; /* Ensure the font size matches the design */
+    border-radius: 5px; /* No border radius for a clean bottom line */
+    border-bottom: 1px solid grey;
+    transition: border-color 0.3s ease-in-out; /* Smooth transition for hover/focus effects */
+    margin-bottom: 20px
+}
+
+.form-input-event:focus {
+    border-bottom: 2px solid #f4a261; /* Highlight the bottom border when the input is focused */
+}
+
+.form-row-event {
+    display: flex;
+    justify-content: space-between;
+}
+
+.half-width-event {
+    width: 55%;
+}
+
+.color-options-event {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.color-option-event {
+    display: flex; /* Make sure this contains both radio button and color */
+    align-items: center;
+    cursor: pointer; 
+}
+
+input[type="radio"] {
+    display: none; /* Hide the radio button itself */
+}
+
+input[type="radio"]:checked + .color-circle-event {
+    border: 2px solid #f4a261; /* Highlight selected color */
+}
+input[type="date"], 
+input[type="time"],
+input[type="text"]:not(#notes) {
+    width: 100%;
+    
+    font-size: 16px;
+    border: none;
+    border-bottom: 2px solid #ddd;
+    border-radius: 0;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+}
+
+input[type="date"]:focus, 
+input[type="time"]:focus,
+input[type="text"]:focus:not(#notes) {
+    border-bottom: 2px solid #f4a261;
+}
+
+.color-circle-event {
+    width: 24px;
+    height: 24px; /* Adjust size to match the goal */
+    border-radius: 50%;
+    margin-right: 10px; /* Add space between the circles */
+    border: 2px solid transparent; 
+    flex-shrink: 0;
+}
+
+.color-circle-event.yellow {
+    background-color: #ffc107;
+}
+
+.color-circle-event.red {
+    background-color: #f44336;
+}
+
+.color-circle-event.green {
+    background-color: #4caf50;
+}
+
+.color-circle-event.blue {
+    background-color: #03a9f4;
+}
+
+.color-circle-event.purple {
+    background-color: #9c27b0;
+}
+
+.drawer-buttons-event {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.save-btn-event {
+    background-color: #F7CA57;
+    border: none;
+    padding: 12px 20px; /* Adjust padding for button size */
+    font-size: 16px; /* Match font size in the design */
+    font-weight: 500; /* Add boldness for more emphasis */
+    color: black;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 45%; /* Keep buttons aligned */
+    transition: background-color 0.2s ease-in-out;
+}
+
+.save-btn-event:hover {
+    background-color: #e59d22;
+}
+
+.cancel-btn-event {
+    background-color: #e0e0e0; /* A lighter gray for a softer look */
+    border: none;
+    padding: 12px 2px;
+    font-size: 16px;
+    color: black;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 45%;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.cancel-btn-event:hover {
+    background-color: #bbb;
+}
+
+.toggle-field-event {
+    margin-bottom: 20px; /* Add space between switch elements */
+}
+
+.switch-event {
+    transform: scale(1.2); /* Slightly increase the switch size */
+}
+
+.form-label-event {
+    font-size: 14px; /* Adjust the font size */
+    font-weight: normal; /* You can adjust this if you need bold or normal text */
+    color: #333; /* Adjust the color as needed */
+    margin-bottom: 5px; /* Add space between the label and the input field */
+    display: block; /* Ensure label appears on its own line */
+}
+
+input::placeholder {
+    color: transparent;
+}
+
+#notes {
+    margin-top: 30px;
+    height: 100px;
+    margin-bottom: 100px;
+    padding-left: 0;
+    text-align: left;
+    vertical-align: top;
+}
+
+.color-picker-event {
+    margin-top: 2%;
+    display: flex;
+    flex-direction: row;
+    gap: 3.5%;
+}
+
+.color-circle-event {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border 0.3s ease;
+}
+
+.color-circle-event.selected-event {
+    border: 2px solid #000; 
+}
+
+/* Switches for Notifications and Sharing */
+.toggle-field-event {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 14px;
+}
+
+.switch-event {
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.switch-event::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    transition: left 0.3s ease;
+}
+
+.switch-event.active-event {
+    background-color: #ffc107;
+}
+
+.switch-event.active-event::before {
+    left: 22px;
+}
+
+/* Initially hide the text (when input is empty) */
+input[type="date"],
+input[type="time"] {
+    color: transparent;
+}
+
+/* Make the text visible when the input has a value */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+    color: black;
+}
