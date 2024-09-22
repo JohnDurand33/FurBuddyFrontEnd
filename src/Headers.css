@@ -1,0 +1,111 @@
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px 35px;
+    border-bottom: none;
+}
+
+/* Grouping for the left section (date + navigation) */
+.left-header-group {
+    display: flex;
+    align-items: center; 
+    gap: 10px; 
+}
+
+/* Ensure the date string remains in the center without affecting the nav buttons */
+.calendar-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-width: 200px;
+}
+
+.calendar-title h2 {
+    margin: 0;
+    font-size: 24px;
+    white-space: nowrap; 
+}
+
+/* Navigation buttons (Prev, Next, Today) */
+.calendar-nav {
+    display: flex;
+    align-items: center;
+}
+
+.nav-button {
+    width: 45px;
+    height: 40px;
+    background-color: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    border-radius: 2px;
+    padding: 10px;
+}
+
+/* Fix the width of the today button to ensure it remains static */
+.today-button {
+    height: 40px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 0 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+/* Right group: Create button + View buttons */
+.right-header-group {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    gap: 20px; 
+}
+
+/* Create button */
+.create-btn {
+    width: 130px;
+    height: 45px;
+    background-color: #F7CA57;
+    color: black;
+    border: 1px solid lightgrey;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    justify-content: center;
+}
+
+/* View buttons (Day, Week, Month) */
+.view-buttons {
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.view-buttons button {
+    width: 126.6px;
+    height: 45px;
+    margin: 0;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.view-buttons button.active {
+    background-color: #FFFAE7;
+}
