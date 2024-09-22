@@ -3,6 +3,7 @@ import { Drawer, List, ListItemIcon, ListItemText, IconButton, Divider, Avatar, 
 import { useAuth } from '../context/AuthContext';  // Import Auth context
 import { Icon } from '@iconify/react';
 import defaultashboardIcon from '@iconify/icons-mdi/view-dashboard-outline';
+import profileicon from '@iconify-icons/mdi/account-circle-outline';
 import calendarIcon from '@iconify/icons-mdi/calendar-outline';
 import recordsIcon from '@iconify/icons-mdi/clipboard-outline';
 import mapIcon from '@iconify/icons-mdi/map-outline';
@@ -74,22 +75,23 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     
     return (
         <Drawer
-            variant='permanent'  // Use 'temporary' for mobile, 'permanent' otherwise
+            variant='permanent'  
             anchor="left"
-            open={authed}  // Control open state based on authed and isRailOpen
-            onClose={toggleRail}  // Handle closing on mobile when clicking outside
+            open={authed}  
+            onClose={toggleRail} 
             ModalProps={{
-                keepMounted: true,  // Keep the Drawer mounted when closed
-                disableBackdropClick: false,  // Ensure tapping outside will close the Drawer
+                keepMounted: true, 
+                disableBackdropClick: false, 
             }}
             sx={{
-                
+                zIndex:20,
                 width: getDrawerWidth(),
                 transition: 'width 0.3s ease-in-out',
                 color: theme.palette.text.primary,
                 backgroundColor: "primary.main" + " !important",
                 boxSizing: 'border-box',
                 '& .MuiDrawer-paper': {
+                    zIndex: 20,
                     backgroundColor: `${theme.palette.primary.main} !important`,
                     width: getDrawerWidth(),
                     transition: 'width 0.3s ease-in-out',
@@ -112,7 +114,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
 
                     {/* Chevron Icons only show when not mobile */}
                     {!isMobile && (
-                        <IconButton onClick={toggleCollapse} sx={{ marginLeft: isCollapsed ? -1 : .5, mt: -2 }}>
+                        <IconButton onClick={toggleCollapse} sx={{ marginLeft: isCollapsed ? -1 : 2, mt: -2 }}>
                             <Paper
                                 elevation={3} // Give it a slight shadow for a paper-like feel
                                 sx={{
@@ -138,17 +140,17 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
 
                     {/* Navigation Links */}
                 <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/dogs/view')}>
-                    <ListItemIcon><Icon icon={defaultashboardIcon} /></ListItemIcon>
-                        {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
-                    </ListItemButton>
-                <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/calendar')}>
-                    <ListItemIcon><Icon icon={calendarIcon} /></ListItemIcon>
-                        {!isMobile && !isCollapsed && <ListItemText primary="Calendar" />}
+                    <ListItemIcon><Icon icon={profileicon} /></ListItemIcon>
+                        {!isMobile && !isCollapsed && <ListItemText primary="Dog Profile" />}
                     </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/records')}>
                         <ListItemIcon><Icon icon={recordsIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Medical Records" />}
                     </ListItemButton>
+                <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/calendar')}>
+                    <ListItemIcon><Icon icon={calendarIcon} /></ListItemIcon>
+                    {!isMobile && !isCollapsed && <ListItemText primary="Calendar" />}
+                </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '16px', ml: .5 }}>
                         <ListItemIcon><Icon icon={mapIcon} /></ListItemIcon>
                         {!isMobile && !isCollapsed && <ListItemText primary="Map" />}
@@ -206,24 +208,6 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
 
                     <Divider sx={{ marginBottom: '16px' }} />
 
-                    {/* User Account */}
-                <ListItemButton sx={{ marginBottom: '16px', ml: .5 }} >
-                    <ListItemIcon>
-                        {/* Display Avatar based on currUser */}
-                        <Avatar src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"} />
-                    </ListItemIcon>
-
-                    {/* Conditionally render user email */}
-                    <ListItemText
-                        primary={
-                            <Typography variant="body1" sx={{ ml: 1, color: 'inherit' }}>
-                                {currUser ? currUser.owner_email : 'No email available'}
-                            </Typography>
-                        }
-                    />
-                </ListItemButton>
-                
-                <Divider sx={{ mt: 2, mb: 2 }} />
 
                 <ListItemButton onClick={toggleTheme}>
                     <ListItemIcon>

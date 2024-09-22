@@ -24,16 +24,7 @@ const DogProfileView = ({ isMobile }) => {
 
     const { currUser, token, currDog, setCurrDog, setLocalCurrDog, setLocalCurrDogProfiles, dogProfiles, refetchCurrDogProfiles, deleteDogProfile } = useAuth();
 
-    useEffect(() => {
-        if (!currDog) {
-            setLoading(true);
-            const storedDog = JSON.parse(localStorage.getItem('currDog'));
-            if (storedDog) {
-                setCurrDog(storedDog);
-            }
-            setLoading(false);
-        }
-    }, [currDog]);
+    
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -170,7 +161,8 @@ const DogProfileView = ({ isMobile }) => {
                                     src={currDog ? currDog.image_path : "/static/images/avatar/1.jpg" }
                                     sx={{
                                         width: '100%', height: "100%", borderRadius: '50%',
-                                        objectFit: 'cover', aspectRatio: '1', }}
+                                        objectFit: 'cover', aspectRatio: '1',
+                                    border: '2px solid #ccc'}}
                                     />
                                 </div>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -192,37 +184,58 @@ const DogProfileView = ({ isMobile }) => {
                         <Grid container spacing={4} justifyContent="start" style={{ marginTop: '1rem', width: '90%' }}>
                             <Grid item xs={12} md={6}>
                                 <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
-                                    Dog Information
+                                    Basic Information
                                 </Typography>
                                 <Box sx={{
                                     backgroundColor: 'primary.main',
                                     borderRadius: '10px',
                                     border: '1px solid #ccc',
-                                    padding: '2rem', // Add padding
-                                    minHeight: '180px',
-                                    mr:2
+                                    padding: '2rem',
+                                    minHeight: '350px',  // Matching the second container height
+                                    mr: 2
                                 }}>
-                                    <Grid container spacing={3}> {/* Increase spacing */}
+                                    <Grid container spacing={3}>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog ? currDog.name : ''}</Typography> {/* Add margin-bottom */}
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Name</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.name : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog ? currDog.breed : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Breed</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.breed : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog ? currDog.age : ''}</Typography> {/* Add margin-bottom */}
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Age</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.age : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog ? currDog.weight : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Weight</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.weight : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog ? currDog.sex : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Sex</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.sex : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog ? (currDog.fixed ? 'Yes' : 'No'): ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Fixed</Typography>
+                                                <Typography variant="body1">{currDog ? (currDog.fixed ? 'Yes' : 'No') : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog ? currDog.chip_number : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Chip Number</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.chip_number : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                     </Grid>
                                 </Box>
@@ -230,34 +243,41 @@ const DogProfileView = ({ isMobile }) => {
 
                             {/* Vet Information */}
                             <Grid item xs={12} md={6}>
-                                <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+                                <Typography variant="h4" sx={{ ml: 2, mt: 2, mb: 2 }}>
                                     Vet Information
                                 </Typography>
                                 <Box sx={{
                                     backgroundColor: 'primary.main',
                                     borderRadius: '10px',
                                     border: '1px solid #ccc',
-                                    padding: '2rem', // Add padding
-                                    minHeight: '350px',
-                                    ml: 2,
-                                    display: 'flex',
-                                    flexDirection: {
-                                        xs: 'column',
-                                        md: 'row',
-                                    },
+                                    padding: '2rem',
+                                    minHeight: '200px',  // Ensure both containers have the same height
+                                    ml: 2
                                 }}>
-                                    <Grid container spacing={3}> {/* Increase spacing */}
+                                    <Grid container spacing={3} justifyContent='center'>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog ? currDog.vet_clinic_name : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Vet Clinic Name</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.vet_clinic_name : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog ? currDog.vet_doctor_name : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Vet Doctor Name</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.vet_doctor_name : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog ? currDog.vet_clinic_phone : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Vet Clinic Phone</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.vet_clinic_phone : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                         <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog ? currDog.vet_clinic_email : ''}</Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>Vet Clinic Email</Typography>
+                                                <Typography variant="body1">{currDog ? currDog.vet_clinic_email : ''}</Typography>
+                                            </Box>
                                         </Grid>
                                     </Grid>
                                 </Box>

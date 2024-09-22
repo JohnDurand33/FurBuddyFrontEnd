@@ -14,10 +14,10 @@ const colorOptions = [
     { id: 5, color: '#9C27B0' },
 ];
 
-const EventDrawer = ({ isOpen, setIsDrawerOpen, selectedEvent=null }) => {
+const EventDrawer = ({ setIsDrawerOpen, handleUpdateEvent, isOpen }) => {
     const formikRef = useRef(null);
     const { token } = useAuth(); // We don't need all of `AuthContext`, just the token here
-    const { createNewEvent, updateExistingEvent, fetchEventsFromAPI } = useEvents(); // Import event creation and update methods
+    const { createNewEvent, updateExistingEvent, fetchEventsFromAPI, selectedEvent, setLocalSelectedEvent, updateFlag, setUpdateFlag } = useEvents(); // Import event creation and update methods
     const [errorMessages, setErrorMessages] = useState('');
 
     // Validation Schema using Yup
@@ -31,13 +31,28 @@ const EventDrawer = ({ isOpen, setIsDrawerOpen, selectedEvent=null }) => {
         color_id: Yup.number().required('Please select a color'),
     });
 
-    // Function to format date and time into ISO 8601 format
+    const normalizeDate = (date) => {
+        const newDate = new Date(date);
+        newDate.setSeconds(0, 0);  // Zero out seconds and milliseconds
+        return newDate;
+    };
+    
+
     const formatDateTime = (date, time) => {
-        return `${date}T${time}:00`; // Format to 'YYYY-MM-DDTHH:MM:SS'
+        // Create a Date object from the date and time
+        const dateTime = new Date(`${date}T${time}:00`);
+
+        // Return the formatted date as YYYY-MM-DD HH:MM:SS
+        return `${dateTime.getFullYear()}-${(dateTime.getMonth() + 1).toString().padStart(2, '0')}-${dateTime.getDate().toString().padStart(2, '0')} ${dateTime.getHours().toString().padStart(2, '0')}:${dateTime.getMinutes().toString().padStart(2, '0')}:${dateTime.getSeconds().toString().padStart(2, '0')}`;
     };
 
     const getDateFromDateTime = (dateTime) => {
-        return dateTime ? dateTime.split('T')[0] : ''; // Extract 'YYYY-MM-DD' from 'YYYY-MM-DDTHH:MM:SS'
+        return dateTime ? dateTime.split('T')[0] : ''
+    };
+
+    const getTimeFromDateTime = (dateTime) => {
+        console.log('Beginning Time:', dateTime);
+        return dateTime ? dateTime.split('T')[1] : '';
     };
 
     // Handle closing the drawer and resetting the form
@@ -47,44 +62,49 @@ const EventDrawer = ({ isOpen, setIsDrawerOpen, selectedEvent=null }) => {
         }
         setIsDrawerOpen(false);
     };
-
+    
     // Function to handle saving the event (either create or update)
     const handleSaveEvent = async (values, { setSubmitting, resetForm }) => {
         setSubmitting(true);
         setErrorMessages('');
 
         try {
-            const startTime = formatDateTime(values.date, values.start_time);
-            const endTime = formatDateTime(values.date, values.end_time);
+            const updatedStartTime = formatDateTime(values.date, values.start_time);
+            const updatedEndTime = formatDateTime(values.date, values.end_time);
 
-            const updatedData = {
-                name: values.name,
-                street: values.street,
-                zip_code: values.zip_code,
-                state: values.state,
-                start_time: startTime,
-                end_time: endTime,
-                notes: values.notes,
-                color_id: values.color_id,
-            };
-
-            console.log('Updated event data:', updatedData);
-
-            if (selectedEvent && selectedEvent.id) {
+            if (updateFlag) {
                 // Update existing event
+                const updatedData = {
+                    name: values.name,
+                    street: values.street,
+                    zip_code: values.zip_code,
+                    state: values.state,
+                    start_time: updatedStartTime,
+                    end_time: updatedEndTime,
+                    notes: values.notes,
+                    color_id: values.color_id,
+                };
+
                 await updateExistingEvent(selectedEvent.id, updatedData);
             } else {
                 // Create new event
-                const response = await createNewEvent(updatedData);
-                console.log(response);
+                const newEventData = {
+                    name: values.name,
+                    street: values.street,
+                    zip_code: values.zip_code,
+                    state: values.state,
+                    start_time: updatedStartTime,
+                    end_time: updatedEndTime,
+                    notes: values.notes,
+                    color_id: values.color_id,
+                };
+
+                await createNewEvent(newEventData);
             }
 
-            
-
-            // After saving, close the drawer and refresh the events
-            handleCloseDrawer();
-            resetForm();
-            fetchEventsFromAPI(); // Refetch events to reflect changes
+            handleCloseDrawer();  // Close the drawer after saving
+            resetForm();  // Reset form values
+            fetchEventsFromAPI();  // Refresh events
         } catch (error) {
             console.error('Error saving event:', error);
             setErrorMessages('Error saving event. Please try again.');
@@ -113,7 +133,7 @@ const EventDrawer = ({ isOpen, setIsDrawerOpen, selectedEvent=null }) => {
                         start_time: selectedEvent?.start_time ? selectedEvent.start_time.split('T')[1] : '', 
                         end_time: selectedEvent?.end_time ? selectedEvent.end_time.split('T')[1] : '', 
                         notes: selectedEvent?.notes || '',
-                        date: getDateFromDateTime(selectedEvent?.start_time), 
+                        date: getDateFromDateTime(selectedEvent?.start_time) || '', 
                         color_id: selectedEvent?.color_id || '',
                     }}
                     validationSchema={validationSchema}

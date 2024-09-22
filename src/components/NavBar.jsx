@@ -62,7 +62,7 @@ const Navbar = ({ toggleRail, isMobile }) => {
             position="static"
             sx={{
                 backgroundColor: 'background.default',
-                maxHeight: '8vh',
+                maxHeight: '12vh',
                 width: '100%',
                 boxShadow: 'none',
                 borderBottom: authed ? '1px solid grey' : null,

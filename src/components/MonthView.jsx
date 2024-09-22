@@ -1,4 +1,6 @@
 import React from 'react';
+import EventBox from './EventBox.jsx';
+import { useEvents } from '../context/EventsContext.jsx';
 import '../styles/MonthView.css';
 
 const getMonthDays = (year, month) => {
@@ -9,7 +11,8 @@ const getMonthDays = (year, month) => {
     return { daysInMonth, daysBeforeStart, totalDays };
 };
 
-const MonthView = ({ currentDate, currEvents }) => {
+const MonthView = ({ currentDate, currEvents, setIsDrawerOpen }) => {
+    const {colorOptions} = useEvents();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
@@ -20,7 +23,19 @@ const MonthView = ({ currentDate, currEvents }) => {
         const dayNumber = index - daysBeforeStart + 1;
         const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth;
 
-        const dayEvents = currEvents.filter(event => event.day === dayNumber && isCurrentMonth);
+        // Filter events based on the day of the event's start_time
+        const dayEvents = currEvents.filter(event => {
+            if (isCurrentMonth) {
+                const eventDate = new Date(event.start_time);
+                return (
+                    eventDate.getFullYear() === year &&
+                    eventDate.getMonth() === month &&
+                    eventDate.getDate() === dayNumber
+                );
+            }
+            return false;
+        });
+
         return {
             dayNumber: isCurrentMonth ? dayNumber : '',
             events: dayEvents,
@@ -38,9 +53,6 @@ const MonthView = ({ currentDate, currEvents }) => {
                     </div>
                 ))}
             </div>
-            <button>
-                
-            </button>
 
             {/* Day Boxes */}
             <div className="month-view">
@@ -52,10 +64,7 @@ const MonthView = ({ currentDate, currEvents }) => {
                         <div className="month-day-header">{box.dayNumber}</div>
                         <div className="month-day-content">
                             {box.events.map(event => (
-                                <div className="event" key={event.title}>
-                                    <strong>{event.title}</strong>
-                                    <p>{event.startTime}:00 - {event.endTime}:00</p>
-                                </div>
+                                <EventBox className="event-month" key={event.id} event={event} colorOptions={colorOptions} setIsDrawerOpen={setIsDrawerOpen}/>
                             ))}
                         </div>
                     </div>

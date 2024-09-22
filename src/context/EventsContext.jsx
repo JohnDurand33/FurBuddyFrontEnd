@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createEvent, deleteEvent, fetchEvents, updateEvent } from '../utils/api/eventApis';
+import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById } from '../utils/api/eventApis';
 import { useAuth } from './AuthContext';
 
 // Create the RecordsContext
@@ -8,11 +8,20 @@ const EventsContext = createContext();
 export const useEvents = () => useContext(EventsContext);
 
 export const EventsProvider = ({ children }) => {
+    const colorOptions = [
+        { id: 1, backgroundColor: '#F7CA57', textColor: '#000000' },
+        { id: 2, backgroundColor: '#F44336', textColor: '#000000' },
+        { id: 3, backgroundColor: '#4CAF50', textColor: '#000000' },
+        { id: 4, backgroundColor: '#03A9F4', textColor: '#000000' },
+        { id: 5, backgroundColor: '#9C27B0', textColor: '#000000' },
+    ];
+
     const [currEvents, setCurrEvents] = useState([]);
     const [currEvent, setCurrEvent] = useState({});
-    const [selectedEvent, setSelectedEvent] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [updateFlag, setUpdateFlag] = useState(false);
     const { authed, token } = useAuth();
 
     const setLocalCurrEvent = (event) => {
@@ -30,28 +39,26 @@ export const EventsProvider = ({ children }) => {
         setSelectedEvent(event);
     };
 
-
-    // Fetch events from the API
     const fetchEventsFromAPI = async (view = 'month', date = new Date()) => {
         setLoading(true);
-        const formattedDate = date.toISOString().split('T')[0];  // Format date as 'YYYY-MM-DD'
+        let params = {};
+        const formattedDate = date.toISOString().split('T')[0];
 
-        // Build the request parameters based on the view type
-        let params = { start_date: formattedDate };
-
-        // Only add `year` and `month` when view is `month`
-        if (view === 'month') {
-            params.year = date.getFullYear();
-            params.month = date.getMonth() + 1; // Remember, months are 0-indexed, so add 1
+        if (view === 'day') {
+            params = { start_date: formattedDate };
+        } else if (view === 'week') {
+            const startOfWeek = new Date(date.setDate(date.getDate() - date.getDay()));
+            const formattedStartOfWeek = startOfWeek.toISOString().split('T')[0];
+            params = { start_date: formattedStartOfWeek };
+        } else if (view === 'month') {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            params = { start_date: formattedDate, year, month };
         }
 
-        console.log(`Sending request to fetch events with view: ${view}, params:`, params);
-
         try {
-            const response = await fetchEvents(view, params); // Use the correct parameters
-            console.log('Events response:', response);
-
-            // Set the first event as the current event if events exist
+            const response = await fetchEvents(view, params);
+            setLocalCurrEvents(response);
             if (response.length > 0) {
                 setLocalCurrEvent(response[0]);
             }
@@ -99,15 +106,14 @@ export const EventsProvider = ({ children }) => {
         }
     };
 
-
-
+    // Automatically fetch events when the component mounts, based on user authentication
     useEffect(() => {
         if (authed && token) {
-            fetchEventsFromAPI();
+            fetchEventsFromAPI(); // Fetch events when the user is authenticated
         }
     }, [authed, token]);
 
-    return(
+    return (
         <EventsContext.Provider
             value={{
                 currEvents,
@@ -116,12 +122,16 @@ export const EventsProvider = ({ children }) => {
                 setLocalSelectedEvent,
                 setLocalCurrEvent,
                 setLocalCurrEvents,
-                fetchEventsFromAPI,
                 createNewEvent,
                 updateExistingEvent,
                 deleteExistingEvent,
+                fetchEventById,
+                fetchEventsFromAPI, 
                 loading,
                 error,
+                colorOptions,
+                updateFlag,
+                setUpdateFlag,
             }}
         >
             {children}

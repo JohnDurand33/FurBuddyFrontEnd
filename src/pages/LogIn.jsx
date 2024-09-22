@@ -7,10 +7,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
-import { useEvents } from '../context/EventsContext'; // Import the EventsContext
+import { useEvents } from '../context/EventsContext';
 import { backEndUrl, GC_ID } from '../utils/config';
+import { ensureArray } from '../utils/helpers';
 
-const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
+const LoginForm = ({ setIsRailOpen }) => {
     const {
         clearAllStateAndLocalStorage,
         fetchUserDataWithToken,
@@ -20,45 +21,47 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         setLocalToken,
         authed,
         currUser,
-        currDog,
         token,
-        dogProfiles,
         fetchCurrDogProfiles,
-        fetchAndSetLocalCurrDogProfiles,
         setLocalCurrDog,
         setLocalCurrDogProfiles,
     } = useAuth();
 
-    const { fetchEventsFromAPI } = useEvents(); // Import fetchEvents to use after login
+    const { fetchEventsFromAPI } = useEvents();
     const [serverError, setServerError] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchData = async () => {
+        if (authed && token && currUser) {
+            fetchDataAfterLogin();
+        }
+    }, [authed, token, currUser]);
+
+    // Fetch profiles and events after successful login
+    const fetchDataAfterLogin = async () => {
+        try {
             if (authed && token && currUser) {
-                try {
-                    const profiles = await fetchCurrDogProfiles(token); // Fetch the dog profiles after login
-                    if (profiles && profiles.length > 0) {
-                        setLocalCurrDog(profiles[0]);
-                        setLocalCurrDogProfiles(profiles);
-                        console.log('currDog:', profiles[0]);
-                        console.log('currDogProfiles:', profiles);
-                        navigate('/dogs/view');
-                        setIsRailOpen(true);
-                    } else {
-                        console.log('No dogs found, redirecting to create a dog profile');
-                        navigate('/dogs/new');
-                    }
-                    // Fetch events for the authenticated user
-                    await fetchEventsFromAPI(); // Fetch events once the user is logged in
-                    setIsRailOpen(true)
-                } catch (error) {
-                    console.error('Error fetching profiles or events:', error);
+                const profiles = await fetchCurrDogProfiles(token);
+                const updatedDogs = await ensureArray(profiles)
+                if (updatedDogs && updatedDogs.length === []) {
+                    navigate('/dogs/new');
+                } else {
+                    console.log('updatedDogs:', updatedDogs);
+                    setLocalCurrDogProfiles(updatedDogs);
+                    setLocalCurrDog(updatedDogs[0]);
+                    navigate('/dogs/view');
                 }
             }
-        };
-        fetchData();
-    }, [authed, token, currUser, fetchEventsFromAPI]);
+        } catch (error) {
+                console.error('Error fetching profiles or events:', error);
+        await fetchEventsFromAPI(); // Fetch events once the user is logged in
+        setIsRailOpen(true); // Open navigation rail
+        }      
+        setServerError('Failed to fetch profiles or events. Please try again.');
+        }
+    };
+
+    
 
     // Validation schema for login form
     const validationSchema = Yup.object().shape({
@@ -66,15 +69,15 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
         password: Yup.string().required('Password is required'),
     });
 
-    // Email and password login
+    // Handle email and password login
     const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
         setServerError(null);
         setSubmitting(true);
-        clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
+        clearAllStateAndLocalStorage();
 
         try {
             // Firebase Authentication
-            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+            const userCredential = await signInWithEmailAndPassword(values.email, values.password);
             const fireBaseUser = userCredential.user;
             setFireUser(fireBaseUser);
 
@@ -87,9 +90,8 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
-            
-            const { auth_token: loginToken } = res.data;
 
+            const { auth_token: loginToken } = res.data;
             setLocalToken(loginToken);
 
             // Fetch user data using token
@@ -97,11 +99,11 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
             setLocalCurrUser(loggedInUser);
             setAuthed(true);
 
-            // Fetch events after successful login
-            await fetchEventsFromAPI();
+            await fetchCurrDogProfiles();
+            setIsRailOpen(true)
 
-            setIsRailOpen(true); // Open the navigation rail after login
-            navigate('/dogs/view'); // Redirect to the dog profile page
+            // Fetch data after successful login
+            refetchCurrDogProfiles();
         } catch (err) {
             setServerError('Invalid email or password. Please try again.');
         } finally {
@@ -110,38 +112,34 @@ const LoginForm = ({ isMobile, toggleRail, setIsRailOpen }) => {
     };
 
     // Google OAuth login
-    const handleGoogleLoginSuccess = async (credentialResponse) => {
-        setServerError(null);
-        clearAllStateAndLocalStorage(); // Clear any existing state and localStorage
+const handleGoogleLoginSuccess = async (credentialResponse) => {
+    setServerError(null);
+    clearAllStateAndLocalStorage();
 
-        try {
-            // Firebase Google Authentication
-            const { credential } = credentialResponse;
-            const googleCredential = GoogleAuthProvider.credential(credential);
-            const userCredential = await signInWithCredential(auth, googleCredential);
-            const fireUser = userCredential.user;
-            setFireUser(fireUser);
+    try {
+        // Firebase Google Authentication
+        const { credential } = credentialResponse;
+        const googleCredential = GoogleAuthProvider.credential(credential);
+        const userCredential = await signInWithCredential(auth, googleCredential);
+        const fireUser = userCredential.user;
+        setFireUser(fireUser);
 
-            // Backend Google Authentication
-            const res = await axios.post(`${backEndUrl}/owner/google-login`, {
-                token: credential,
-                provider: 'google',
-            });
+        // Backend Google Authentication
+        const res = await axios.post(`${backEndUrl}/owner/google-login`, {
+            token: credential,
+            provider: 'google',
+        });
 
-            // Update context state with user data and token
-            setLocalCurrUser(res.data.owner);
-            setLocalToken(res.data.auth_token);
-            setAuthed(true);
+        setLocalCurrUser(res.data.owner);
+        setLocalToken(res.data.auth_token);
+        setAuthed(true);
 
-            // Fetch events after successful Google login
-            await fetchEventsFromAPI();
-
-            setIsRailOpen(true); // Open the navigation rail after login
-            navigate('/dogs/view'); // Redirect to the dog profile page
-        } catch (err) {
-            setServerError('Google Login Failed. Please try again.');
-        }
-    };
+        fetchDataAfterLogin();
+    } catch (err) {
+        setServerError('Google Login Failed. Please try again.');
+    } finally {
+        setIsRailOpen(true);
+    }
 
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
