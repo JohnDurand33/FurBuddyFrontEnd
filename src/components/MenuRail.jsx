@@ -204,25 +204,6 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                         {!isMobile && !isCollapsed && <ListItemText primary="Logout" />}
                     </ListItemButton>
 
-                    <Divider sx={{ marginBottom: '16px' }} />
-
-                    {/* User Account */}
-                <ListItemButton sx={{ marginBottom: '16px', ml: .5 }} >
-                    <ListItemIcon>
-                        {/* Display Avatar based on currUser */}
-                        <Avatar src="/static/images/avatar/1.jpg" alt={currUser ? currUser.owner_email : "User Avatar"} />
-                    </ListItemIcon>
-
-                    {/* Conditionally render user email */}
-                    <ListItemText
-                        primary={
-                            <Typography variant="body1" sx={{ ml: 1, color: 'inherit' }}>
-                                {currUser ? currUser.owner_email : 'No email available'}
-                            </Typography>
-                        }
-                    />
-                </ListItemButton>
-                
                 <Divider sx={{ mt: 2, mb: 2 }} />
 
                 <ListItemButton onClick={toggleTheme}>

@@ -106,7 +106,7 @@ const DogProfileCreate = ({ isMobile }) => {
 
 
     return (
-        <div style={{ maxWidth: '80%', margin: '0 auto', padding: '2rem' }}>
+        <div style={{ maxWidth: '90%', margin: '0 auto', padding: '2rem' }}>
             <h1 style={{
                 textAlign: isMobile ? 'center' : 'start',
                 fontSize: isMobile ? '1.5rem' : '2rem',
@@ -137,7 +137,7 @@ const DogProfileCreate = ({ isMobile }) => {
                             <Avatar
                                 alt="Dog Avatar"
                                 src={imageUrl || values.image_path || "/static/images/avatar/1.jpg"} 
-                                sx={{ width: 100, height: 100 }}
+                                sx={{ width: 200, height: 200 }}
                             />
                             <Box display="flex" alignItems="center">
                                 <IconButton
