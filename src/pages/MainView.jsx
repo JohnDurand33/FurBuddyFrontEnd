@@ -49,7 +49,6 @@ function MainView({ toggleTheme, isDark }) {
             flexDirection: 'column',
             ml: getMarginLeft(),
             pr: '-2%',
-            pr: 0, 
             pb:'2%',
             mb: isCalendarPage ? '0px' : '16px', // No bottom margin for calendar
             height: '100vh',

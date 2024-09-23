@@ -10,7 +10,7 @@ import { storage } from '../config/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { backEndUrl } from '../utils/config';
 import { Icon } from '@iconify/react';
-import editIcon from '@iconify-icons/mdi/pencil-outline'; // Iconify edit icon
+import pencilOutline from '@iconify-icons/mdi/pencil-outline'; 
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById } from '../utils/api/eventApis';
+import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById, fetchEventsFromAPI } from '../utils/eventApi';
 import { useAuth } from './AuthContext';
 
 // Create the RecordsContext
@@ -126,12 +126,12 @@ export const EventsProvider = ({ children }) => {
                 updateExistingEvent,
                 deleteExistingEvent,
                 fetchEventById,
-                fetchEventsFromAPI,
                 loading,
                 error,
                 colorOptions,
                 updateFlag,
                 setUpdateFlag,
+                fetchEventsFromAPI,
             }}
         >
             {children}

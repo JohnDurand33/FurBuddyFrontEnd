@@ -11,7 +11,8 @@ import { useEvents } from '../context/EventsContext';
 import { backEndUrl, GC_ID } from '../utils/config';
 import { ensureArray } from '../utils/helpers';
 
-const LoginForm = ({ setIsRailOpen }) => {
+const Login = ({ setIsRailOpen }) => {
+    console.log('Login.jsx');
     const {
         clearAllStateAndLocalStorage,
         fetchUserDataWithToken,
@@ -27,15 +28,34 @@ const LoginForm = ({ setIsRailOpen }) => {
         setLocalCurrDogProfiles,
     } = useAuth();
 
-    const { fetchEventsFromAPI } = useEvents();
+    const { currEvents,
+        currEvent,
+        selectedEvent,
+        setLocalSelectedEvent,
+        setLocalCurrEvent,
+        setLocalCurrEvents,
+        createNewEvent,
+        updateExistingEvent,
+        deleteExistingEvent,
+        fetchEventById,
+        fetchEventsFromAPI,
+        loading,
+        error,
+        colorOptions,
+        updateFlag,
+        setUpdateFlag } = useEvents();
     const [serverError, setServerError] = useState(null);
     const navigate = useNavigate();
+    console.log('Component rendering...');
 
     useEffect(() => {
+        console.log('useEffect running...');
         if (authed && token && currUser) {
+            console.log('User is authenticated, fetching data...');
             fetchDataAfterLogin();
         }
     }, [authed, token, currUser]);
+
 
     // Fetch profiles and events after successful login
     const fetchDataAfterLogin = async () => {
@@ -43,10 +63,11 @@ const LoginForm = ({ setIsRailOpen }) => {
             if (authed && token && currUser) {
                 const profiles = await fetchCurrDogProfiles(token);
                 const updatedDogs = await ensureArray(profiles)
-                if (updatedDogs && updatedDogs.length === []) {
+                if (updatedDogs && updatedDogs.length == []) {
                     navigate('/dogs/new');
                 } else {
-                    console.log('updatedDogs:', updatedDogs);
+                    console.log('updatedDogs:', updatedDogs)
+                    const updatedDogs = await ensureArray(profiles);
                     setLocalCurrDogProfiles(updatedDogs);
                     setLocalCurrDog(updatedDogs[0]);
                     navigate('/dogs/view');
@@ -60,8 +81,6 @@ const LoginForm = ({ setIsRailOpen }) => {
         setServerError('Failed to fetch profiles or events. Please try again.');
         }
     };
-
-    
 
     // Validation schema for login form
     const validationSchema = Yup.object().shape({
@@ -144,12 +163,15 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
             <Formik
-                initialValues={{ email: '', password: '' }}
-                validationSchema={validationSchema}
-                onSubmit={handleEmailPasswordLogin}
-            >
-                {({ errors, touched, isSubmitting }) => (
-                    <Form>
+    initialValues={{ email: '', password: '' }}
+    validationSchema={validationSchema}
+    onSubmit={(values, { setSubmitting }) => {
+        console.log('values:', values);  // Log values when form is submitted
+        setSubmitting(false);  // Stop the form from staying in submitting state
+    }}
+>
+    {({ errors, touched, isSubmitting }) => (
+        <Form>
                         <div style={{ marginBottom: '2rem' }}>
                             <h1 style={{ textAlign: 'center', color: '#333' }}>Login Form</h1>
                         </div>
@@ -221,4 +243,4 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
     );
 };
 
-export default LoginForm;
+export default Login

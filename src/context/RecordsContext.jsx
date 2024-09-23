@@ -3,6 +3,7 @@ import { useAuth } from './AuthContext';
 import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { se } from 'date-fns/locale';
+import { ensureArray } from '../utils/helpers';
 
 // Create the RecordsContext
 const RecordsContext = createContext();
@@ -49,7 +50,7 @@ export const RecordsProvider = ({ children }) => {
             const response = await axios.get(`${backEndUrl}/medical_record/categories`);
             console.log('Categories response:', response);
             const { data } = response;
-            setLocalCategories(data);
+            const updatedRecords = ensureArray(data);
         } catch (error) {
             console.error('Error fetching categories:', error);
             setError('Error fetching categories');
@@ -81,12 +82,16 @@ export const RecordsProvider = ({ children }) => {
                     }
                 });
                 console.log('updated currDogProfiles fetched', response.data);
-                if (!response.data || (Array.isArray(response.data) && response.data.length === 0)) {
-                    return [];
+                const updatedRecords = await ensureArray(response.data);
+                if (updatedRecords.length == []) {
+                    setLocalCurrDogRecords([]);
+                    setLocalCurrDogRec({});
+                    console.log('No records found');
                 } else {
-                    const updatedRecords = Array.isArray(response.data) ? response.data : [response.data];
+                    const updatedRecords = ensureArray(response.data);
                     setLocalCurrDogRecords(updatedRecords);
                     setLocalCurrDogRec(updatedRecords[0]);
+                    console.log('updated currDogRecords fetched:', updatedRecords);
                     return updatedRecords;
                 }
             }
@@ -103,7 +108,7 @@ export const RecordsProvider = ({ children }) => {
     const refetchCurrDogRecords = async () => {
         const updatedRecords = await fetchCurrDogRecords();
         if (updatedRecords.length > 0) {
-            const formattedNewRecords = Array.isArray(updatedRecords) ? updatedRecords : [updatedRecords];
+            const formattedNewRecords = ensureArray(updatedRecords);
             console.log('refetch currDogRecords:', formattedNewRecords);
             setLocalCurrDogRecords(formattedNewRecords);
             setLocalCurrDogRec(formattedNewRecords[0]);

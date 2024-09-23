@@ -1,5 +1,5 @@
 import axios from "axios";
-import { backEndUrl } from "../config";
+import { backEndUrl } from "./config";
 
 const basePath = `${backEndUrl}/event/`; // Set '/event/' as the base path for the routes
 
@@ -69,8 +69,7 @@ export const deleteEvent = async (eventId) => {
     return response.data;
 };
 
-export // Fetch events from the API based on view type (day/week/month)
-const fetchEventsFromAPI = async (view = "month", date = new Date()) => {
+export const fetchEventsFromAPI = async (view = "month", date = new Date()) => {
     setLoading(true); // Start loading when fetching begins
 
     let params = {};

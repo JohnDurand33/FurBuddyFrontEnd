@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
         clearAllStateAndLocalStorage();
         navigate('/login');
     };
+
     const fetchUserDataWithToken = async (token) => {
         try {
             const response = await axios.get(`${backEndUrl}/owner/owners/current`, {
@@ -63,9 +64,11 @@ export const AuthProvider = ({ children }) => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            const profile = response.data
-            console.log('Fetched user data:', profile);
-            setLocalCurrUser(profile); // Store user
+            const profile = await response.data
+            if (profile === 1) {
+                console.log('Fetched user data:', profile);
+                setLocalCurrUser(profile);
+            }
             return profile
         } catch (err) {
             console.error('Error fetching user data:', err);
