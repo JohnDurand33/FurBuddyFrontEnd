@@ -1,0 +1,45 @@
+/* Right group: Create button + View buttons */
+.right-header-group {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    gap: 20px; 
+}
+
+/* Create button */
+.create-btn {
+    width: 130px;
+    height: 45px;
+    background-color: #F7CA57;
+    color: black;
+    border: 1px solid lightgrey;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    justify-content: center;
+}
+
+/* View buttons (Day, Week, Month) */
+.view-buttons {
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.view-buttons button {
+    width: 126.6px;
+    height: 45px;
+    margin: 0;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.view-buttons button.active {
+    background-color: #FFFAE7;
+}

@@ -4,6 +4,8 @@ import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { se } from 'date-fns/locale';
 import { ensureArray } from '../utils/helpers';
+import { Icon } from '@iconify/react';
+import mdiDeleteOutline from '@iconify/icons-mdi/delete-outline';
 
 // Create the RecordsContext
 const RecordsContext = createContext();
@@ -11,6 +13,7 @@ const RecordsContext = createContext();
 export const useRecords = () => useContext(RecordsContext);
 
 export const RecordsProvider = ({ children }) => {
+
     const [categories, setCategories] = useState([]);
     const [serviceTypes, setServiceTypes] = useState([]);
     const [currDogRec, setCurrDogRec] = useState({});
@@ -50,7 +53,7 @@ export const RecordsProvider = ({ children }) => {
             const response = await axios.get(`${backEndUrl}/medical_record/categories`);
             console.log('Categories response:', response);
             const { data } = response;
-            const updatedRecords = ensureArray(data);
+            setLocalCategories(data);
         } catch (error) {
             console.error('Error fetching categories:', error);
             setError('Error fetching categories');
@@ -71,7 +74,7 @@ export const RecordsProvider = ({ children }) => {
 
     const fetchCurrDogRecords = async () => {
         try {
-            if (authed && token) {
+            if (authed && token && currDog) {
                 setLoading(true);
                 setError(null);
 
@@ -81,14 +84,13 @@ export const RecordsProvider = ({ children }) => {
                         'Content-Type': 'application/json',
                     }
                 });
-                console.log('updated currDogProfiles fetched', response.data);
+                
                 const updatedRecords = await ensureArray(response.data);
                 if (updatedRecords.length == []) {
                     setLocalCurrDogRecords([]);
                     setLocalCurrDogRec({});
                     console.log('No records found');
                 } else {
-                    const updatedRecords = ensureArray(response.data);
                     setLocalCurrDogRecords(updatedRecords);
                     setLocalCurrDogRec(updatedRecords[0]);
                     console.log('updated currDogRecords fetched:', updatedRecords);
@@ -107,7 +109,7 @@ export const RecordsProvider = ({ children }) => {
     // Manual refetching method 
     const refetchCurrDogRecords = async () => {
         const updatedRecords = await fetchCurrDogRecords();
-        if (updatedRecords.length > 0) {
+        if (updatedRecords && updatedRecords.length > 0) {
             const formattedNewRecords = ensureArray(updatedRecords);
             console.log('refetch currDogRecords:', formattedNewRecords);
             setLocalCurrDogRecords(formattedNewRecords);
@@ -121,22 +123,15 @@ export const RecordsProvider = ({ children }) => {
     };
         
     useEffect(() => {
-        if (authed && token) {
+        setLoading(true);
+        if (authed && token && currDog) {
+            console.log('Fetching categories');
             fetchCategories();
+            console.log('Fetching service types');
             fetchServiceTypes();
         }
-    }, [authed, token]);
-
-    useEffect(() => {
-        const initialRecords = async () => {
-            if (authed && token && currDog) {
-                setLoading(true);
-                await refetchCurrDogRecords();
-                setLoading(false);
-            }
-        };
-        initialRecords();
-    }, [currDog]);
+        setLoading(false);
+    }, [authed, currDog]);
 
     return (
         <RecordsContext.Provider value={{

@@ -8,9 +8,10 @@ import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
+import { ensureArray } from '../utils/helpers';
 
 const RecordsPage = () => {
-    const { currDog, authed, token, logout } = useAuth();
+    const { currDog, authed, token, logout, currUser } = useAuth();
     const { currDogRecords, setLocalCurrDogRecords, refetchCurrDogRecords } = useRecords();
     const [showDrawer, setShowDrawer] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
@@ -81,34 +82,6 @@ const RecordsPage = () => {
         return format(new Date(date.getTime() + date.getTimezoneOffset() * 60000), 'yyyy-MM-dd');
     };
 
-    const fetchRecords = async () => {
-        if (authed && token && currDog) {
-            setLoading(true);
-            try {
-                const response = await axios.get(`${backEndUrl}/medical_record/profile/${currDog.id}/records`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: {
-                        page,
-                        limit,
-                        offset: (page - 1) * limit,
-                    },
-                });
-
-                const fetchedRecords = response.data || [];
-
-                if (JSON.stringify(fetchedRecords) !== JSON.stringify(currDogRecords)) {
-                    setLocalCurrDogRecords(fetchedRecords);
-                }
-
-                setTotalRecords(fetchedRecords.length || 0);
-            } catch (error) {
-                console.error('Error fetching records:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
-
     const applySorting = (records) => {
         return [...records].sort((a, b) => {
             if (sortConfig.key === 'service_date') {
@@ -160,11 +133,49 @@ const RecordsPage = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            await refetchCurrDogRecords();
+            await fetchCurrDogRecords();
         } catch (error) {
             console.error('Error deleting record or fetching updated records:', error);
         }
     };
+
+    useEffect(() => {
+        const initialRecords = async () => {
+            console.log('Initial records fetching');
+            if (authed && token && currDog) {
+                setLoading(true);
+                await fetchCurrDogRecords(token);
+                setLoading(false);
+            }
+        };
+        initialRecords();
+    }, [currDog]);
+
+    // Fetch dog profiles after login
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            if (authed && token && currUser) {
+                try {
+                    const hasDogs = await fetchCurrDogProfiles();
+                    if (!hasDogs) {
+                        console.log('Login useEffect: No dog profiles found redirecting to /dogs/new');
+                    } else {
+                        console.log('Login useEffect: Dog profiles found redirecting to /dogs/view');
+                    }
+                } catch (error) {
+                    console.error('Error fetching profiles:', error);
+                    setLoading(false);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [authed, token, currUser]);
+
 
     return (
         <Box sx={{ padding: 3 }}>

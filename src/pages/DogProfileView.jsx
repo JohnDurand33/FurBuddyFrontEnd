@@ -13,6 +13,8 @@ import { Icon } from '@iconify/react';
 import pencilOutline from '@iconify-icons/mdi/pencil-outline'; 
 import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { useNavigate } from 'react-router-dom';
+import editIcon from '@iconify-icons/mdi/edit';
+import mdiDeleteOutline from '@iconify-icons/mdi/delete-outline';
 
 const DogProfileView = ({ isMobile }) => {
     const navigate = useNavigate();
@@ -24,18 +26,13 @@ const DogProfileView = ({ isMobile }) => {
     const [submitting, setSubmitting] = useState(false);
     const theme = useTheme();
 
-    const { currUser, token, currDog, setCurrDog, setLocalCurrDog, refetchCurrDogProfiles } = useAuth();
+    const { currUser, token, currDog, setCurrDog, setLocalCurrDog, fetchCurrDogProfiles } = useAuth();
 
     useEffect(() => {
-        if (!currDog) {
-            setLoading(true);
-            const storedDog = JSON.parse(localStorage.getItem('currDog'));
-            if (storedDog) {
-                setCurrDog(storedDog);
-            }
-            setLoading(false);
-        }
-    }, [currDog]);
+        setLoading(true); 
+        fetchCurrDogProfiles(token);
+        setLoading(false); 
+    }, [token]);  
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -78,11 +75,11 @@ const DogProfileView = ({ isMobile }) => {
                 },
             });
 
-            const updatedProfiles = await refetchCurrDogProfiles();
-            if (updatedProfiles.length > 0) {
-                navigate('/dogs/view');
-            } else {
+            const hasDogs = await fetchCurrDogProfiles();
+            if (!hasDogs) {
                 navigate('/dogs/new');
+            } else {
+                navigate('/dogs/view');
             }
         } catch (error) {
             console.error('Error deleting dog profile:', error);
@@ -139,31 +136,35 @@ const DogProfileView = ({ isMobile }) => {
         vet_clinic_phone: Yup.string(),
         vet_clinic_email: Yup.string().email('Invalid email format')
     });
+    if (loading) return <Typography>Loading...</Typography>;
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", padding: 3, ml: isMobile ? '60px' : 0 }}>
-            <Grid container alignItems="center" justifyContent="center" spacing={4} sx={{ pt: 5 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", ml: isMobile ? '60px' : 0 }}>
+            <Grid container alignItems="center" justifyContent="center" spacing={4} >
 
                 {!isEditing ? (
-                    <>
-                        <Grid item xs={12} container justifyContent="center">
-                            <Box sx={{ display: 'flex', justifyContent: 'start', width: '100%', position: 'relative', paddingRight: '30px', marginLeft: '5%' }}>
-                                <div style={{ position: 'relative', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px' }}>
+                    <>  
+                        <Grid item xs={12} container justifyContent="center" ml={2}>
+                            <Box sx={{ display: 'flex', justifyContent: 'start', width: '100%', paddingRight: '30px', mb:5, mt:3, ml:3 }}>
+                                <div style={{ position: 'relative', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px',  }}>
+                                    <Typography variant="h4" sx={{ color: '#666666', fontSize: '1.4rem', mb: 2, mt:-1, }}>
+                                        Dog Information
+                                    </Typography>
                                     <Avatar
                                         alt="Dog's Image"
                                         src={currDog ? currDog.image_path : "/static/images/avatar/1.jpg"}
                                         sx={{
                                             width: '100%', height: "100%", borderRadius: '50%',
-                                            objectFit: 'cover', aspectRatio: '1',
+                                            objectFit: 'cover', aspectRatio: '1', border: '2px solid #ccc'
                                         }}
                                     />
                                 </div>
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                     <Typography variant="h5" sx={{ mt: 6, ml: 2, fontWeight: 600 }}>{currDog ? currDog.name : ''}</Typography>
-                                    <Typography variant="h5" sx={{ mt: 4, ml: 2 }}>Chip No. {currDog ? currDog.chip_number : ''}</Typography>
+                                    <Typography variant="h5" sx={{ mt: 2, ml: 2 }}>Chip # {currDog ? currDog.chip_number : ''}</Typography>
                                 </Box>
                                 <IconButton
-                                    sx={{ position: 'absolute', top: 0, right: 0, borderColor: 'grey', mr: '8%' }}
+                                    sx={{ position: 'absolute', top: 100, right: 0, borderColor: 'grey', mr: '8%' }}
                                     onClick={handleEditToggle}
                                 >
                                     <Icon icon={editIcon} width="24" height="24" />
@@ -172,141 +173,107 @@ const DogProfileView = ({ isMobile }) => {
                             </Box>
                         </Grid>
 
-                        <Grid container spacing={4} justifyContent="start" style={{ marginTop: '1rem', width: '90%' }}>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{
+                                ml:5,
+                                backgroundColor: 'primary.main',
+                                borderRadius: '6px',
+                                border: '1px solid #ccc',
+                                padding: '2rem',
+                                width: '520px',
+                                height: '400px',
+                                display: 'flex',
+                                flexDirection: 'column',  // Ensure content stacks vertically
+                            }}>
+                                {/* Dog Information title alone at the top */}
+                                <Typography variant="h4" sx={{ color: '#666666', fontSize: '1.4rem', mb: 2, mt: - 1, pl: 3 }}>
                                     Dog Information
                                 </Typography>
-                                <Box sx={{
-                                    backgroundColor: 'primary.main',
-                                    borderRadius: '10px',
-                                    border: '1px solid #ccc',
-                                    padding: '2rem',
-                                    minHeight: '180px',
-                                    mr: 2
-                                }}>
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Name: {currDog ? currDog.name : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Breed: {currDog ? currDog.breed : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Age: {currDog ? currDog.age : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Weight: {currDog ? currDog.weight : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Sex: {currDog ? currDog.sex : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Fixed: {currDog ? (currDog.fixed ? 'Yes' : 'No') : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Chip Number: {currDog ? currDog.chip_number : ''}</Typography>
-                                        </Grid>
-                                    </Grid>
-                                </Box>
-                            </Grid>
 
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
+                                {/* Dog details below */}
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} md={6} >
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Name</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.name : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Breed</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.breed : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Age</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.age : ''} years old</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Gender</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.sex : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Weight</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.weight : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Fixed</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? (currDog.fixed ? 'Yes' : 'No') : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Microchip No.</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.chip_number : ''}</Typography>
+                                    </Grid>
+                                </Grid>
+                            </Box>
+                        </Grid>
+
+                            {/* Vet Information Section */}
+                        <Grid item xs={12} md={6}>
+                            <Box sx={{
+                                ml: 1,
+                                backgroundColor: 'primary.main',
+                                borderRadius: '6px',
+                                border: '1px solid #ccc',
+                                padding: '2rem',
+                                width: '520px',
+                                height: '400px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}>
+                                {/* Vet Information Title */}
+                                <Typography variant="h4" sx={{ color: '#666666', fontSize: '1.4rem', mb: 2, mt:-1, pl: 3 }}>
                                     Vet Information
                                 </Typography>
-                                <Box sx={{
-                                    backgroundColor: 'primary.main',
-                                    borderRadius: '10px',
-                                    border: '1px solid #ccc',
-                                    padding: '2rem',
-                                    minHeight: '300px',
-                                    ml: 2,
-                                    display: 'flex',
-                                    flexDirection: {
-                                        xs: 'column',
-                                        md: 'row',
-                                    },
-                                }}>
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Name: {currDog ? currDog.vet_clinic_name : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Doctor Name: {currDog ? currDog.vet_doctor_name : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Phone: {currDog ? currDog.vet_clinic_phone : ''}</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <Typography variant="h6" sx={{ mb: 2 }}>Vet Clinic Email: {currDog ? currDog.vet_clinic_email : ''}</Typography>
-                                        </Grid>
+
+                                {/* Vet Information Grid */}
+                                <Grid container spacing={3} >
+                                    <Grid item xs={12} md={6} mb={7} >
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Vet Clinic Name</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.vet_clinic_name : ''}</Typography>
                                     </Grid>
-                                </Box>
-                            </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Vet Doctor Name</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.vet_doctor_name : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Vet Clinic Phone</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.vet_clinic_phone : ''}</Typography>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Vet Clinic Email</Typography>
+                                        <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.vet_clinic_email : ''}</Typography>
+                                    </Grid>
+                                </Grid>
+                            </Box>
                         </Grid>
-                        <Grid container justifyContent="center" sx={{ mt: 4 }}>
-                            <Button
-                                onClick={handleOpenModal}
-                                sx={{
-                                    variant: "outlined",
-                                    color: "text.primary",
-                                    backgroundColor: theme.palette.secondary.main,
-                                    borderColor: "grey",
-                                }}>
-                                Delete Profile
-                            </Button>
-                            <Modal
-                                open={isModalOpen}
-                                onClose={handleCloseModal}
-                                aria-labelledby="delete-confirmation-modal"
-                                aria-describedby="ask-for-confirmation"
-                            >
-                                <Box
-                                    sx={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        width: 400,
-                                        bgcolor: 'background.paper',
-                                        borderRadius: 2,
-                                        boxShadow: 24,
-                                        p: 4,
-                                    }}
-                                >
-                                    <Typography id="delete-confirmation-modal" variant="h6" component="h2">
-                                        Are you sure you want to delete this profile?
-                                    </Typography>
-                                    <Typography id="ask-for-confirmation" sx={{ mt: 2 }}>
-                                        This action cannot be undone.
-                                    </Typography>
-                                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            onClick={handleDeleteProfile}
-                                            disabled={submitting}
-                                        >
-                                            {submitting ? 'Deleting...' : 'Confirm'}
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            color="secondary"
-                                            onClick={handleCloseModal}
-                                            disabled={submitting}
-                                        >
-                                            Cancel
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            </Modal>
-                        </Grid>
+                        
+
+                        
                     </>
                 ) : (
                     <>
                         <Grid item xs={12}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'start', marginBottom: '2rem', marginLeft: '6%' }}>
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'start', marginTop:
+                                        '2rem', marginLeft: 40
+                                }}>
                                 <div style={{ position: 'relative', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px' }}>
                                     <Avatar
                                         alt="Dog's Image"
@@ -320,7 +287,7 @@ const DogProfileView = ({ isMobile }) => {
                                         }}
                                     />
                                 </div>
-                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Box sx={{ display: 'flex', flexDirection: 'column'}}>
                                     <Typography variant="h5" sx={{ mt: 3, ml: 2, fontWeight: 600 }}>{currDog ? currDog.name : ''}</Typography>
                                     <Typography variant="h5" sx={{ mt: 1, ml: 2 }}>Chip No. {currDog ? currDog.chip_number : ''}</Typography>
                                     <div>
@@ -374,155 +341,250 @@ const DogProfileView = ({ isMobile }) => {
                                 vet_doctor_name: currDog?.vet_doctor_name || '',
                                 vet_clinic_phone: currDog?.vet_clinic_phone || '',
                                 vet_clinic_email: currDog?.vet_clinic_email || ''
-                            }}
+                                }}
+                                isSubmitting={submitting}
                             validationSchema={validationSchema}
                             enableReinitialize={true}
                             onSubmit={handleSave}
                         >
                             {({ values, errors, touched, setFieldValue, isSubmitting }) => (
-                                <Form style={{ margin: '0 auto', width: '80%' }}>
-                                    <Grid container spacing={3}>
-                                        <Grid item xs={12}>
-                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>
-                                                Dog Information
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}>Pet Name</label>
-                                            <Field
-                                                type="text"
-                                                id="name"
-                                                name="name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.name && errors.name ? 'error' : ''}
-                                            />
-                                            {touched.name && errors.name && <div style={{ color: 'red' }}>{errors.name}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="breed" style={{ display: 'block', marginBottom: '0.5rem' }}>Breed</label>
-                                            <Field
-                                                type="text"
-                                                id="breed"
-                                                name="breed"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.breed && errors.breed ? 'error' : ''}
-                                            />
-                                            {touched.breed && errors.breed && <div style={{ color: 'red' }}>{errors.breed}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="age" style={{ display: 'block', marginBottom: '0.5rem' }}>Age</label>
-                                            <Field
-                                                type="text"
-                                                id="age"
-                                                name="age"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.age && errors.age ? 'error' : ''}
-                                            />
-                                            {touched.age && errors.age && <div style={{ color: 'red' }}>{errors.age}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Gender</label>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Field type="radio" id="female" name="sex" value="Female" style={{ marginRight: '0.5rem' }} />
-                                                <label htmlFor="female" style={{ marginRight: '1rem' }}>Female</label>
-                                                <Field type="radio" id="male" name="sex" value="Male" style={{ marginRight: '0.5rem' }} />
-                                                <label htmlFor="male">Male</label>
-                                            </div>
-                                            {touched.sex && errors.sex && <div style={{ color: 'red' }}>{errors.sex}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="weight" style={{ display: 'block', marginBottom: '0.5rem' }}>Weight (lbs)</label>
-                                            <Field
-                                                type="text"
-                                                id="weight"
-                                                name="weight"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.weight && errors.weight ? 'error' : ''}
-                                            />
-                                            {touched.weight && errors.weight && <div style={{ color: 'red' }}>{errors.weight}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>{fixedLabel(values)} Status</label>
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Field type="radio" id="fixedYes" name="fixed" value="yes" checked={values.fixed === true} style={{ marginRight: '0.5rem' }} />
-                                                <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>
-                                                <Field type="radio" id="fixedNo" name="fixed" value="no" checked={values.fixed === false} style={{ marginRight: '0.5rem' }} />
-                                                <label htmlFor="fixedNo">No</label>
-                                            </div>
-                                            {touched.fixed && errors.fixed && <div style={{ color: 'red' }}>{errors.fixed}</div>}
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <label htmlFor="chip_number" style={{ display: 'block', marginBottom: '0.5rem' }}>Microchip No.</label>
-                                            <Field
-                                                type="text"
-                                                id="chip_number"
-                                                name="chip_number"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.chip_number && errors.chip_number ? 'error' : ''}
-                                            />
-                                            {touched.chip_number && errors.chip_number && <div style={{ color: 'red' }}>{errors.chip_number}</div>}
-                                        </Grid>
+                                <Form style={{  width: '95%' }}>
+                                        <Grid container spacing={4}>
+                                            {/* Dog Information Form Fields */}
+                                            <Grid item xs={12} md={6} ml={2}>
+                                                <Typography variant="h4" sx={{ mt: 4, mb: 2, color: '#666666', fontSize: '1.4rem', pl: 3 }}>
+                                                    Dog Information
+                                                </Typography>
+                                                <Box sx={{ padding: '2rem', flexDirection: 'column' }}>
+                                                    <Grid container spacing={3}>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Pet Name</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="name"
+                                                                name="name"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.name && errors.name && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.name}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="breed" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Breed</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="breed"
+                                                                name="breed"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.breed && errors.breed && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.breed}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="age" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Age</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="age"
+                                                                name="age"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.age && errors.age && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.age}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Gender</label>
+                                                            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+                                                                <Field type="radio" id="female" name="sex" value="Female" style={{ marginRight: '0.5rem' }} />
+                                                                <label htmlFor="female" style={{ marginRight: '1rem' }}>Female</label>
+                                                                <Field type="radio" id="male" name="sex" value="Male" style={{ marginRight: '0.5rem' }} />
+                                                                <label htmlFor="male">Male</label>
+                                                            </div>
+                                                            {touched.sex && errors.sex && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.sex}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="weight" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Weight (lbs)</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="weight"
+                                                                name="weight"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.weight && errors.weight && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.weight}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Fixed</label>
+                                                            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
+                                                                <Field type="radio" id="fixedYes" name="fixed" value="yes" style={{ marginRight: '0.5rem' }} />
+                                                                <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>
+                                                                <Field type="radio" id="fixedNo" name="fixed" value="no" style={{ marginRight: '0.5rem' }} />
+                                                                <label htmlFor="fixedNo">No</label>
+                                                            </div>
+                                                            {touched.fixed && errors.fixed && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.fixed}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="chip_number" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Microchip No.</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="chip_number"
+                                                                name="chip_number"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.chip_number && errors.chip_number && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.chip_number}</div>}
+                                                        </Grid>
+                                                    </Grid>
+                                                </Box>
+                                            </Grid>
 
-                                        <Grid item xs={12}>
-                                            <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>Vet Information</Typography>
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Name</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_clinic_name"
-                                                name="vet_clinic_name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_name && errors.vet_clinic_name ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_name && errors.vet_clinic_name && <div style={{ color: 'red' }}>{errors.vet_clinic_name}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Doctor Name</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_doctor_name"
-                                                name="vet_doctor_name"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_doctor_name && errors.vet_doctor_name ? 'error' : ''}
-                                            />
-                                            {touched.vet_doctor_name && errors.vet_doctor_name && <div style={{ color: 'red' }}>{errors.vet_doctor_name}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Phone</label>
-                                            <Field
-                                                type="text"
-                                                id="vet_clinic_phone"
-                                                name="vet_clinic_phone"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_phone && errors.vet_clinic_phone ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_phone && errors.vet_clinic_phone && <div style={{ color: 'red' }}>{errors.vet_clinic_phone}</div>}
-                                        </Grid>
-                                        <Grid item xs={12} md={6}>
-                                            <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem' }}>Vet Clinic Email</label>
-                                            <Field
-                                                type="email"
-                                                id="vet_clinic_email"
-                                                name="vet_clinic_email"
-                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-                                                className={touched.vet_clinic_email && errors.vet_clinic_email ? 'error' : ''}
-                                            />
-                                            {touched.vet_clinic_email && errors.vet_clinic_email && <div style={{ color: 'red' }}>{errors.vet_clinic_email}</div>}
-                                        </Grid>
+                                            {/* Vet Information Form Fields */}
+                                            <Grid item xs={12} md={6} ml={-2}>
+                                                <Typography variant="h4" sx={{ mt: 4, mb: 2, color: '#666666', fontSize: '1.4rem', pl: 3 }}>
+                                                    Vet Information
+                                                </Typography>
+                                                <Box sx={{ padding: '2rem', flexDirection: 'column' }}>
+                                                    <Grid container spacing={3}>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="vet_clinic_name" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Vet Clinic Name</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="vet_clinic_name"
+                                                                name="vet_clinic_name"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.vet_clinic_name && errors.vet_clinic_name && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.vet_clinic_name}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="vet_doctor_name" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Vet Doctor Name</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="vet_doctor_name"
+                                                                name="vet_doctor_name"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.vet_doctor_name && errors.vet_doctor_name && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.vet_doctor_name}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="vet_clinic_phone" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Vet Clinic Phone</label>
+                                                            <Field
+                                                                type="text"
+                                                                id="vet_clinic_phone"
+                                                                name="vet_clinic_phone"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.vet_clinic_phone && errors.vet_clinic_phone && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.vet_clinic_phone}</div>}
+                                                        </Grid>
+                                                        <Grid item xs={12} md={6}>
+                                                            <label htmlFor="vet_clinic_email" style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Vet Clinic Email</label>
+                                                            <Field
+                                                                type="email"
+                                                                id="vet_clinic_email"
+                                                                name="vet_clinic_email"
+                                                                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', pl: '20px' }}
+                                                            />
+                                                            {touched.vet_clinic_email && errors.vet_clinic_email && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.vet_clinic_email}</div>}
+                                                        </Grid>
+                                                    </Grid>
+                                                </Box>
+                                            </Grid>
 
-                                        <Grid item xs={12} container justifyContent="center" style={{ marginTop: '2rem', gap: '10px' }}>
-                                            <Button type="submit" sx={{ variant: "contained", backgroundColor: "secondary.main", color: "text.primary", border: "1px solid grey", minWidth: '140px' }}>
-                                                {isSubmitting ? "Saving..." : "Save Changes"}
-                                            </Button>
-                                            <Button sx={{ variant: "outlined", color: "black", border: "1px solid grey", ml: 2, minWidth: '140px' }} onClick={handleEditToggle}>
-                                                Cancel
-                                            </Button>
-                                        </Grid>
+
+                                            <Grid container justifyContent="space-between" alignItems="center" sx={{ mt: 0, width: '90%', ml:10}}>
+                                                {/* Left: Delete Profile with Icon */}
+                                                <Grid item>
+                                                    <Button
+                                                        startIcon={<Icon icon={mdiDeleteOutline} />}
+                                                        onClick={handleOpenModal}
+                                                        sx={{
+                                                            color: "red",
+                                                            backgroundColor: "transparent",
+                                                            borderColor: "transparent",
+                                                            '&:hover': {
+                                                                backgroundColor: 'transparent',
+                                                                color: 'darkred'
+                                                            },
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        Delete Profile
+                                                    </Button>
+                                                </Grid>
+
+                                                {/* Right: Cancel and Save Changes Buttons */}
+                                                <Grid item sx={{ display: 'flex', gap: '1rem' }}>
+                                                    <Button
+                                                        sx={{
+                                                            variant: "outlined",
+                                                            color: "black",
+                                                            border: "1px solid grey",
+                                                            minWidth: '120px',
+                                                        }}
+                                                        onClick={handleEditToggle}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                    <Button
+                                                        type="submit"
+                                                        sx={{
+                                                            variant: "contained",
+                                                            backgroundColor: theme.palette.secondary.main,
+                                                            color: theme.palette.text.primary,
+                                                            border: "1px solid grey",
+                                                            minWidth: '140px',
+                                                        }}
+                                                        
+                                                    >
+                                                        {isSubmitting ? "Saving..." : "Save Changes"}
+                                                    </Button>
+                                                </Grid>
+
+                                                {/* Delete Confirmation Modal */}
+                                                <Modal
+                                                    open={isModalOpen}
+                                                    onClose={handleCloseModal}
+                                                    aria-labelledby="delete-confirmation-modal"
+                                                    aria-describedby="ask-for-confirmation"
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: '50%',
+                                                            left: '50%',
+                                                            transform: 'translate(-50%, -50%)',
+                                                            minWidth: 400,
+                                                            bgcolor: 'background.paper',
+                                                            borderRadius: 2,
+                                                            boxShadow: 24,
+                                                            p: 4,
+                                                        }}
+                                                    >
+                                                        <Typography id="delete-confirmation-modal" variant="h6" component="h2">
+                                                            Are you sure you want to delete this profile?
+                                                        </Typography>
+                                                        <Typography id="ask-for-confirmation" sx={{ mt: 2 }}>
+                                                            This action cannot be undone.
+                                                        </Typography>
+                                                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Button
+                                                                variant="contained"
+                                                                color="primary"
+                                                                onClick={handleDeleteProfile}
+                                                                disabled={submitting}
+                                                            >
+                                                                {submitting ? 'Deleting...' : 'Confirm'}
+                                                            </Button>
+                                                            <Button
+                                                                variant="outlined"
+                                                                color="secondary"
+                                                                onClick={handleCloseModal}
+                                                                disabled={submitting}
+                                                            >
+                                                                Cancel
+                                                            </Button>
+                                                        </Box>
+                                                    </Box>
+                                                </Modal>
+                                            </Grid>
                                     </Grid>
                                 </Form>
                             )}
                         </Formik>
+                            
                     </>
                 )}
             </Grid>

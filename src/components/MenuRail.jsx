@@ -21,9 +21,9 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ImGift } from 'react-icons/im';
 
-const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark, currUser }) => {
+const MenuRail = ({ isMobile, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark, currUser }) => {
     const navigate = useNavigate();
-    const { authed, token, currDog, handleLogout, dogProfiles, refetchCurrDogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
+    const { authed, token, currDog, handleLogout, dogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(true);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -31,34 +31,17 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
     const togglePetsDropdown = () => setIsPetsOpen((prev) => !prev);
 
     const getDrawerWidth = () => {
-        if (!authed || !isRailOpen) {
+        if (!authed ) {
+            console.log('Drawer width:', '0px');
             return '0px';
         } else if (isMobile) {
+            console.log('Drawer width:', '64px');
             return '64px';
         } else {
+            console.log('Drawer width:', isCollapsed ? '64px' : '260px');
             return isCollapsed ? '64px' : '260px';
         }
     };
-
-    // Fetch dog profiles after login
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true); 
-            if (authed && token && currUser) {
-                try {
-                    await refetchCurrDogProfiles();  
-                } catch (error) {
-                    console.error('Error fetching profiles:', error);
-                    setLoading(false);
-                } finally {
-                    setLoading(false); 
-                }
-            } else {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [authed, token, currUser]);
 
     const handleCurrDogChange = (dog) => {
         setLocalCurrDog(dog);
@@ -83,7 +66,6 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                 disableBackdropClick: false,  // Ensure tapping outside will close the Drawer
             }}
             sx={{
-                
                 width: getDrawerWidth(),
                 transition: 'width 0.3s ease-in-out',
                 color: theme.palette.text.primary,
@@ -139,7 +121,7 @@ const MenuRail = ({ isMobile, isRailOpen, toggleRail, isCollapsed, toggleCollaps
                     {/* Navigation Links */}
                 <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/dogs/view')}>
                     <ListItemIcon><Icon icon={defaultashboardIcon} /></ListItemIcon>
-                        {!isMobile && !isCollapsed && <ListItemText primary="Dashboard" />}
+                        {!isMobile && !isCollapsed && <ListItemText primary="Profile" />}
                     </ListItemButton>
                 <ListItemButton sx={{ marginBottom: '12px', ml: .5 }} onClick={handleNavigateTo('/calendar')}>
                     <ListItemIcon><Icon icon={calendarIcon} /></ListItemIcon>

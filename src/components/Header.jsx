@@ -1,5 +1,5 @@
 import React from 'react';
-import '../Header.css';
+import '../Headers.css';
 
 const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange }) => {
     return (

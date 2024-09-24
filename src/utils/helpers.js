@@ -5,9 +5,11 @@ export const ensureArray = (data) => {
     if (!data) return [];
 
     // If data is already an array, return it
+    console.log("Data is an array, not wrapping into an array", data); 
     if (Array.isArray(data)) return data;
 
     // If data is not an array, wrap it in an array
+    console.log("Data is not an array, wrapping it into an array", data); 
     return [data];
 };
 

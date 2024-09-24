@@ -3,82 +3,89 @@ import axios from 'axios';
 import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, redirect, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { auth } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import { useEvents } from '../context/EventsContext';
 import { backEndUrl, GC_ID } from '../utils/config';
 import { ensureArray } from '../utils/helpers';
+import { set } from 'date-fns';
+import { clearAllLocalStorage } from '../utils/localStorage';
+import '../Buttons.css';
 
 const Login = ({ setIsRailOpen }) => {
-    console.log('Login.jsx');
     const {
-        clearAllStateAndLocalStorage,
+        authed,
+        token,
+        currUser,
+        setLocalCurrDog,
+        setLocalCurrUser,
+        setLocalCurrDogProfiles,
+        currDogs,
+        currDog,
         fetchUserDataWithToken,
         setAuthed,
-        setFireUser,
-        setLocalCurrUser,
+        setToken,
         setLocalToken,
-        authed,
-        currUser,
-        token,
         fetchCurrDogProfiles,
-        setLocalCurrDog,
-        setLocalCurrDogProfiles,
+        clearAllStateAndLocalStorage,
+        loading,
+        setLoading
     } = useAuth();
 
-    const { currEvents,
-        currEvent,
-        selectedEvent,
-        setLocalSelectedEvent,
-        setLocalCurrEvent,
-        setLocalCurrEvents,
-        createNewEvent,
-        updateExistingEvent,
-        deleteExistingEvent,
-        fetchEventById,
-        fetchEventsFromAPI,
-        loading,
-        error,
-        colorOptions,
-        updateFlag,
-        setUpdateFlag } = useEvents();
-    const [serverError, setServerError] = useState(null);
+    const { currEvents, setCurrEvents, setLocalCurrEvent } = useEvents();
+
+    const [serverError, setServerError] = useState(null); // Set to `null` for error handling
     const navigate = useNavigate();
-    console.log('Component rendering...');
 
-    useEffect(() => {
-        console.log('useEffect running...');
-        if (authed && token && currUser) {
-            console.log('User is authenticated, fetching data...');
-            fetchDataAfterLogin();
-        }
-    }, [authed, token, currUser]);
-
-
-    // Fetch profiles and events after successful login
-    const fetchDataAfterLogin = async () => {
+    // Handle email and password login
+    const handleEmailPasswordLogin = async (values, setSubmitting) => {
         try {
-            if (authed && token && currUser) {
-                const profiles = await fetchCurrDogProfiles(token);
-                const updatedDogs = await ensureArray(profiles)
-                if (updatedDogs && updatedDogs.length == []) {
-                    navigate('/dogs/new');
-                } else {
-                    console.log('updatedDogs:', updatedDogs)
-                    const updatedDogs = await ensureArray(profiles);
-                    setLocalCurrDogProfiles(updatedDogs);
-                    setLocalCurrDog(updatedDogs[0]);
-                    navigate('/dogs/view');
-                }
+            setServerError(null);
+            setSubmitting(true)// Reset server error state
+            console.log('Logging in with email and password:', values);
+            const payload = {
+                owner_email: values.email,
+                password: values.password,
+            };
+
+            // Backend email/password Login
+            const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            const { auth_token: loginToken } = res.data;
+            console.log('Login token:', loginToken);
+            setLocalToken(loginToken);
+
+            // Fetch user data using token
+            const loggedInUser = await fetchUserDataWithToken(loginToken);
+            setLocalCurrUser(loggedInUser);
+            console.log('Logged in user:', loggedInUser);
+            setAuthed(true);
+
+
+            const hasDogs = await fetchCurrDogProfiles(loginToken); 
+            
+
+            // Redirect based on whether dog profiles exist
+            if (!hasDogs) {
+                console.log('No dog profiles, redirecting to /dogs/new');
+                navigate('/dogs/new'); // Redirect to the 'new dog' page
+            } else {
+                console.log('Dog profiles found, redirecting to /dogs/view');
+                navigate('/dogs/view'); // Redirect to the 'view dogs' page
             }
-        } catch (error) {
-                console.error('Error fetching profiles or events:', error);
-        await fetchEventsFromAPI(); // Fetch events once the user is logged in
-        setIsRailOpen(true); // Open navigation rail
-        }      
-        setServerError('Failed to fetch profiles or events. Please try again.');
+
+            setAuthed(true); // Set user as authenticated
+
+        } catch (err) {
+            console.error('Error logging in:', err);
+            setServerError('Failed to login. Please check your credentials.');
+        } finally {
+            setLoading(false);
+            setSubmitting(false);
         }
     };
 
@@ -88,90 +95,22 @@ const Login = ({ setIsRailOpen }) => {
         password: Yup.string().required('Password is required'),
     });
 
-    // Handle email and password login
-const handleEmailPasswordLogin = async (values, { setSubmitting }) => {
-    setServerError(null);
-    setSubmitting(true);
-    clearAllStateAndLocalStorage();
-
-    try {
-        // Firebase Authentication
-        const userCredential = await signInWithEmailAndPassword(values.email, values.password);
-        const fireBaseUser = userCredential.user;
-        setFireUser(fireBaseUser);
-
-        // Backend Authentication
-        const payload = {
-            owner_email: values.email,
-            password: values.password,
-        };
-
-        const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        const { auth_token: loginToken } = res.data;
-        setLocalToken(loginToken);
-
-        // Fetch user data using token
-        const loggedInUser = await fetchUserDataWithToken(loginToken);
-        setLocalCurrUser(loggedInUser);
-        setAuthed(true);
-
-        fetchCurrDogProfiles();
-        setIsRailOpen(true)
-
-        // Fetch data after successful login
-        refetchCurrDogProfiles();
-    } catch (err) {
-        setServerError('Invalid email or password. Please try again.');
-    } finally {
-        setSubmitting(false);
-    };
-};
-
-
-    // Google OAuth login
-const handleGoogleLoginSuccess = async (credentialResponse) => {
-    setServerError(null);
-    clearAllStateAndLocalStorage();
-
-    try {
-        // Firebase Google Authentication
-        const { credential } = credentialResponse;
-        const googleCredential = GoogleAuthProvider.credential(credential);
-        const userCredential = await signInWithCredential(auth, googleCredential);
-        const fireUser = userCredential.user;
-        setFireUser(fireUser);
-
-        // Backend Google Authentication
-        const res = await axios.post(`${backEndUrl}/owner/google-login`, {
-            token: credential,
-            provider: 'google',
-        });
-
-        setLocalCurrUser(res.data.owner);
-        setLocalToken(res.data.auth_token);
-        setAuthed(true);
-
-        fetchDataAfterLogin();
-    } catch (err) {
-        setServerError('Google Login Failed. Please try again.');
-    };
-        
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
             <Formik
-    initialValues={{ email: '', password: '' }}
-    validationSchema={validationSchema}
-    onSubmit={(values, { setSubmitting }) => {
-        console.log('values:', values);  // Log values when form is submitted
-        setSubmitting(false);  // Stop the form from staying in submitting state
-    }}
->
-    {({ errors, touched, isSubmitting }) => (
-        <Form>
+                initialValues={{ email: '', password: '' }}
+                validationSchema={validationSchema}
+                onSubmit={(values, { setSubmitting }) => {
+                    console.log('Form submitted with values:', values);
+                    handleEmailPasswordLogin(values, setSubmitting);  // Invoke the login function here
+                }}
+            >
+                {({ errors, touched, isSubmitting }) => (
+                    <Form>
                         <div style={{ marginBottom: '2rem' }}>
                             <h1 style={{ textAlign: 'center', color: '#333' }}>Login Form</h1>
                         </div>
@@ -186,7 +125,13 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
                                 type="email"
                                 id="email"
                                 name="email"
-                                style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    marginBottom: '0.5rem',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                }}
                             />
                             {touched.email && errors.email && (
                                 <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.email}</div>
@@ -199,7 +144,13 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
                                 type="password"
                                 id="password"
                                 name="password"
-                                style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    marginBottom: '0.5rem',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                }}
                             />
                             {touched.password && errors.password && (
                                 <div style={{ color: 'red', marginBottom: '1rem' }}>{errors.password}</div>
@@ -216,7 +167,7 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
                                 color: 'black',
                                 border: 'none',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                             }}
                         >
                             {isSubmitting ? 'Submitting...' : 'Login'}
@@ -230,17 +181,8 @@ const handleGoogleLoginSuccess = async (credentialResponse) => {
                     Don't have an account? Sign up here.
                 </Link>
             </div>
-
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                <GoogleOAuthProvider clientId={GC_ID}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleLoginSuccess}
-                        onError={() => setServerError('Google Login Failed. Please try again.')}
-                    />
-                </GoogleOAuthProvider>
-            </div>
         </div>
     );
 };
 
-export default Login
+export default Login;

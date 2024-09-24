@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import '../Buttons.css';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { storage } from '../config/firebase';
 import { Avatar, Box, IconButton } from '@mui/material';
@@ -15,7 +16,7 @@ import { useTheme } from '@mui/material/styles';
 
 const DogProfileCreate = ({ isMobile }) => {
     const theme = useTheme();
-    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles, deleteDogProfile, fetchCurrDogProfiles, refetchCurrDogProfiles } = useAuth();
+    const { setLocalCurrUser, currUser, token, authed, setLocalCurrDog, setLocalDogProfiles, deleteDogProfile, fetchCurrDogProfiles } = useAuth();
     const navigate = useNavigate();
     const [serverError, setServerError] = useState(null);
     const [image, setImage] = useState(null);
@@ -93,7 +94,7 @@ const DogProfileCreate = ({ isMobile }) => {
             );
             console.log("creat dog response data", response.data);
 
-            const updatedProfiles = await refetchCurrDogProfiles();
+            const updatedProfiles = await fetchCurrDogProfiles();
             console.log("fetch dogProfiles response after create", updatedProfiles);
             navigate(`/dogs/view`);
         } catch (err) {

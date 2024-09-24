@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@emotion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react'; // For Iconify icons
+import '../Buttons.css';
 
 const Navbar = ({ toggleRail, isMobile }) => {
     const { logout, authed, setAuthed, clearAllStateAndLocalStorage, currDog } = useAuth();
@@ -105,11 +106,24 @@ const Navbar = ({ toggleRail, isMobile }) => {
                                 </IconButton>
                             </>
                         ) : (
-                            <>
-                                <Button
-                                    component={NavLink}
-                                    to="/login"
-                                    sx={{ ml: 1, color: theme.palette.text.primary }}
+                                    <>
+                                    
+                        <Button
+                        component={NavLink}
+                                to="/login"
+                                sx={{
+                                    width: '130px',
+                                    height: '40px',
+                                    color: 'black',
+                                    border: '1px solid lightgrey',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    borderRadius: '3px',
+                                    justifyContent: 'center',
+                                    mr: 2,
+                                }}
                                 >
                                     Log In
                                 </Button>
@@ -117,9 +131,13 @@ const Navbar = ({ toggleRail, isMobile }) => {
                                     component={NavLink}
                                     to="/signup"
                                     sx={{
-                                        ml: 1,
-                                        color: theme.palette.secondary.main,
-                                        backgroundColor: theme.palette.primary.main,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        width: '130px',
+                                        height: '40px',
+                                        backgroundColor: '#F7CA57',
+                                        color: 'black',
+                                        border: '1px solid lightgrey',
                                     }}
                                 >
                                     Sign Up

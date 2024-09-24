@@ -35,24 +35,35 @@ const SignUpForm = () => {
         try {
             clearAllStateAndLocalStorage();
 
-            const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-            const fireUser = userCredential.user;
-            setFireUser(fireUser);
-
             const payload = {
                 owner_email: values.email,
                 password: values.password,
-                owner_name: values.ownerName,
-                owner_phone: values.ownerPhone,
             };
 
             const res = await axios.post(`${backEndUrl}/owner/`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
 
+            console.log(res)
+
             navigate('/login');
         } catch (err) {
-            setServerError(err.message || 'Sign-up failed. Please try again.');
+            if (err.response) {
+                // The request was made, and the server responded with a status code that falls out of the range of 2xx
+                console.error('Response data:', err.response.data);
+                console.error('Response status:', err.response.status);
+                console.error('Response headers:', err.response.headers);
+                setServerError(err.response.data?.error || 'Sign-up failed. Please try again.');
+            } else if (err.request) {
+                // The request was made, but no response was received
+                console.error('Request:', err.request);
+                setServerError('No response from server. Please try again.');
+            } else {
+                // Something happened in setting up the request that triggered an error
+                console.error('Error', err.message);
+                setServerError(err.message || 'Sign-up failed. Please try again.');
+            }
+
         } finally {
             setSubmitting(false);
         }
