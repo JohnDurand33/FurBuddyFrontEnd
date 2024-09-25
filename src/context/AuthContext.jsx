@@ -80,13 +80,10 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const fetchCurrDogProfiles = async (passedToken=token, retry_count = 0) => {
+    const fetchCurrDogProfiles = async (passedToken = token) => {
         try {
             setLoading(true);
             setError(null);
-
-            // Delay before attempting the request
-            await new Promise(resolve => setTimeout(resolve, 500)); // Adjust the delay as needed
 
             console.log('Token being used:', passedToken); // Debugging token
 
@@ -101,23 +98,18 @@ export const AuthProvider = ({ children }) => {
             if (profiles.length === 0) {
                 setLocalDogProfiles([]);
                 setLocalCurrDog({});
+                console.log('No profiles found');
                 return false; // No profiles found
             } else {
                 setLocalCurrDogProfiles(profiles);
                 setLocalCurrDog(profiles[0]);
+                console.log('Dog profiles fetched:', profiles);
                 return true; // Profiles found
             }
         } catch (error) {
-            // Retry on 401 Unauthorized
-            if (error.response?.status === 401 && retry_count < 3) {
-                console.log('Error fetching dog profiles, retrying...', error);
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Retry after 1 second
-                return fetchCurrDogProfiles(retry_count + 1);
-            } else {
-                console.error('Error fetching dog profiles:', error);
-                setError('Error fetching dog profiles');
-                return false;
-            }
+            console.error('Error fetching dog profiles:', error);
+            setError('Error fetching dog profiles');
+            return false;
         } finally {
             setLoading(false);
         }
@@ -140,15 +132,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Load user and dog profile from localStorage on component mount
     useEffect(() => {
-        if (token) {  // Ensure the token is set before making the request
-            console.log('Token is available, fetching profiles...');
-            fetchCurrDogProfiles(token);
-        } else {
-            console.log('Token is not set, skipping profile fetch');
-        }
-    }, [token]);
+        const updatedOwnerProfiles = async () => {
+            try {
+                setLoading(true);
+                const hasDog = await fetchCurrDogProfiles(token);
+                if (!hasDog) {
+                    navigate('/dogs/new');
+                
+                } else {
+                    navigate('dogs/view')
+                
+                }
+            } finally {
+                    setLoading(false);
+                }
+        };
+    updatedOwnerProfiles();
+}, [authed, currUser, token]);  
 
     useEffect(() => {
         if (!authed) {

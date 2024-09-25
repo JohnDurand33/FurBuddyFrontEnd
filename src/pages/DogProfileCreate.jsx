@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import '../Buttons.css';
+import { getAuth } from "firebase/auth";
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { storage } from '../config/firebase';
+import { storage, auth } from '../config/firebase';
 import { Avatar, Box, IconButton } from '@mui/material';
 import { Icon } from '@iconify/react';
 import cameraIcon from '@iconify/icons-mdi/camera';  // Import specific icons
@@ -60,12 +61,24 @@ const DogProfileCreate = ({ isMobile }) => {
     };
 
     const handleImageUpload = async () => {
+        const auth = getAuth();  // Get the authentication instance
+        const user = auth.currentUser;  // Get the current authenticated user
+
+        if (!user) {
+            console.error("User is not authenticated. Please login.");
+            return;
+        }
+        try {
         if (image) {
             const storageRef = ref(storage, `dog_images/${Date.now()}_${image.name}`);
             const snapshot = await uploadBytes(storageRef, image);
-            return await getDownloadURL(snapshot.ref);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            return downloadURL;
+                }
+            } catch (error) {
+                console.error("Error uploading image:", error);
+            }
         };
-    };
 
     const handleSubmit = async (values, { setSubmitting, resetForm }) => {
         setServerError(null);
@@ -94,9 +107,11 @@ const DogProfileCreate = ({ isMobile }) => {
             );
             console.log("creat dog response data", response.data);
 
-            const updatedProfiles = await fetchCurrDogProfiles();
-            console.log("fetch dogProfiles response after create", updatedProfiles);
-            navigate(`/dogs/view`);
+            const isUpdatedProfiles = await fetchCurrDogProfiles();
+            console.log("fetch dogProfiles response after create", isUpdatedProfiles);
+            if (isUpdatedProfiles) {
+                navigate(`/dogs/view`);
+            } 
         } catch (err) {
             setServerError(err.message || 'Profile creation failed. Please try again.');
         } finally {

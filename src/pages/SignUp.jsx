@@ -34,7 +34,22 @@ const SignUpForm = () => {
         setServerError(null);
         try {
             clearAllStateAndLocalStorage();
+            const { email, password } = values;
 
+        
+            const newAuth = auth;
+            const userCredential = await createUserWithEmailAndPassword(newAuth, email, password);
+            const user = userCredential.user;
+            console.log("User signed up:", user);
+        } catch (error) {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(`Error signing up [${errorCode}]: ${errorMessage}`);
+            setServerError('Sign-up failed. Please try again.');
+        }
+
+        
+        try {
             const payload = {
                 owner_email: values.email,
                 password: values.password,

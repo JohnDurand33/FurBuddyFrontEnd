@@ -153,11 +153,11 @@ const RecordsPage = () => {
 
     // Fetch dog profiles after login
     useEffect(() => {
-        const fetchData = async () => {
+        const initialDogs = async () => {
             setLoading(true);
             if (authed && token && currUser) {
                 try {
-                    const hasDogs = await fetchCurrDogProfiles();
+                    const hasDogs = await fetchCurrDogProfiles(token);
                     if (!hasDogs) {
                         console.log('Login useEffect: No dog profiles found redirecting to /dogs/new');
                     } else {
@@ -173,8 +173,8 @@ const RecordsPage = () => {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, [authed, token, currUser]);
+        initialDogs();
+    }, [currUser]);
 
 
     return (

@@ -109,7 +109,9 @@ export const EventsProvider = ({ children }) => {
     // Automatically fetch events when the component mounts, based on user authentication
     useEffect(() => {
         if (authed && token) {
+            setLoading(true);
             fetchEventsFromAPI(); // Fetch events when the user is authenticated
+            setLoading(false);
         }
     }, [authed, token]);
 

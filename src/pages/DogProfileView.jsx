@@ -28,11 +28,7 @@ const DogProfileView = ({ isMobile }) => {
 
     const { currUser, token, currDog, setCurrDog, setLocalCurrDog, fetchCurrDogProfiles } = useAuth();
 
-    useEffect(() => {
-        setLoading(true); 
-        fetchCurrDogProfiles(token);
-        setLoading(false); 
-    }, [token]);  
+    
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -113,7 +109,7 @@ const DogProfileView = ({ isMobile }) => {
             );
 
             if (response.status === 200) {
-                setLocalCurrDog(response.data); // Update the current dog with updated data
+                await fetchCurrDogProfiles();
                 setIsEditing(false);
                 resetForm();
                 navigate('/dogs/view');
@@ -136,7 +132,6 @@ const DogProfileView = ({ isMobile }) => {
         vet_clinic_phone: Yup.string(),
         vet_clinic_email: Yup.string().email('Invalid email format')
     });
-    if (loading) return <Typography>Loading...</Typography>;
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", ml: isMobile ? '60px' : 0 }}>
@@ -277,7 +272,7 @@ const DogProfileView = ({ isMobile }) => {
                                 <div style={{ position: 'relative', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px' }}>
                                     <Avatar
                                         alt="Dog's Image"
-                                        src={imageUrl || currDog.image_path || ""}
+                                        src={imageUrl ? imageUrl : currDog ? currDog.image_path : "/static/images/avatar/1.jpg"}
                                         style={{
                                             width: '100%',
                                             height: '100%',

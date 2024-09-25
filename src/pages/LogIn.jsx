@@ -28,7 +28,6 @@ const Login = ({ setIsRailOpen }) => {
         setAuthed,
         setToken,
         setLocalToken,
-        fetchCurrDogProfiles,
         clearAllStateAndLocalStorage,
         loading,
         setLoading
@@ -42,6 +41,7 @@ const Login = ({ setIsRailOpen }) => {
     // Handle email and password login
     const handleEmailPasswordLogin = async (values, setSubmitting) => {
         try {
+            setLoading(true);
             setServerError(null);
             setSubmitting(true)// Reset server error state
             console.log('Logging in with email and password:', values);
@@ -64,27 +64,13 @@ const Login = ({ setIsRailOpen }) => {
             setLocalCurrUser(loggedInUser);
             console.log('Logged in user:', loggedInUser);
             setAuthed(true);
-
-
-            const hasDogs = await fetchCurrDogProfiles(loginToken); 
-            
-
-            // Redirect based on whether dog profiles exist
-            if (!hasDogs) {
-                console.log('No dog profiles, redirecting to /dogs/new');
-                navigate('/dogs/new'); // Redirect to the 'new dog' page
-            } else {
-                console.log('Dog profiles found, redirecting to /dogs/view');
-                navigate('/dogs/view'); // Redirect to the 'view dogs' page
-            }
-
-            setAuthed(true); // Set user as authenticated
+            setLoading(false);
 
         } catch (err) {
             console.error('Error logging in:', err);
             setServerError('Failed to login. Please check your credentials.');
-        } finally {
             setLoading(false);
+        } finally {
             setSubmitting(false);
         }
     };
@@ -94,10 +80,6 @@ const Login = ({ setIsRailOpen }) => {
         email: Yup.string().email('Invalid email format').required('Email is required'),
         password: Yup.string().required('Password is required'),
     });
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
