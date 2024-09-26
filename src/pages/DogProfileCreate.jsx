@@ -14,6 +14,7 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { backEndUrl } from '../utils/config';
 import { useTheme } from '@mui/material/styles';
+import { api } from '../utils/eventApi';
 
 const DogProfileCreate = ({ isMobile }) => {
     const theme = useTheme();

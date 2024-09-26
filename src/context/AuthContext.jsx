@@ -4,6 +4,7 @@ import axios from 'axios';
 import { backEndUrl } from '../utils/config';
 import { ensureArray } from '../utils/helpers';
 import { clearAllLocalStorage } from '../utils/localStorage';
+import { api } from '../utils/eventApi';
 
 
 const AuthContext = createContext();

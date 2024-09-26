@@ -1,5 +1,6 @@
 import React from 'react';
 import '../MonthView.css';
+import { api } from '../utils/eventApi';
 
 const getMonthDays = (year, month) => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();

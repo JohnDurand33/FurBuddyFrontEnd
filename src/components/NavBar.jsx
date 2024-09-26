@@ -7,6 +7,7 @@ import { useTheme } from '@emotion/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '@iconify/react'; // For Iconify icons
 import '../Buttons.css';
+import { api } from '../utils/eventApi';
 
 const Navbar = ({ toggleRail, isMobile }) => {
     const { logout, authed, setAuthed, clearAllStateAndLocalStorage, currDog } = useAuth();

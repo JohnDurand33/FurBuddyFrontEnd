@@ -3,123 +3,114 @@ import Header from '../components/Header';
 import DayView from '../components/DayView';
 import WeekView from '../components/WeekView';
 import MonthView from '../components/MonthView';
+import EventDrawer from '../components/EventDrawer';
+import EventModal from '../components/EventModal';
 import '../MyCalendar.css';
+import { useEvents } from '../context/EventsContext';
 
 const MyCalendar = () => {
     const [currentView, setCurrentView] = useState('week'); // Default to 'week'
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for EventDrawer
+    const [isModalOpen, setIsModalOpen] = useState(false);  // State for EventModal
+    const [hoveredEvent, setHoveredEvent] = useState(null); // State for hovered event
 
-    // State for events (mock data for now)
-    const [events, setEvents] = useState([
-        {
-            title: 'Vet Appointment',
-            startTime: 13, // 1 PM
-            endTime: 14,   // 2 PM
-            day: 16,       // August 16th for Month view, Monday for Week view
-        },
-        {
-            title: 'Play Date',
-            startTime: 10,
-            endTime: 11,
-            day: 21,
-        },
-    ]);
+    const {
+        currEvents,
+        selectedEvent,
+        setLocalSelectedEvent,
+        updateFlag,
+        setUpdateFlag,
+    } = useEvents();
 
-    // Navigate to next/previous day/week/month based on the current view
+    // Handle creating a new event
+    const handleCreateEvent = () => {
+        setUpdateFlag(false); // We are in "create" mode
+        setLocalSelectedEvent(null); // Clear any selected event
+        setIsDrawerOpen(true);  // Open the drawer for a new event
+    };
+
+    // Handle hovering over an event
+    const handleEventHover = (event) => {
+        if (event) {
+            setLocalSelectedEvent(event);  // Set the hovered event
+            setHoveredEvent(event);        // Update the state for the modal to show
+            setIsModalOpen(true);          // Show modal on hover
+        } else {
+            setIsModalOpen(false);         // Close modal when not hovering
+        }
+    };
+
+    // Handle closing the modal
+    const handleModalClose = () => {
+        setIsModalOpen(false);  // Close the modal
+    };
+
+    // Navigate to the next time period based on current view
     const goNext = () => {
         const newDate = new Date(currentDate);
         switch (currentView) {
             case 'day':
-                newDate.setDate(newDate.getDate() + 1); // Next day
-                break;
+                newDate.setDate(newDate.getDate() + 1); break;
             case 'week':
-                newDate.setDate(newDate.getDate() + 7); // Next week
-                break;
+                newDate.setDate(newDate.getDate() + 7); break;
             case 'month':
-                newDate.setMonth(newDate.getMonth() + 1); // Next month
-                break;
-            default:
-                break;
+                newDate.setMonth(newDate.getMonth() + 1); break;
+            default: break;
         }
         setCurrentDate(newDate);
     };
 
+    // Navigate to the previous time period
     const goPrev = () => {
         const newDate = new Date(currentDate);
         switch (currentView) {
             case 'day':
-                newDate.setDate(newDate.getDate() - 1); // Previous day
-                break;
+                newDate.setDate(newDate.getDate() - 1); break;
             case 'week':
-                newDate.setDate(newDate.getDate() - 7); // Previous week
-                break;
+                newDate.setDate(newDate.getDate() - 7); break;
             case 'month':
-                newDate.setMonth(newDate.getMonth() - 1); // Previous month
-                break;
-            default:
-                break;
+                newDate.setMonth(newDate.getMonth() - 1); break;
+            default: break;
         }
         setCurrentDate(newDate);
     };
 
+    // Return to the current date
     const goToday = () => {
         setCurrentDate(new Date());
     };
 
-    // Handle view switching (Day, Week, Month)
-    const handleViewChange = (view) => {
-        setCurrentView(view);
-    };
-
-    // Formatting the header date based on the current view
-    const formatHeaderDate = () => {
-        const options = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        };
-
-        switch (currentView) {
-            case 'day': {
-                const fullDayOptions = {
-                    weekday: 'long', // Full day name (e.g., "Monday")
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                };
-                return currentDate.toLocaleDateString('en-US', fullDayOptions);
-            }
-            case 'week': {
-                const monthYearOptions = { year: 'numeric', month: 'long' };
-                return currentDate.toLocaleDateString('en-US', monthYearOptions);
-            }
-            case 'month': {
-                const monthYearOptions = { year: 'numeric', month: 'long' };
-                return currentDate.toLocaleDateString('en-US', monthYearOptions);
-            }
-            default:
-                return currentDate.toLocaleDateString('en-US', options);
-        }
-    };
-
-    // Dynamic view rendering based on currentView
+    // Render the view based on currentView state
     return (
         <div className="calendar-container">
             <Header
                 currentView={currentView}
-                currentDate={formatHeaderDate()} // Pass the formatted date string
+                currentDate={currentDate}
                 onPrev={goPrev}
                 onNext={goNext}
                 onToday={goToday}
-                onViewChange={handleViewChange}
+                onViewChange={setCurrentView}
+                onCreateEvent={handleCreateEvent}
             />
 
             {/* Render the appropriate view */}
             <div className="calendar-content">
-                {currentView === 'day' && <DayView events={events} currentDate={currentDate} />}
-                {currentView === 'week' && <WeekView events={events} currentDate={currentDate} />}
-                {currentView === 'month' && <MonthView events={events} currentDate={currentDate} />}
+                {currentView === 'day' && <DayView events={currEvents} currentDate={currentDate} onEventHover={handleEventHover} />}
+                {currentView === 'week' && <WeekView events={currEvents} currentDate={currentDate} onEventHover={handleEventHover} />}
+                {currentView === 'month' && <MonthView events={currEvents} currentDate={currentDate} onEventHover={handleEventHover} />}
             </div>
+
+            <EventDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+            />
+
+            <EventModal
+                isOpen={isModalOpen}
+                onClose={handleModalClose}
+                event={hoveredEvent} // Pass the hovered event to the modal
+            />
         </div>
     );
 };

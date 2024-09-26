@@ -1,13 +1,15 @@
 import React from 'react';
 import '../Headers.css';
+import { api } from '../utils/eventApi';
 
-const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange }) => {
+const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange, onCreateEvent }) => {
     return (
         <div className="calendar-header">
             {/* Left group: Date + Navigation buttons */}
             <div className="left-header-group">
                 <div className="calendar-title">
-                    <h3>{currentDate}</h3> {/* Removed inline styling */}
+                    {/* Convert currentDate to a readable format */}
+                    <h3>{currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</h3>
                 </div>
                 <div className="calendar-nav">
                     <button type="button" className="nav-button" onClick={onPrev}>&lt;</button>
@@ -18,7 +20,7 @@ const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChang
 
             {/* Right group: Create + View buttons */}
             <div className="right-header-group">
-                <button type="button" className="create-btn">+ Create</button>
+                <button type="button" className="create-btn" onClick={onCreateEvent}>+ Create</button>
                 <div className="view-buttons">
                     <button
                         type="button"

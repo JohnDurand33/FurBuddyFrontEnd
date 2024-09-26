@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../WeekView.css';
+import { api } from '../utils/eventApi';
 
 const WeekView = ({ currentDate, events }) => {
     const [currentWeekDates, setCurrentWeekDates] = useState([]);

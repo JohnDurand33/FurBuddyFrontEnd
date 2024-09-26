@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import chevronDownIcon from '@iconify/icons-mdi/chevron-down';
 import chevronUpIcon from '@iconify/icons-mdi/chevron-up';
 import { useRecords } from '../context/RecordsContext';
+import { api } from '../utils/eventApi';
 
 const FilterModal = ({ onClose, setFilteredRecords }) => {
     const [selectedCategories, setSelectedCategories] = useState({});

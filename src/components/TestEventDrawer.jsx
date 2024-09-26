@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEvents } from '../context/EventsContext';
+import { api } from '../utils/eventApi';
 
 const EventDrawer = ({ isOpen, onClose, selectedEvent }) => {
     const { createNewEvent, fetchEventById, updateExistingEvent } = useEvents(); // Import necessary functions

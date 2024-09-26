@@ -10,6 +10,7 @@ import DogProfileCreate from './DogProfileCreate';
 import DogProfileViewPage from './DogProfileView';
 import RecordsPage from './RecordsPage';
 import MyCalendar from './MyCalendar';
+import { api } from '../utils/eventApi';
 import { useAuth } from '../context/AuthContext';
 
 function MainView({ toggleTheme, isDark }) {

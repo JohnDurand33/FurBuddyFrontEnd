@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById, fetchEventsFromAPI } from '../utils/eventApi';
 import { useAuth } from './AuthContext';
+import { api } from '../utils/eventApi';
 
 // Create the RecordsContext
 const EventsContext = createContext();

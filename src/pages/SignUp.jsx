@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../config/firebase';
 import { backEndUrl } from '../utils/config';
+import { api } from '../utils/eventApi';
 
 const SignUpForm = () => {
     const {

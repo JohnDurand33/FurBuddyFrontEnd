@@ -15,6 +15,7 @@ import CameraOutlineIcon from '@iconify-icons/mdi/camera-outline';
 import { useNavigate } from 'react-router-dom';
 import editIcon from '@iconify-icons/mdi/edit';
 import mdiDeleteOutline from '@iconify-icons/mdi/delete-outline';
+import { api } from '../utils/eventApi';
 
 const DogProfileView = ({ isMobile }) => {
     const navigate = useNavigate();

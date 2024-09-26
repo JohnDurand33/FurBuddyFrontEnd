@@ -1,35 +1,50 @@
-
-
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useEvents } from '../context/EventsContext';
+import EventModal from './EventModal'; // Assuming you already have an EventModal component
+import './EventBox.css'; // Custom CSS for styling
 
-const getFirstWord = (str) => {
-    return str.split(' ')[0];
-}
+const EventBox = ({ event, view, color_id }) => {
+    const [hovered, setHovered] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
-const EventBox = ({ event, colorOptions, updateEvent }) => {
-    const { setLocalSelectedEvent } = useEvents();
-    // Find the matching color option based on the event's color_id
-    const colorOption = colorOptions.find(opt => opt.id === event.color_id) || { backgroundColor: '#FFFFFF', textColor: '#000000' };
-    const location = useLocation();
-    const startTime = new Date(event.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const title = getFirstWord(event.name);
+    const handleHover = () => {
+        setHovered(true);
+        setSelectedEvent(event); // Set the selected event for the modal
+    };
 
+    const handleMouseLeave = () => {
+        setHovered(false);
+    };
+
+    // Define styles based on the `view` prop
+    const getBoxStyle = () => {
+        switch (view) {
+            case 'day':
+                return { width: '100%', height: '50px', backgroundColor: color_id };
+            case 'week':
+                return { width: '150px', height: '75px', backgroundColor: color_id };
+            case 'month':
+                return { width: '75px', height: '50px', backgroundColor: color_id };
+            default:
+                return { width: '100px', height: '50px', backgroundColor: color_id };
+        }
+    };
 
     return (
         <div
-            onClick={updateEvent}
-            className="event-month"
-            style={{
-                color: colorOption.textColor,
-                textDecoration: 'underline',
-            }}
+            className="event-box"
+            style={getBoxStyle()}
+            onMouseEnter={handleHover}
+            onMouseLeave={handleMouseLeave}
         >
-            <strong>{title} </strong>
-            <span className="time-divider" style={{ backgroundColor: colorOption.backgroundColor || '' }}></span>
-            {new Date(event.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <div className="event-header">
+                {event.name}
+            </div>
+            <div className="event-times">
+                <span>FROM: {event.fromTime} </span>
+                <span>TO: {event.toTime} </span>
+            </div>
 
+            {hovered && <EventModal event={selectedEvent} />}
         </div>
     );
 };

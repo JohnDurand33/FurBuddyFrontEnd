@@ -9,6 +9,7 @@ import { backEndUrl } from '../utils/config';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ensureArray } from '../utils/helpers';
+import { api } from '../utils/eventApi';
 
 const RecordsPage = () => {
     const { currDog, authed, token, logout, currUser } = useAuth();

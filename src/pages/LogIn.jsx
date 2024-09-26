@@ -13,6 +13,7 @@ import { ensureArray } from '../utils/helpers';
 import { set } from 'date-fns';
 import { clearAllLocalStorage } from '../utils/localStorage';
 import '../Buttons.css';
+import { api } from '../utils/eventApi';
 
 const Login = ({ setIsRailOpen }) => {
     const {

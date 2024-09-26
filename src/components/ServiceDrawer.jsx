@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns';
 import '../drawerStyles.css';
 import { backEndUrl } from '../utils/config';
 import { useRecords } from '../context/RecordsContext';
+import { api } from '../utils/eventApi';
 
 const ServiceDrawer = ({ isOpen, setShowDrawer, serviceData = null, mode = 'create' }) => {
     const formikRef = useRef(null);

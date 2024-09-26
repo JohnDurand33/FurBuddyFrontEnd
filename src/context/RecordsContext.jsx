@@ -6,6 +6,7 @@ import { se } from 'date-fns/locale';
 import { ensureArray } from '../utils/helpers';
 import { Icon } from '@iconify/react';
 import mdiDeleteOutline from '@iconify/icons-mdi/delete-outline';
+import { api } from '../utils/eventApi';
 
 // Create the RecordsContext
 const RecordsContext = createContext();

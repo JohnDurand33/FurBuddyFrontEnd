@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Icon } from '@iconify/react'; // Iconify for the close icon
-import '../styles/EventDrawer.css';  // Updated to avoid conflict with ServiceDrawer
 import { useAuth } from '../context/AuthContext';
 import { useEvents } from '../context/EventsContext'; // Import the Events context
+import '../EventDrawer.css';
 
 const colorOptions = [
     { id: 1, color: '#F7CA57' },
@@ -14,97 +14,68 @@ const colorOptions = [
     { id: 5, color: '#9C27B0' },
 ];
 
-const EventDrawer = ({ setIsDrawerOpen, handleUpdateEvent, isOpen }) => {
-    const formikRef = useRef(null);
-    const { token } = useAuth(); // We don't need all of `AuthContext`, just the token here
-    const { createNewEvent, updateExistingEvent, fetchEventsFromAPI, selectedEvent, setLocalSelectedEvent, updateFlag, setUpdateFlag } = useEvents(); // Import event creation and update methods
+const EventDrawer = ({ onClose, isOpen }) => {
+    const { createNewEvent, updateExistingEvent, selectedEvent, updateFlag, fetchEventsFromAPI, colorOptions } = useEvents();
     const [errorMessages, setErrorMessages] = useState('');
 
+    const { token } = useAuth(); // We don't need all of `AuthContext`, just the token here
+    
     // Validation Schema using Yup
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Event Name is required'),
+        date: Yup.string().required('Date is required'),  // Required for combining date and time
         start_time: Yup.string().required('Start time is required'),
         end_time: Yup.string().required('End time is required'),
-        zip_code: Yup.number(),
+        zip_code: Yup.string(),
         state: Yup.string(),
         notes: Yup.string(),
         color_id: Yup.number().required('Please select a color'),
     });
-
-    const normalizeDate = (date) => {
-        const newDate = new Date(date);
-        newDate.setSeconds(0, 0);  // Zero out seconds and milliseconds
-        return newDate;
-    };
     
 
-    const formatDateTime = (date, time) => {
-        // Create a Date object from the date and time
-        const dateTime = new Date(`${date}T${time}:00`);
-
-        // Return the formatted date as YYYY-MM-DD HH:MM:SS
-        return `${dateTime.getFullYear()}-${(dateTime.getMonth() + 1).toString().padStart(2, '0')}-${dateTime.getDate().toString().padStart(2, '0')} ${dateTime.getHours().toString().padStart(2, '0')}:${dateTime.getMinutes().toString().padStart(2, '0')}:${dateTime.getSeconds().toString().padStart(2, '0')}`;
+    // Helper to combine date and time and get them from stamp
+    const combineDateAndTime = (date, time) => {
+        return `${date}T${time}:00`;
     };
-
-    const getDateFromDateTime = (dateTime) => {
-        return dateTime ? dateTime.split('T')[0] : ''
-    };
-
-    const getTimeFromDateTime = (dateTime) => {
-        console.log('Beginning Time:', dateTime);
-        return dateTime ? dateTime.split('T')[1] : '';
-    };
-
-    // Handle closing the drawer and resetting the form
-    const handleCloseDrawer = () => {
-        if (formikRef.current) {
-            formikRef.current.resetForm();
-        }
-        setIsDrawerOpen(false);
-    };
+    const getDateFromDateTime = (dateTime) => dateTime ? new Date(dateTime).toISOString().split('T')[0] : '';
+    const getTimeFromDateTime = (dateTime) => dateTime ? new Date(dateTime).toISOString().split('T')[1].slice(0, 5) : '';
     
     // Function to handle saving the event (either create or update)
     const handleSaveEvent = async (values, { setSubmitting, resetForm }) => {
         setSubmitting(true);
         setErrorMessages('');
+        console.log('Formik values:', values);
 
         try {
-            const updatedStartTime = formatDateTime(values.date, values.start_time);
-            const updatedEndTime = formatDateTime(values.date, values.end_time);
+            const formattedStartTime = combineDateAndTime(values.date, values.start_time);
+            const formattedEndTime = combineDateAndTime(values.date, values.end_time);
 
-            if (updateFlag) {
+            const { date, notification, share_with_friends, ...eventData } = values;
+
+            if (updateFlag && selectedEvent) {
                 // Update existing event
                 const updatedData = {
-                    name: values.name,
-                    street: values.street,
-                    zip_code: values.zip_code,
-                    state: values.state,
-                    start_time: updatedStartTime,
-                    end_time: updatedEndTime,
-                    notes: values.notes,
-                    color_id: values.color_id,
+                    ...eventData, 
+                    start_time: formattedStartTime,
+                    end_time: formattedEndTime,
                 };
-
+                console.log('Updating- updatedData',updatedData)
                 await updateExistingEvent(selectedEvent.id, updatedData);
             } else {
                 // Create new event
                 const newEventData = {
-                    name: values.name,
-                    street: values.street,
-                    zip_code: values.zip_code,
-                    state: values.state,
-                    start_time: updatedStartTime,
-                    end_time: updatedEndTime,
-                    notes: values.notes,
-                    color_id: values.color_id,
+                    ...eventData,
+                    start_time: formattedStartTime,
+                    end_time: formattedEndTime,
                 };
-
+                console.log('Creating- newEventData',newEventData)
                 await createNewEvent(newEventData);
             }
 
-            handleCloseDrawer();  // Close the drawer after saving
+            // Close the drawer and reset the form after successful save
             resetForm();  // Reset form values
-            fetchEventsFromAPI();  // Refresh events
+            onClose();  // Close the drawer
+            fetchEventsFromAPI();  // Refresh events list
         } catch (error) {
             console.error('Error saving event:', error);
             setErrorMessages('Error saving event. Please try again.');
@@ -113,149 +84,131 @@ const EventDrawer = ({ setIsDrawerOpen, handleUpdateEvent, isOpen }) => {
         }
     };
 
+    // Prevent click inside the drawer from closing it
+    const handleDrawerClick = (e) => {
+        e.stopPropagation();  // Prevents the event from bubbling up to the overlay
+    };
+
     return (
-        <div className={`drawer-overlay ${isOpen ? 'open' : ''}`} onClick={handleCloseDrawer}>
-            <div className={`custom-event-drawer ${isOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
-                {/* Drawer Header */}
-                <div className="drawer-header-event">
-                    <h3>{selectedEvent ? 'Edit Event' : 'Create Event / Activity'}</h3>
-                    <Icon icon="mdi:close" className="close-icon-event" onClick={handleCloseDrawer} />
+        // isOpen && (
+        <div className={`event-drawer-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
+            <div className={`event-custom-drawer ${isOpen ? 'open' : ''}`} onClick={handleDrawerClick}>
+                <div className="event-drawer-header">
+                    {console.log('isOpen',isOpen)}
+                    <h3>{updateFlag ? 'Edit Event' : 'Create Event'}</h3>
+                    <Icon icon="mdi:close" className="event-close-icon" onClick={onClose} />
                 </div>
 
                 {/* Formik Form */}
                 <Formik
-                    
                     initialValues={{
                         name: selectedEvent?.name || '',
+                        date: getDateFromDateTime(selectedEvent?.start_time) || '',
+                        start_time: getTimeFromDateTime(selectedEvent?.start_time) || '',
+                        end_time: getTimeFromDateTime(selectedEvent?.end_time) || '',
                         street: selectedEvent?.street || '',
                         zip_code: selectedEvent?.zip_code || '',
                         state: selectedEvent?.state || '',
-                        start_time: selectedEvent?.start_time ? selectedEvent.start_time.split('T')[1] : '', 
-                        end_time: selectedEvent?.end_time ? selectedEvent.end_time.split('T')[1] : '', 
-                        notes: selectedEvent?.notes || '',
-                        date: getDateFromDateTime(selectedEvent?.start_time) || '', 
                         color_id: selectedEvent?.color_id || '',
+                        notes: selectedEvent?.notes || '',
                     }}
                     validationSchema={validationSchema}
                     enableReinitialize={true} // Allow reinitializing the form when eventData changes
                     onSubmit={handleSaveEvent}
-                    innerRef={formikRef}
                 >
                     {({ values, isSubmitting, setFieldValue }) => (
-                        <Form className="event-form-event">
-                            {/* Event Name Field */}
-                            <div className="form-field-event">
-                                <label htmlFor="name" className="form-label-event">Event Name</label>
-                                <Field
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    className={`form-input-event`}
-                                />
-                                <ErrorMessage name="name" component="div" className="error-message" />
+                        <Form className="event-form">
+                            {/* Event Name */}
+                            <div className="event-form-field">
+                                <label htmlFor="name" className="event-form-label">Event Name</label>
+                                <Field id="name" name="name" type="text" className="event-form-input" />
+                                <ErrorMessage name="name" component="div" className="event-error-message" />
                             </div>
 
-                            {/* Date Picker */}
-                            <div className="form-field-event">
-                                <label htmlFor="date" className="form-label-event">Date</label>
-                                <Field
-                                    id="date"
-                                    name="date"
-                                    type="date"
-                                    className={`form-input-event`}
-                                />
-                                <ErrorMessage name="date" component="div" className="error-message" />
-                            </div>
-
-                            {/* Time Fields */}
-                            <div className="form-row-event">
-                                <div className="form-field-event half-width-event">
-                                    <label htmlFor="start_time" className="form-label-event">From</label>
-                                    <Field
-                                        name="start_time"
-                                        type="time"
-                                        className={`form-input-event`}
-                                    />
-                                    <ErrorMessage name="start_time" component="div" className="error-message" />
+                            {/* Date and Time - Single Row */}
+                            <div className="event-form-field date-time-row">
+                                <div className="event-date-time">
+                                    <label htmlFor="date" className="event-form-label">Date</label>
+                                    <Field id="date" name="date" type="date" className="event-form-input" />
                                 </div>
-                                <div className="form-field-event half-width-event">
-                                    <label htmlFor="end_time" className="form-label-event">To</label>
-                                    <Field
-                                        name="end_time"
-                                        type="time"
-                                        className={`form-input-event`}
-                                    />
-                                    <ErrorMessage name="end_time" component="div" className="error-message" />
+                                <div className="event-time">
+                                    <label htmlFor="start_time" className="event-form-label">Time</label>
+                                    <Field name="start_time" type="time" className="event-form-input" />
+                                </div>
+                                <div className="event-time">
+                                    <label htmlFor="end_time" className="event-form-label">To</label>
+                                    <Field name="end_time" type="time" className="event-form-input" />
+                                </div>
+                            </div>
+
+                            {/* Zip Code and State */}
+                            <div className="event-form-field">
+                                <div className="event-form-row">
+                                    <div className="event-form-field half-width-event">
+                                        <label htmlFor="zip_code" className="event-form-label">Zip Code</label>
+                                        <Field id="zip_code" name="zip_code" type="text" className="event-form-input" />
+                                        <ErrorMessage name="zip_code" component="div" className="event-error-message" />
+                                    </div>
+                                    <div className="event-form-field half-width-event">
+                                        <label htmlFor="state" className="event-form-label">State</label>
+                                        <Field id="state" name="state" type="text" className="event-form-input" />
+                                        <ErrorMessage name="state" component="div" className="event-error-message" />
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Color Picker */}
-                            <div className="form-field-event">
-                                <label className="form-label-event">Select Event Color</label>
-                                <div className="color-picker-event">
+                            <div className="event-form-field">
+                                <label className="event-form-label">Select Event Color</label>
+                                <div className="event-color-picker">
                                     {colorOptions.map((colorOption) => (
                                         <div
                                             key={colorOption.id}
-                                            className={`color-circle-event ${values.color_id === colorOption.id ? 'selected-event' : ''}`}
+                                            className={`event-color-circle ${values.color_id === colorOption.id ? 'event-selected' : ''}`}
                                             style={{ backgroundColor: colorOption.color }}
-                                            onClick={() => setFieldValue("color_id", colorOption.id)} // Set color_id when clicked
-                                        ></div>
+                                            onClick={() => setFieldValue('color_id', colorOption.id)}  // Update color_id on click
+                                        />
                                     ))}
                                 </div>
-                                <ErrorMessage name="color_id" component="div" className="error-message" />
+                                <ErrorMessage name="color_id" component="div" className="event-error-message" />
+                            </div>
+
+                            {/* Toggles */}
+                            <div className="event-toggle-section">
+                                <label className="event-form-label">Turn On Notification</label>
+                                <label className="toggle-switch">
+                                    <Field type="checkbox" name="notification" />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            <div className="event-toggle-section">
+                                <label className="event-form-label">Share with friends</label>
+                                <label className="toggle-switch">
+                                    <Field type="checkbox" name="share_with_friends" />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
 
                             {/* Address Field */}
-                            <div className="form-field-event">
-                                <label htmlFor="street" className="form-label-event">Street Address</label>
-                                <Field
-                                    name="street"
-                                    type="text"
-                                    className={`form-input-event`}
-                                />
-                                <ErrorMessage name="street" component="div" className="error-message" />
+                            <div className="event-form-field">
+                                <label htmlFor="street" className="event-form-label">Street Address</label>
+                                <Field name="street" type="text" className="event-form-input" />
+                                <ErrorMessage name="street" component="div" className="event-error-message" />
                             </div>
 
-                            {/* Zip Code and State Fields */}
-                            <div className="form-row-event">
-                                <div className="form-field-event half-width-event">
-                                    <label htmlFor="zip_code" className="form-label-event">Zip Code</label>
-                                    <Field
-                                        name="zip_code"
-                                        type="text"
-                                        className={`form-input-event`}
-                                    />
-                                    <ErrorMessage name="zip_code" component="div" className="error-message" />
-                                </div>
-
-                                <div className="form-field-event half-width-event">
-                                    <label htmlFor="state" className="form-label-event">State</label>
-                                    <Field
-                                        name="state"
-                                        type="text"
-                                        className={`form-input-event`}
-                                    />
-                                    <ErrorMessage name="state" component="div" className="error-message" />
-                                </div>
-                            </div>
-
-                            {/* Notes Field */}
-                            <div className="form-field-event">
-                                <label htmlFor="notes" className="form-label-event">Notes</label>
-                                <Field
-                                    as="textarea"
-                                    name="notes"
-                                    className={`form-input-event`}
-                                />
-                                <ErrorMessage name="notes" component="div" className="error-message" />
+                            {/* Notes Field - Expand Rows */}
+                            <div className="event-form-field">
+                                <label htmlFor="notes" className="event-form-label">Add Notes</label>
+                                <Field as="textarea" name="notes" className="event-form-input" style={{ height: '150px' }} />
+                                <ErrorMessage name="notes" component="div" className="event-error-message" />
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="drawer-buttons-event">
-                                <button type="button" className="cancel-btn-event" onClick={handleCloseDrawer}>
+                            <div className="event-drawer-buttons">
+                                <button type="button" className="event-cancel-btn" onClick={onClose}>
                                     Cancel
                                 </button>
-                                <button type="submit" className="save-btn-event" disabled={isSubmitting}>
+                                <button type="submit" className="event-save-btn" disabled={isSubmitting}>
                                     Save
                                 </button>
                             </div>
@@ -264,7 +217,8 @@ const EventDrawer = ({ setIsDrawerOpen, handleUpdateEvent, isOpen }) => {
                 </Formik>
             </div>
         </div>
-    );
+        )
+    // );
 };
 
 export default EventDrawer;

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import '../global.css';
+import { api } from '../utils/eventApi';
 
 const Pagination = ({ totalRecords, recordsPerPage = 10 }) => {
     const [currentPage, setCurrentPage] = useState(1);

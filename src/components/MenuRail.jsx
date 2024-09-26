@@ -20,6 +20,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ImGift } from 'react-icons/im';
+import { api } from '../utils/eventApi';
 
 const MenuRail = ({ isMobile, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark, currUser }) => {
     const navigate = useNavigate();

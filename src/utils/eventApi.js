@@ -4,7 +4,7 @@ import { backEndUrl } from "./config";
 const basePath = `${backEndUrl}/event/`; // Set '/event/' as the base path for the routes
 
 // Create an Axios instance with the base URL
-const api = axios.create({
+export const api = axios.create({
     baseURL: basePath,
     headers: {
         "Content-Type": "application/json",
@@ -105,3 +105,4 @@ export const fetchEventsFromAPI = async (view = "month", date = new Date()) => {
         setLoading(false); // Stop loading after fetching completes
     }
 };
+
