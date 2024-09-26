@@ -30,7 +30,8 @@ const Login = ({ setIsRailOpen }) => {
         setLocalToken,
         clearAllStateAndLocalStorage,
         loading,
-        setLoading
+        setLoading,
+        setFireUser,
     } = useAuth();
 
     const { currEvents, setCurrEvents, setLocalCurrEvent } = useEvents();
@@ -40,40 +41,50 @@ const Login = ({ setIsRailOpen }) => {
 
     // Handle email and password login
     const handleEmailPasswordLogin = async (values, setSubmitting) => {
-        try {
             setLoading(true);
             setServerError(null);
-            setSubmitting(true)// Reset server error state
-            console.log('Logging in with email and password:', values);
-            const payload = {
-                owner_email: values.email,
-                password: values.password,
-            };
-
-            // Backend email/password Login
-            const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            const { auth_token: loginToken } = res.data;
-            console.log('Login token:', loginToken);
-            setLocalToken(loginToken);
-
-            // Fetch user data using token
-            const loggedInUser = await fetchUserDataWithToken(loginToken);
-            setLocalCurrUser(loggedInUser);
-            console.log('Logged in user:', loggedInUser);
-            setAuthed(true);
-            setLoading(false);
-
-        } catch (err) {
-            console.error('Error logging in:', err);
-            setServerError('Failed to login. Please check your credentials.');
-            setLoading(false);
-        } finally {
-            setSubmitting(false);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+            const user = userCredential.user;
+            console.log("Logged in user:", user);
+            setFireUser(user);
+            // You can now store the user information or token if needed
+        } catch (error) {
+            console.error("Error logging in to Firebase:", error.message);
+            setServerError("Failed to login to Firebase. Please check your credentials.");
         }
-    };
+
+        try {
+        console.log('Logging into backend with email and password:', values);
+        const payload = {
+            owner_email: values.email,
+            password: values.password,
+        };
+
+
+        const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        const { auth_token: loginToken } = res.data;
+        console.log('Login token:', loginToken);
+        setLocalToken(loginToken);
+
+        // Fetch user data using token
+        const loggedInUser = await fetchUserDataWithToken(loginToken);
+        setLocalCurrUser(loggedInUser);
+        console.log('Logged in user:', loggedInUser);
+        setAuthed(true);
+        setLoading(false);
+
+    } catch (err) {
+        console.error('Error logging into backend:', err);
+        setServerError('Failed to login. Please check your backend credentials.');
+        setLoading(false);
+    } finally {
+        setSubmitting(false);
+    }
+};
 
     // Validation schema for login form
     const validationSchema = Yup.object().shape({
