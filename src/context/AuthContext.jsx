@@ -76,8 +76,6 @@ export const AuthProvider = ({ children }) => {
             return profile
         } catch (err) {
             console.error('Error fetching user data:', err);
-            clearAllLocalStorage();
-            navigate('/login');
         }
     };
 

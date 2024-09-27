@@ -543,7 +543,7 @@ const DogProfileView = ({ isMobile }) => {
                                                             transform: 'translate(-50%, -50%)',
                                                             minWidth: 400,
                                                             bgcolor: 'background.paper',
-                                                            borderRadius: 2,
+                                                            borderRadius: 1,
                                                             boxShadow: 24,
                                                             p: 4,
                                                         }}
@@ -554,16 +554,18 @@ const DogProfileView = ({ isMobile }) => {
                                                         <Typography id="ask-for-confirmation" sx={{ mt: 2 }}>
                                                             This action cannot be undone.
                                                         </Typography>
-                                                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
+                                                        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', }}>
                                                             <Button
-                                                                variant="contained"
-                                                                color="primary"
+                                                                sx={{ backgroundColor: 'secondary.main' }}
+                                                                variant="outlined"
+                                                                color="grey"
                                                                 onClick={handleDeleteProfile}
                                                                 disabled={submitting}
                                                             >
                                                                 {submitting ? 'Deleting...' : 'Confirm'}
                                                             </Button>
                                                             <Button
+                                                                sx={{ boxShadow: 'none', borderRadius: '2px', color: 'black', border: '1px solid grey' }}
                                                                 variant="outlined"
                                                                 color="secondary"
                                                                 onClick={handleCloseModal}

@@ -189,7 +189,7 @@ const RecordsPage = () => {
                 </Box>
             )}
 
-            <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey', borderRadius: "2px", border: 'none', boxShadow: 'none' }}>
+            <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey', borderRadius: "2px", boxShadow: 'none' }}>
                 <Table>
                     <TableHead>
                         <TableRow>

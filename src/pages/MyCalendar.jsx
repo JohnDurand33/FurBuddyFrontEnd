@@ -5,7 +5,8 @@ import WeekView from '../components/WeekView';
 import MonthView from '../components/MonthView';
 import EventDrawer from '../components/EventDrawer';
 import EventModal from '../components/EventModal';
-import { isSameDay, isSameWeek, isSameMonth, parseISO } from 'date-fns';
+import {Modal, Box, Button, Typography } from '@mui/material';
+import { isSameDay, isSameWeek, isSameMonth, parseISO, set } from 'date-fns';
 import '../MyCalendar.css';
 import { useEvents } from '../context/EventsContext';
 
@@ -15,6 +16,8 @@ const MyCalendar = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for EventDrawer
     const [isModalOpen, setIsModalOpen] = useState(false);  // State for EventModal
     const [hoveredEvent, setHoveredEvent] = useState(null); // State for hovered event
+    const [isWarningOpen, setIsWarningOpen] = useState(false); // State for warning modal
+    const [submitting, setSubmitting] = useState(false); // State for delete confirmation
 
     const {
         currEvents,
@@ -59,6 +62,13 @@ const MyCalendar = () => {
             setLocalSelectedEvent({});
         }
     };
+
+    const handleWarningConfirm = () => {
+        setSubmitting(true);
+        setIsWarningOpen(false);
+        handleDeleteEvent();
+        setSubmitting(false);
+    }
 
     // Handle closing the modal
     const handleModalClose = () => {
@@ -156,7 +166,53 @@ const MyCalendar = () => {
                 onClose={handleModalClose}
                 onEdit={handleEditEvent}
                 onDelete={handleDeleteEvent}
+                onClickDelete={()=>setIsWarningOpen(true)}
             />
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={isWarningOpen}
+                aria-labelledby="delete-confirmation-modal"
+                aria-describedby="ask-for-confirmation"
+            >
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        minWidth: 400,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                        boxShadow: 24,
+                        p: 4,
+                    }}
+                >
+                    <Typography id="delete-confirmation-modal" variant="h6" component="h2">
+                        Are you sure you want to delete this event?
+                    </Typography>
+                    <Typography id="ask-for-confirmation" sx={{ mt: 2 }}>
+                        This action cannot be undone.
+                    </Typography>
+                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', }}>
+                        <Button
+                            sx={{ backgroundColor: 'secondary.main' }}
+                            variant="outlined"
+                            color="grey"
+                            onClick={handleWarningConfirm}
+                        >
+                            {submitting ? 'Deleting...' : 'Confirm'}
+                        </Button>
+                        <Button
+                            sx={{ boxShadow: 'none', borderRadius: '2px', color: 'black', border: '1px solid grey' }}
+                            variant="outlined"
+                            color="secondary"
+                            onClick={()=>setIsWarningOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
         </div>
     );
 };

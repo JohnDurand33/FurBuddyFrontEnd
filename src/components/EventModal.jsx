@@ -19,7 +19,7 @@ const formatDisplayDate = (dateTime) => {
     return dateTime.split('T')[0]; // Extract the date part (YYYY-MM-DD)
 };
 
-const EventModal = ({ onClose, isOpen, onEdit, onDelete }) => {
+const EventModal = ({ onClose, isOpen, onEdit, onDelete, onClickDelete }) => {
     const { selectedEvent, setLocalSelectedEvent, updateFlag, setUpdateFlag } = useEvents();
 
     // Ensure selectedEvent is valid before trying to access its properties
@@ -35,7 +35,7 @@ const EventModal = ({ onClose, isOpen, onEdit, onDelete }) => {
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
                         <h3>{selectedEvent.name}</h3>
-                        <button className="close-btn" onClick={onClose}>
+                    <button className="close-btn" onClick={onClose}>
                             <IoMdClose size={24} />
                         </button>
                     </div>
@@ -78,7 +78,7 @@ const EventModal = ({ onClose, isOpen, onEdit, onDelete }) => {
                     
 
                     <div className="modal-footer">
-                    <button className="delete-btn" onClick={onDelete}>Delete</button>
+                    <button className="delete-btn" onClick={onClickDelete}>Delete</button>
                         <button className="edit-btn"onClick={onEdit}>Edit</button>
 
                     
