@@ -21,10 +21,13 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { ImGift } from 'react-icons/im';
 import { api } from '../utils/eventApi';
+import { useRecords } from '../context/RecordsContext';
 
 const MenuRail = ({ isMobile, toggleRail, isCollapsed, toggleCollapse, toggleTheme, isDark, currUser }) => {
     const navigate = useNavigate();
+    const { applyDogFilter, setLocalCurrDogRecords } = useRecords();  // Get auth and state functions
     const { authed, token, currDog, handleLogout, dogProfiles, setLocalCurrDog, logout } = useAuth();  // Get auth and state functions
+
     const theme = useTheme();
     const [isPetsOpen, setIsPetsOpen] = useState(true);
     const [loading, setLoading] = useState(true);  // State for managing loading
@@ -44,8 +47,14 @@ const MenuRail = ({ isMobile, toggleRail, isCollapsed, toggleCollapse, toggleThe
         }
     };
 
-    const handleCurrDogChange = (dog) => {
-        setLocalCurrDog(dog);
+    const handleCurrDogClick = (dog = currDog, records = []) => {
+        if (dog && dog.id !== currDog.id) setLocalCurrDog(dog);
+        if (dog && dog.id !== currDog.id && records.length > 0) {
+            const filteredRecords = applyDogFilter(records);
+            setLocalCurrDogRecords(filteredRecords);
+        }
+        
+        
     };
 
     const handleAddDog = () => {
@@ -151,7 +160,7 @@ const MenuRail = ({ isMobile, toggleRail, isCollapsed, toggleCollapse, toggleThe
                             console.log('Rendering dog profiles', dogProfiles),
                             dogProfiles.map(dog => (
                                 <ListItemButton
-                                    onClick={() => handleCurrDogChange(dog)}
+                                    onClick={() => handleCurrDogClick(dog)}
                                     key={dog.id}
                                     sx={{
                                         marginBottom: '12px',

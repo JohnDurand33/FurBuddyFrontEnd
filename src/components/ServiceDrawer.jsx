@@ -246,15 +246,13 @@ const ServiceDrawer = ({ isOpen, setShowDrawer, serviceData = null, mode = 'crea
                             </div>
 
                             <div className="form-buttons">
-                                <Button
+                                <button type="submit" className="orange-button" style={{width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px grey', marginRight: '30px'}}
                                     type="submit"
-                                    variant="contained"
-                                    color="primary"
                                     disabled={isSubmitting}
-                                    className="save-btn"
+                                    className="orange-button"
                                 >
                                     {isSubmitting ? (isEditMode ? 'Updating...' : 'Adding...') : isEditMode ? 'Update Service' : 'Add Service'}
-                                </Button>
+                                    </button>
                                     <Button variant="outlined" onClick={() => handleCloseDrawer()} className="cancel-btn">
                                     Cancel
                                 </Button>

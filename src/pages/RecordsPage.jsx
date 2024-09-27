@@ -10,6 +10,9 @@ import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ensureArray } from '../utils/helpers';
 import { api } from '../utils/eventApi';
+import chevronUpArrow from '@iconify/icons-mdi/chevron-up';
+import chevronDownArrow from '@iconify/icons-mdi/chevron-down';
+import { Icon } from '@iconify/react';
 
 const RecordsPage = () => {
     const { currDog, authed, token, logout, currUser } = useAuth();
@@ -51,7 +54,11 @@ const RecordsPage = () => {
             setFinalDisplayedRecords([]);
 
         }
-    }, [currDogRecords, sortConfig]);
+    }, [currDogRecords, sortConfig, currDog]);
+
+    const applyFilter = (records) => {
+        return records
+        };
 
     useEffect(() => {
         // Apply pagination whenever `page`, `limit`, or `intermediaryRecords` change
@@ -101,10 +108,7 @@ const RecordsPage = () => {
         });
     };
 
-    const applyFilter = (records) => {
-        // Implement filtering logic here if necessary, for now, it's a pass-through
-        return records;
-    };
+    
 
     const handleSortRequest = (key) => {
         
@@ -152,31 +156,6 @@ const RecordsPage = () => {
         initialRecords();
     }, [currDog]);
 
-    // Fetch dog profiles after login
-    useEffect(() => {
-        const initialDogs = async () => {
-            setLoading(true);
-            if (authed && token && currUser) {
-                try {
-                    const hasDogs = await fetchCurrDogProfiles(token);
-                    if (!hasDogs) {
-                        console.log('Login useEffect: No dog profiles found redirecting to /dogs/new');
-                    } else {
-                        console.log('Login useEffect: Dog profiles found redirecting to /dogs/view');
-                    }
-                } catch (error) {
-                    console.error('Error fetching profiles:', error);
-                    setLoading(false);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
-            }
-        };
-        initialDogs();
-    }, [currUser]);
-
 
     return (
         <Box sx={{ padding: 3 }}>
@@ -185,8 +164,8 @@ const RecordsPage = () => {
             </Typography>
 
             <Grid container justifyContent="space-between" alignItems="center">
-                <Grid item>
-                    <Select value={limit} onChange={handleLimitChange}>
+                <Grid item >
+                    <Select value={limit} onChange={handleLimitChange} sx={{ height: 40, widht: 'auto',mb:-7 }}>
                         <MenuItem value={10}>10</MenuItem>
                         <MenuItem value={25}>25</MenuItem>
                         <MenuItem value={50}>50</MenuItem>
@@ -194,11 +173,11 @@ const RecordsPage = () => {
                     </Select>
                 </Grid>
                 <Grid item>
-                    <button type="button" className="orange-button" style={{width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px grey', marginRight: '30px'}}
+                    <button type="button" className="orange-button" style={{width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px solid grey', marginRight: '30px'}}
                     onClick={handleAddRecord} >
                         Add
                     </button>
-                    <button type="button" className="white-button" style={{ width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px grey' }} onClick={() => setShowFilterModal(true)}>
+                    <button type="button" className="white-button" style={{ width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px solid grey', }} onClick={() => setShowFilterModal(true)}>
                         Filter
                     </button>
                 </Grid>
@@ -210,21 +189,20 @@ const RecordsPage = () => {
                 </Box>
             )}
 
-            <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey' }}>
+            <TableContainer component={Paper} sx={{ mt: 3, border: '1px solid lightgrey', borderRadius: "2px", border: 'none', boxShadow: 'none' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
                             <TableCell onClick={() => handleSortRequest('service_date')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
-                                Service Date
+                                <Box sx={{ display: 'flex', flexDirection: 'row', width: 'auto' }} >{'Service Date'} <Box sx={{ display: 'flex', flexDirection: "column", ml:1}}><Icon icon={chevronUpArrow} color={'blue'} /><Icon icon={chevronDownArrow} color={'blue'} /></Box></Box>
                             </TableCell>
-                            <TableCell onClick={() => handleSortRequest('category_name')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
-                                Category
+                            <TableCell onClick={() => handleSortRequest('category_name')} sx={{ cursor: 'pointer', fontWeight: 600 }}><Box sx={{ display: 'flex', flexDirection: 'row', width: 'auto' }} >Category <Box sx={{ display: 'flex', flexDirection: "column", ml:1}}><Icon icon={chevronUpArrow} color={'blue'} /><Icon icon={chevronDownArrow} color={'blue'} /></Box></Box>
                             </TableCell>
                             <TableCell onClick={() => handleSortRequest('service_type_name')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
-                                Service Type
+                                <Box sx={{ display: 'flex', flexDirection: 'row' }} >Service Type <Box sx={{ display: 'flex', flexDirection: "column", ml: 1 }}><Icon icon={chevronUpArrow} color={'blue'} /><Icon icon={chevronDownArrow} color={'blue'}/></Box></Box>
                             </TableCell>
                             <TableCell onClick={() => handleSortRequest('follow_up_date')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
-                                Follow-Up
+                                <Box sx={{ display: 'flex', flexDirection: 'row' }} >Follow-Up <Box sx={{ display: 'flex', flexDirection: "column", ml: 1 }}><Icon icon={chevronUpArrow} color={'blue'} /><Icon icon={chevronDownArrow} color={'blue'} /></Box></Box>
                             </TableCell>
                             <TableCell onClick={() => handleSortRequest('fee')} sx={{ cursor: 'pointer', fontWeight: 600 }}>
                                 Fee
@@ -258,12 +236,13 @@ const RecordsPage = () => {
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
                 <Typography>Showing {finalDisplayedRecords.length} of {totalRecords} records</Typography>
                 <Box>
-                    <Button disabled={page === 1} onClick={() => handlePageChange(page - 1)} sx={{ mr: 2 }}>
+                    <button type="button" style={{ backgroundColor: page * limit >= totalRecords ? '#ccc' : '#FFCA00', width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px solid grey', marginRight: '30px'}}
+                    onClick={() => handlePageChange(page - 1)} >
                         Previous
-                    </Button>
-                    <Button disabled={page * limit >= totalRecords} onClick={() => handlePageChange(page + 1)}>
+                    </button>
+                    <button type="button" style={{ backgroundColor: page * limit >= totalRecords ? '#ccc' : 'white', width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px solid grey', }} onClick={() => handlePageChange(page + 1)}>
                         Next
-                    </Button>
+                    </button>
                 </Box>
             </Box>
 

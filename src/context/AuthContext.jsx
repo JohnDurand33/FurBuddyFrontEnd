@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        clearAllLocalStorage();
+        clearAllStateAndLocalStorage();
         navigate('/login');
     };
 
@@ -135,12 +135,7 @@ export const AuthProvider = ({ children }) => {
 
     
 
-    useEffect(() => {
-        if (!authed) {
-            clearAllStateAndLocalStorage();
-            navigate('/login');
-        }
-    }, [authed, currUser]);
+    
 
     
 

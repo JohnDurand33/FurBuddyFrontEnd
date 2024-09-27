@@ -70,12 +70,12 @@ const Login = ({ setIsRailOpen }) => {
         console.log('Login response:', res.data);
         res.data.auth_token;
             console.log('Login token:', res.data.auth_token);
-            setLocalToken(res.data.auth_token);
+            await setLocalToken(res.data.auth_token);
             
 
         // Fetch user data using token
         const loggedInUser = await fetchUserDataWithToken(res.data.auth_token);
-        setLocalCurrUser(loggedInUser);
+        await setLocalCurrUser(loggedInUser);
         console.log('Logged in user:', loggedInUser);
 
         // Fetch dog profiles using token

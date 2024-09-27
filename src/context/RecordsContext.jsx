@@ -122,6 +122,10 @@ export const RecordsProvider = ({ children }) => {
             return [];
         }
     };
+
+    const applyDogFilter = (records) => records.filter((record) => {
+        record.profile_id = currDog.id;
+    });
         
     useEffect(() => {
         setLoading(true);
@@ -151,7 +155,8 @@ export const RecordsProvider = ({ children }) => {
             fetchCurrDogRecords, //fetches and returns records whether or not they are empty
             refetchCurrDogRecords, //sets and returns records
             loading,
-            error
+            error,
+            applyDogFilter,
         }}>
             {children}
         </RecordsContext.Provider>

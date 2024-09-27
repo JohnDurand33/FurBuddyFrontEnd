@@ -579,7 +579,6 @@ const DogProfileView = ({ isMobile }) => {
                                 </Form>
                             )}
                         </Formik>
-                            
                     </>
                 )}
             </Grid>

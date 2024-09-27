@@ -155,13 +155,14 @@ tbody tr:hover {
 }
 
 .white-button {
-    --variant-containedBg: lightgrey;
+    --variant-containedBg: white;
     --variant-containedColor: #000000;
+    border: 1px solid black;
 }
 
 .white-button {
     background-color: var(--variant-containedBg);
-    color: var(--variant-containedColor);
+    color: var(--variant-containedColor)
 }
 
 /* IE 10+ CSS */
