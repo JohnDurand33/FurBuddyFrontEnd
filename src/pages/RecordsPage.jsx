@@ -13,7 +13,7 @@ import { api } from '../utils/eventApi';
 
 const RecordsPage = () => {
     const { currDog, authed, token, logout, currUser } = useAuth();
-    const { currDogRecords, setLocalCurrDogRecords, refetchCurrDogRecords } = useRecords();
+    const { currDogRecords, setLocalCurrDogRecords, fetchCurrDogRecords } = useRecords();
     const [showDrawer, setShowDrawer] = useState(false);
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [drawerMode, setDrawerMode] = useState('create');
@@ -33,7 +33,7 @@ const RecordsPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        refetchCurrDogRecords();
+        fetchCurrDogRecords();
     }, [currDog, authed, token]);
 
     useEffect(() => {
@@ -194,12 +194,13 @@ const RecordsPage = () => {
                     </Select>
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" onClick={handleAddRecord} sx={{ mr: 2 }}>
-                        + Add
-                    </Button>
-                    <Button variant="outlined" onClick={() => setShowFilterModal(true)}>
+                    <button type="button" className="orange-button" style={{width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px grey', marginRight: '30px'}}
+                    onClick={handleAddRecord} >
+                        Add
+                    </button>
+                    <button type="button" className="white-button" style={{ width: 140, height: 45, fontSize: 16, fontWeight: 600, borderRadius: '4px', border: '1px grey' }} onClick={() => setShowFilterModal(true)}>
                         Filter
-                    </Button>
+                    </button>
                 </Grid>
             </Grid>
 

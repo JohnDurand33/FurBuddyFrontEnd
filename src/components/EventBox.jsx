@@ -1,50 +1,57 @@
-import React, { useState } from 'react';
-import EventModal from './EventModal'; // Assuming you already have an EventModal component
-import './EventBox.css'; // Custom CSS for styling
+import React from 'react';
+import { parseISO, differenceInMinutes, getHours, getMinutes } from 'date-fns';
+import { useEvents } from '../context/EventsContext';
 
-const EventBox = ({ event, view, color_id }) => {
-    const [hovered, setHovered] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
+// Helper function to format event times
+const formatTime = (date) => {
+    const hour = date.getHours() === 0 ? 12 : date.getHours() % 12;
+    const period = date.getHours() < 12 ? 'AM' : 'PM';
+    return `${hour}:${date.getMinutes().toString().padStart(2, '0')} ${period}`;
+};
 
-    const handleHover = () => {
-        setHovered(true);
-        setSelectedEvent(event); // Set the selected event for the modal
+const EventBox = ({ event, onEventHover, onEventClick }) => {
+    const { colorOptions } = useEvents();
+
+    // Helper to get the background color from color_id
+    const getColorFromId = (colorId) => {
+        const color = colorOptions.find((color) => color.id === colorId);
+        return color ? color.backgroundColor : 'lightgrey'; // Default to light grey if no match
     };
 
-    const handleMouseLeave = () => {
-        setHovered(false);
-    };
+    const eventStart = parseISO(event.start_time); // Parse ISO string to Date object
+    const eventEnd = parseISO(event.end_time);     // Parse ISO string to Date object
 
-    // Define styles based on the `view` prop
-    const getBoxStyle = () => {
-        switch (view) {
-            case 'day':
-                return { width: '100%', height: '50px', backgroundColor: color_id };
-            case 'week':
-                return { width: '150px', height: '75px', backgroundColor: color_id };
-            case 'month':
-                return { width: '75px', height: '50px', backgroundColor: color_id };
-            default:
-                return { width: '100px', height: '50px', backgroundColor: color_id };
-        }
+    // Calculate the top position based on the event's start time
+    const startHour = getHours(eventStart);
+    const startMinutes = getMinutes(eventStart);
+    const topPosition = (startHour * 60 + startMinutes) * (90 / 60); // 90px per hour slot
+
+    // Calculate the event's duration in minutes and height in pixels
+    const durationInMinutes = differenceInMinutes(eventEnd, eventStart);
+    const height = (durationInMinutes / 60) * 90; // 90px per hour slot
+
+    // Event style based on top position and height
+    const eventStyle = {
+        position: 'absolute',
+        top: `${topPosition}px`,
+        height: `${height}px`,
+        width: '100%',
+        backgroundColor: event.color_id ? getColorFromId(event.color_id) : '#ffeb3b',
+        padding: '5px',
+        borderRadius: '4px',
+        zIndex: 1,
+        boxSizing: 'border-box',
     };
 
     return (
         <div
             className="event-box"
-            style={getBoxStyle()}
-            onMouseEnter={handleHover}
-            onMouseLeave={handleMouseLeave}
+            style={eventStyle}
+            onMouseEnter={() => onEventHover(event)}  // Trigger the hover function passed from DayView
+            onClick={() => { onEventClick(event) }}
         >
-            <div className="event-header">
-                {event.name}
-            </div>
-            <div className="event-times">
-                <span>FROM: {event.fromTime} </span>
-                <span>TO: {event.toTime} </span>
-            </div>
-
-            {hovered && <EventModal event={selectedEvent} />}
+            <strong>{event.name}</strong>
+            <p>{formatTime(eventStart)} - {formatTime(eventEnd)}</p>
         </div>
     );
 };

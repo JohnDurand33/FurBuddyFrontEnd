@@ -133,24 +133,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        const updatedOwnerProfiles = async () => {
-            try {
-                setLoading(true);
-                const hasDog = await fetchCurrDogProfiles(token);
-                if (!hasDog) {
-                    navigate('/dogs/new');
-                
-                } else {
-                    navigate('dogs/view')
-                
-                }
-            } finally {
-                    setLoading(false);
-                }
-        };
-    updatedOwnerProfiles();
-}, [authed, currUser, token]);  
+    
 
     useEffect(() => {
         if (!authed) {

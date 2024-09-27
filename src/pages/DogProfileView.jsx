@@ -29,7 +29,6 @@ const DogProfileView = ({ isMobile }) => {
 
     const { currUser, token, currDog, setCurrDog, setLocalCurrDog, fetchCurrDogProfiles } = useAuth();
 
-    
 
     const handleOpenModal = () => {
         setIsModalOpen(true);
@@ -108,7 +107,7 @@ const DogProfileView = ({ isMobile }) => {
                     },
                 }
             );
-
+            console.log('Update Dog Profile Response:', response.data);
             if (response.status === 200) {
                 await fetchCurrDogProfiles();
                 setIsEditing(false);
@@ -209,7 +208,7 @@ const DogProfileView = ({ isMobile }) => {
                                         <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? currDog.weight : ''}</Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
-                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>Fixed</Typography>
+                                        <Typography variant="subtitle1" sx={{ color: '#666666', fontSize: '1.2rem', pl: 3 }}>{currDog.sex === 'Male' ? 'Neutered' : currDog.sex === 'Female' ? 'Spayed': 'Fiexed'}</Typography>
                                         <Typography variant="body1" sx={{ color: '#333333', fontSize: '1.1rem', pl: 3 }}>{currDog ? (currDog.fixed ? 'Yes' : 'No') : ''}</Typography>
                                     </Grid>
                                     <Grid item xs={12} md={6}>
@@ -404,7 +403,7 @@ const DogProfileView = ({ isMobile }) => {
                                                             {touched.weight && errors.weight && <div style={{ color: 'red', paddingLeft: '20px' }}>{errors.weight}</div>}
                                                         </Grid>
                                                         <Grid item xs={12} md={6}>
-                                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>Fixed</label>
+                                                            <label style={{ display: 'block', marginBottom: '0.5rem', color: '#666666', fontSize: '1.2rem', pl: '20px' }}>{currDog.sex === 'Male' ? 'Neutered' : currDog.sex === 'Female' ? 'Spayed' : 'Fiexed'}</label>
                                                             <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px' }}>
                                                                 <Field type="radio" id="fixedYes" name="fixed" value="yes" style={{ marginRight: '0.5rem' }} />
                                                                 <label htmlFor="fixedYes" style={{ marginRight: '1rem' }}>Yes</label>

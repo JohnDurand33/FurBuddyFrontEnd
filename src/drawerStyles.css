@@ -45,18 +45,19 @@
 .form-field label {
     width: 100%;
     border-radius: 4px;
-    font-family: Arial, 'Roboto', sans-serif;  
-    font-size: 20px;  
-    font-weight: 600; 
-    margin-bottom: 10px; 
-    letter-spacing: 0; 
-    line-height: normal; 
+    font-family: Arial, "Roboto", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0;
+    line-height: normal;
     color: #333;
 }
 
-.form-input-1, .form-input-2 {
+.form-input-1,
+.form-input-2 {
     width: 100%;
-    padding: 8px; 
+    padding: 8px;
     height: 45px;
     border: 1px solid #ddd;
     border-radius: 2px;
@@ -66,18 +67,17 @@
 
 /* Removed from global.css and added here */
 .custom-drawer label {
-  font-size: 14px;
-  font-weight: bold;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .custom-drawer input,
 .custom-drawer select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 14px;
 }
 
 /* Fee and Follow-Up Date styling */
@@ -87,7 +87,7 @@
 }
 
 .form-input-2 {
-    width: 100%; 
+    width: 100%;
 }
 
 .form-input.error {
@@ -103,22 +103,22 @@
 /* Buttons container */
 .form-buttons {
     position: absolute;
-    bottom: 30px; 
+    bottom: 30px;
     left: 0;
     width: 100%;
-    padding: 0 40px; 
+    padding: 0 40px;
     display: flex;
-    justify-content: space-around; 
+    justify-content: space-around;
 }
 
 /* Specific button styling */
 .save-btn {
-    background-color: #F4A261;
+    background-color: #f4a261;
     color: black;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    width: 45%; 
+    width: 45%;
 }
 
 .save-btn:hover {
@@ -131,7 +131,7 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    width: 45%; 
+    width: 45%;
 }
 
 .cancel-btn:hover {

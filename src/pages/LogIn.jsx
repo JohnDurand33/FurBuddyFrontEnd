@@ -26,6 +26,7 @@ const Login = ({ setIsRailOpen }) => {
         currDogs,
         currDog,
         fetchUserDataWithToken,
+        fetchCurrDogProfiles,
         setAuthed,
         setToken,
         setLocalToken,
@@ -66,17 +67,28 @@ const Login = ({ setIsRailOpen }) => {
         const res = await axios.post(`${backEndUrl}/owner/login`, payload, {
             headers: { 'Content-Type': 'application/json' },
         });
-
-        const { auth_token: loginToken } = res.data;
-        console.log('Login token:', loginToken);
-        setLocalToken(loginToken);
+        console.log('Login response:', res.data);
+        res.data.auth_token;
+            console.log('Login token:', res.data.auth_token);
+            setLocalToken(res.data.auth_token);
+            
 
         // Fetch user data using token
-        const loggedInUser = await fetchUserDataWithToken(loginToken);
+        const loggedInUser = await fetchUserDataWithToken(res.data.auth_token);
         setLocalCurrUser(loggedInUser);
         console.log('Logged in user:', loggedInUser);
+
+        // Fetch dog profiles using token
+        const hasDogProfiles = await fetchCurrDogProfiles(res.data.auth_token);
+        console.log('fetchDogs response', hasDogProfiles);
+        if (hasDogProfiles) {
+            navigate('/dogs/view')
+        } else {
+            navigate('/dogs/new')
+        }
         setAuthed(true);
         setLoading(false);
+        
 
     } catch (err) {
         console.error('Error logging into backend:', err);

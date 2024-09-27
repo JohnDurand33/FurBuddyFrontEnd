@@ -1,6 +1,5 @@
 import React from 'react';
-import '../Headers.css';
-import { api } from '../utils/eventApi';
+import '../Header.css';
 
 const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChange, onCreateEvent }) => {
     return (
@@ -9,7 +8,13 @@ const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChang
             <div className="left-header-group">
                 <div className="calendar-title">
                     {/* Convert currentDate to a readable format */}
-                    <h3>{currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                    <h3>
+                        {currentView === 'day'
+                            ? currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                            : currentView === 'week'
+                                ? currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                                : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </h3>
                 </div>
                 <div className="calendar-nav">
                     <button type="button" className="nav-button" onClick={onPrev}>&lt;</button>
@@ -20,7 +25,7 @@ const Header = ({ currentView, currentDate, onPrev, onNext, onToday, onViewChang
 
             {/* Right group: Create + View buttons */}
             <div className="right-header-group">
-                <button type="button" className="create-btn" onClick={onCreateEvent}>+ Create</button>
+                <button type="button" className="create-btn" onClick={onCreateEvent}>Create</button>
                 <div className="view-buttons">
                     <button
                         type="button"

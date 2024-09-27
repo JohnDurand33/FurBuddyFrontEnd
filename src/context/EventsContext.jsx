@@ -1,9 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById, fetchEventsFromAPI } from '../utils/eventApi';
+import { createEvent, deleteEvent, fetchEvents, updateEvent, fetchEventById } from '../utils/eventApi';
 import { useAuth } from './AuthContext';
-import { api } from '../utils/eventApi';
 
-// Create the RecordsContext
 const EventsContext = createContext();
 
 export const useEvents = () => useContext(EventsContext);
@@ -71,7 +69,6 @@ export const EventsProvider = ({ children }) => {
         }
     };
 
-    // Create a new event
     const createNewEvent = async (eventData) => {
         try {
             const response = await createEvent(eventData);
@@ -82,7 +79,6 @@ export const EventsProvider = ({ children }) => {
         }
     };
 
-    // Update an existing event
     const updateExistingEvent = async (eventId, eventData) => {
         try {
             const response = await updateEvent(eventId, eventData);
@@ -96,22 +92,21 @@ export const EventsProvider = ({ children }) => {
         }
     };
 
-    // Delete an event
     const deleteExistingEvent = async (eventId) => {
         try {
             await deleteEvent(eventId);
             const updatedEvents = currEvents.filter((event) => event.id !== eventId);
             setLocalCurrEvents(updatedEvents);
+            setLocalCurrEvent({});
         } catch (err) {
             console.error('Error deleting event:', err);
         }
     };
 
-    // Automatically fetch events when the component mounts, based on user authentication
     useEffect(() => {
         if (authed && token) {
             setLoading(true);
-            fetchEventsFromAPI(); // Fetch events when the user is authenticated
+            fetchEventsFromAPI();
             setLoading(false);
         }
     }, [authed, token]);

@@ -144,6 +144,26 @@ tbody tr:hover {
     vertical-align: middle;
 }
 
+.orange-button {
+    --variant-containedBg: #FFCA00;
+    --variant-containedColor: #000000;
+}
+
+.orange-button {
+    background-color: var(--variant-containedBg);
+    color: var(--variant-containedColor);
+}
+
+.white-button {
+    --variant-containedBg: lightgrey;
+    --variant-containedColor: #000000;
+}
+
+.white-button {
+    background-color: var(--variant-containedBg);
+    color: var(--variant-containedColor);
+}
+
 /* IE 10+ CSS */
 @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
     body {

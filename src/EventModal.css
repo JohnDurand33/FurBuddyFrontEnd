@@ -9,7 +9,15 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    display: none; 
+    display: none;  /* Default is hidden */
+}
+
+.modal-overlay.open {
+    display: flex;  /* Show the modal when 'open' class is applied */
+}
+
+.modal-overlay.close {
+    display: none;  /* Keep hidden when 'close' class is applied */
 }
 
 .modal-content {

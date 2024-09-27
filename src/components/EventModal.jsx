@@ -4,34 +4,34 @@ import '../EventModal.css'
 import { IoMdClose } from 'react-icons/io';  // React icon for close button
 import { useEvents } from '../context/EventsContext';
 
-const EventModal = ({ onClose, isOpen }) => {
+// Helper to format event date and time to local string
+const formatDateTime = (dateTime) => {
+    if (!dateTime) return '';
+    const [date, time] = dateTime.split('T');
+    const [hours, minutes] = time.split(':');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
+    return `${formattedHours}:${minutes} ${period}`;
+};
+
+const formatDisplayDate = (dateTime) => {
+    if (!dateTime) return '';
+    return dateTime.split('T')[0]; // Extract the date part (YYYY-MM-DD)
+};
+
+const EventModal = ({ onClose, isOpen, onEdit, onDelete }) => {
     const { selectedEvent, setLocalSelectedEvent, updateFlag, setUpdateFlag } = useEvents();
 
     // Ensure selectedEvent is valid before trying to access its properties
     if (!selectedEvent) return null;
 
-    const formatDateTime = (dateTime) => {
-        if (!dateTime) return '';
-        const [date, time] = dateTime.split('T');
-        const [hours, minutes] = time.split(':');
-        const period = hours >= 12 ? 'PM' : 'AM';
-        const formattedHours = hours % 12 || 12; // Convert to 12-hour format
-        return `${formattedHours}:${minutes} ${period}`;
-    };
-
-    // Helper function to format the date from datetime string
-    const formatDisplayDate = (dateTime) => {
-        if (!dateTime) return '';
-        return dateTime.split('T')[0]; // Extract the date part (YYYY-MM-DD)
-    };
-
+    // Format event times for display in local time
     const formattedDate = formatDisplayDate(selectedEvent.start_time);
     const formattedStartTime = formatDateTime(selectedEvent.start_time);
     const formattedEndTime = formatDateTime(selectedEvent.end_time);
 
     return (
-        <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
-            {selectedEvent && (
+        <div className={`modal-overlay ${isOpen ? 'open' : 'close'}`} onClick={onClose}>
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
                         <h3>{selectedEvent.name}</h3>
@@ -67,25 +67,23 @@ const EventModal = ({ onClose, isOpen }) => {
                                 </p>
                             </div>
                         </div>
+                        
 
                         <div className="modal-item">
                             <strong>Notes</strong>
                             <p>{selectedEvent.notes || "No notes"}</p>
-                        </div>
-
-                        <div className="modal-item notification-toggle">
-                            <strong>Turn On Notification</strong>
-                            <input type="checkbox" className="toggle-switch" />
-                        </div>
-                    </div>
-
-                    <div className="modal-footer">
-                        <button className="delete-btn">Delete</button>
-                        <button className="edit-btn">Edit</button>
-
                     </div>
                 </div>
-            )}
+                    
+                    
+
+                    <div className="modal-footer">
+                    <button className="delete-btn" onClick={onDelete}>Delete</button>
+                        <button className="edit-btn"onClick={onEdit}>Edit</button>
+
+                    
+                </div>
+            </div>
         </div>
     );
 };
