@@ -1,5 +1,15 @@
 {
-  "storage": {
-    "rules": "storage.rules"
-  }
+    "hosting": {
+        "public": "dist", // Make sure this points to the Vite output folder (default is 'dist')
+        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "storage": {
+        "rules": "storage.rules"
+    }
 }
