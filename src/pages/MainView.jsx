@@ -75,9 +75,9 @@ function MainView({ toggleTheme, isDark }) {
                 }}
             >
                 <Routes>
-                    <Route path="/" element={<SignUp />} />
-                    <Route path="/signup" element={<SignUp isMobile={isMobile} toggleRail={toggleRail} />} />
+                    <Route path="/" element={<Login />} />
                     <Route path="/login" element={<LogIn isMobile={isMobile} toggleRail={toggleRail} setIsRailOpen={setIsRailOpen} />} />
+                    <Route path="/signup" element={<SignUp isMobile={isMobile} toggleRail={toggleRail} />} />
                     <Route path="/heropage" element={<HeroPage isMobile={isMobile} />} />
                     <Route path="/dogs/new" element={<DogProfileCreate isMobile={isMobile} />} />
                     <Route path="/dogs/view" element={<DogProfileViewPage isMobile={isMobile} getMarginLeft={getMarginLeft} isRailOpen={isRailOpen} />} />

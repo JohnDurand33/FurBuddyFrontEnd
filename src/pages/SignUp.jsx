@@ -85,30 +85,6 @@ const SignUpForm = () => {
         }
     };
 
-    const handleGoogleSignUpSuccess = async (credentialResponse) => {
-        setServerError(null);
-        try {
-            const { credential } = credentialResponse;
-            const googleCredential = GoogleAuthProvider.credential(credential);
-            const userCredential = await signInWithCredential(auth, googleCredential);
-            const fireUser = userCredential.user;
-            setFireUser(fireUser);
-
-            const res = await axios.post(`${backEndUrl}/owner/google-signup`, {
-                token: credential,
-                provider: 'google',
-            });
-
-            updateCurrUser(res.data.owner);
-            updateToken(res.data.auth_token);
-
-            setAuthed(true);
-            navigate('/login');
-        } catch (err) {
-            setServerError('Google sign-up failed. Please try again.');
-        }
-    };
-
     return (
         <div style={{ maxWidth: '80%', margin: '0 auto', marginTop: '2rem' }}>
             <Formik
@@ -183,19 +159,6 @@ const SignUpForm = () => {
                     </Form>
                 )}
             </Formik>
-
-            <div style={{ margin: '2rem' }}>
-                <hr />
-            </div>
-
-            <div style={{ textAlign: 'center' }}>
-                <GoogleOAuthProvider clientId={GC_ID}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSignUpSuccess}
-                        onError={() => setServerError('Google Sign-up Failed. Please try again.')}
-                    />
-                </GoogleOAuthProvider>
-            </div>
         </div>
     );
 };
